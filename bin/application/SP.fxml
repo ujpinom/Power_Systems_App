@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="675.0" prefWidth="1056.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SPController">
+  <columnConstraints>
+    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="233.0" minWidth="10.0" prefWidth="206.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="842.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints maxHeight="301.0" minHeight="3.0" prefHeight="138.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="-Infinity" minHeight="10.0" prefHeight="473.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="0.0" prefHeight="43.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <AnchorPane fx:id="areaDibujo" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onMouseClicked="#mouseClicked" onMouseDragged="#dragEvent" onMouseMoved="#mouseEvent" prefHeight="354.0" prefWidth="793.0" style="-fx-background-color: white;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="443.0" prefWidth="210.0" spacing="8.0" style="-fx-background-color: #90a4ae;" GridPane.rowIndex="1">
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+         <children>
+            <TitledPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="180.0" prefWidth="216.0" style="-fx-border-color: black;" text="Control" textFill="#d35400">
+               <font>
+                  <Font name="Arial Bold Italic" size="18.0" />
+               </font>
+               <content>
+                  <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="144.0" prefWidth="109.0" spacing="5.0" style="-fx-background-color: #cfd8dc;">
+                     <children>
+                        <Button fx:id="ejecutar" maxWidth="-Infinity" mnemonicParsing="false" onAction="#ejecutar" prefHeight="41.0" prefWidth="123.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/ic_play_arrow_128_28560.png&quot;); -fx-background-repeat: no-repeat; -fx-font-family: &quot;Helvetica&quot;; -fx-background-position: left;" stylesheets="@application.css" text="Ejecutar" textAlignment="RIGHT" textFill="#311c09">
+                           <font>
+                              <Font name="Arial Bold" size="18.0" />
+                           </font>
+                           <tooltip>
+                              <Tooltip text="Empty Tooltip" />
+                           </tooltip>
+                           <tooltip>
+                              <Tooltip text="Empty Tooltip" />
+                           </tooltip>
+                           <tooltip>
+                              <Tooltip text="Empty Tooltip" />
+                           </tooltip>
+                           <tooltip>
+                              <Tooltip text="Empty Tooltip" />
+                           </tooltip>
+                           <tooltip>
+                              <Tooltip text="Empty Tooltip" />
+                           </tooltip>
+                           <tooltip>
+                              <Tooltip text="Empty Tooltip" />
+                           </tooltip>
+                           <tooltip>
+                              <Tooltip text="Ejecutar" />
+                           </tooltip>
+                        </Button>
+                        <Separator prefHeight="0.0" prefWidth="270.0" />
+                        <HBox alignment="TOP_CENTER" spacing="12.0">
+                           <children>
+                              <Button fx:id="undo1" contentDisplay="TOP" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#borrarUltimoElemento" prefHeight="56.0" prefWidth="62.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/circular-arrow41_41902.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css">
+                                 <tooltip>
+                                    <Tooltip text="Borrar Último Elemento" />
+                                 </tooltip>
+                              </Button>
+                              <Button fx:id="undo" mnemonicParsing="false" onAction="#limpiarArea" prefHeight="56.0" prefWidth="65.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/gnome_edit_clear.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css">
+                                 <tooltip>
+                                    <Tooltip text="Limpiar" />
+                                 </tooltip>
+                              </Button>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+            </TitledPane>
+            <TitledPane maxWidth="-Infinity" prefHeight="270.0" prefWidth="216.0" style="-fx-border-color: black;" text="Elementos" textFill="#d35400">
+               <font>
+                  <Font name="Arial Bold Italic" size="18.0" />
+               </font>
+               <content>
+                  <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="236.0" prefWidth="182.0" spacing="20.0" style="-fx-background-color: #cfd8dc;">
+                     <children>
+                        <HBox alignment="CENTER" spacing="20.0">
+                           <children>
+                              <ToggleButton fx:id="linea" mnemonicParsing="false" onAction="#lineaSelected" prefHeight="39.0" prefWidth="55.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/minus-gross-horizontal-straight-line-symbol_icon-icons.com_74137.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css">
+                                 <toggleGroup>
+                                    <ToggleGroup fx:id="group" />
+                                 </toggleGroup>
+                                 <tooltip>
+                                    <Tooltip text="Línea" />
+                                 </tooltip>
+                              </ToggleButton>
+                              <ToggleButton fx:id="trafo" mnemonicParsing="false" onAction="#trafoSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/transformer_icon_180260.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Transformador" />
+                                 </tooltip></ToggleButton>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="20.0">
+                           <children>
+                              <ToggleButton fx:id="barra" mnemonicParsing="false" onAction="#barraSelected" prefHeight="39.0" prefWidth="55.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/rod_barbells-48_44503.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Barra" />
+                                 </tooltip></ToggleButton>
+                              <ToggleButton fx:id="carga" mnemonicParsing="false" onAction="#cargaSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/downloadupdates_theapplication_thearrow_descarg_2915.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Carga" />
+                                 </tooltip></ToggleButton>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="20.0">
+                           <children>
+                              <ToggleButton fx:id="banco" mnemonicParsing="false" onAction="#bancoSelected" prefHeight="39.0" prefWidth="56.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/file_type_capacitor_icon_130703.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Banco" />
+                                 </tooltip></ToggleButton>
+                              <ToggleButton fx:id="generador" mnemonicParsing="false" onAction="#genSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/flux_icon_177813.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Generador" />
+                                 </tooltip></ToggleButton>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="52.0" prefWidth="200.0">
+                           <children>
+                              <ToggleButton fx:id="none" mnemonicParsing="false" onAction="#editionSelected" prefHeight="39.0" prefWidth="60.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/pencil_79263.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Modo Edición" />
+                                 </tooltip></ToggleButton>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+            </TitledPane>
+         </children>
+      </VBox>
+      <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="16.0" prefWidth="1048.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+         <children>
+            <TextField fx:id="infoElemento" disable="true" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" opacity="0.95" prefHeight="28.0" prefWidth="367.0" text="Elemento: " />
+            <TextField fx:id="infoTare" disable="true" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" opacity="0.95" prefHeight="39.0" prefWidth="354.0" text="Tarea: " />
+            <TextField fx:id="infoPosiMouse" disable="true" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" opacity="0.98" prefHeight="43.0" prefWidth="323.0" text="X=     Y=     " />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="154.0" prefWidth="210.0" spacing="1.0" style="-fx-background-color: #90a4ae; -fx-border-color: #90a4ae; -fx-border-width: 3;">
+         <children>
+            <VBox prefHeight="200.0" prefWidth="100.0" spacing="3.0">
+               <children>
+                  <MenuButton fx:id="tiposFalla" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="68.0" prefWidth="100.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/iconfinder-weather-weather-forecast-lightning-storm-energy-3859139_121230%20(2).png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Fallas" textFill="WHITE">
+                    <items>
+                      <MenuItem fx:id="fallattrifa" mnemonicParsing="false" onAction="#fallaTrifasica" text="Trifásica Balanceada" />
+                      <MenuItem fx:id="fallaMono" mnemonicParsing="false" onAction="#fallaMono" text="Línea a tierra" />
+                        <MenuItem fx:id="fallaLaL" mnemonicParsing="false" onAction="#fallaLaL" text="Línea a Línea" />
+                        <MenuItem fx:id="fallaLLT" mnemonicParsing="false" onAction="#fallaLLTierra" text="Línea-Línea a tierra" />
+                    </items>
+                     <font>
+                        <Font name="Arial Bold Italic" size="17.0" />
+                     </font>
+                     <tooltip>
+                        <Tooltip text="Seleccionar Tipo Falla" />
+                     </tooltip>
+                  </MenuButton>
+                  <MenuButton fx:id="visualizacion" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="70.0" prefWidth="100.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/vision_view_eye_icon_153887.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Visualización" textFill="WHITE">
+                     <font>
+                        <Font name="Arial Bold Italic" size="17.0" />
+                     </font>
+                     <items>
+                        <MenuItem fx:id="matrizSecuencia" mnemonicParsing="false" onAction="#fallaTrifasica" text="Matrices de secuencia" />
+                        <MenuItem fx:id="fallaTabular" mnemonicParsing="false" onAction="#fallaMono" text="Fallas forma tabular" />
+                        <MenuItem fx:id="flujoTabular" mnemonicParsing="false" onAction="#fallaLaL" text="Flujos forma tabular" />
+                     </items>
+                     <tooltip>
+                        <Tooltip text="Visualización" />
+                     </tooltip>
+                  </MenuButton>
+               </children>
+               <HBox.margin>
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+               </HBox.margin>
+            </VBox>
+            <VBox prefHeight="1.0" prefWidth="100.0">
+               <children>
+                  <MenuButton fx:id="flujos" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="69.0" prefWidth="99.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/transmission_spread_transfer_move_flow_coronavirus_contagion_icon_141087%20(1).png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Flujos" textFill="WHITE">
+                    <items>
+                      <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Action 1" />
+                      <MenuItem fx:id="GaussSeidel" mnemonicParsing="false" onAction="#GaussSeidel" text="Gauss-Seidel" />
+                    </items>
+                     <font>
+                        <Font name="Arial Bold Italic" size="17.0" />
+                     </font>
+                     <tooltip>
+                        <Tooltip text="Seleccionar Modo Cálculo" />
+                     </tooltip>
+                  </MenuButton>
+               </children>
+               <HBox.margin>
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+               </HBox.margin></VBox>
+         </children>
+         <GridPane.margin>
+            <Insets top="3.0" />
+         </GridPane.margin>
+      </HBox>
+      <HBox maxHeight="-Infinity" prefHeight="154.0" prefWidth="840.0" style="-fx-background-color: #90a4ae; -fx-border-color: #90a4ae; -fx-border-width: 3;" GridPane.columnIndex="1">
+         <children>
+            <TextArea fx:id="display" editable="false" prefHeight="139.0" prefWidth="601.0" style="-fx-background-color: #19D518;">
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
+               <HBox.margin>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </HBox.margin>
+               <font>
+                  <Font name="Arial Bold" size="11.0" />
+               </font>
+               <tooltip>
+                  <Tooltip text="Display" />
+               </tooltip>
+            </TextArea>
+            <VBox prefHeight="149.0" prefWidth="87.0">
+               <children>
+                  <Label text="S_BASE" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="MVAbase" alignment="CENTER" disable="true" editable="false" focusTraversable="false" maxWidth="1.7976931348623157E308" opacity="0.99" prefHeight="28.0" prefWidth="63.0" text="100 MVA">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </TextField>
+                  <Separator disable="true" prefHeight="11.0" prefWidth="64.0" style="-fx-border-color: transparent;" />
+                  <Label prefHeight="17.0" prefWidth="86.0" text="Info-Flujo" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextArea fx:id="infoFlujo" editable="false" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white;">
+                     <font>
+                        <Font name="System Bold" size="9.5" />
+                     </font>
+                  </TextArea>
+               </children>
+            </VBox>
+         </children></HBox>
+   </children>
+   <padding>
+      <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+   </padding>
+</GridPane>

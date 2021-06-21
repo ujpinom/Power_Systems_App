@@ -4,7 +4,9 @@ import java.util.Arrays;
 
 public class Zbarra implements Cloneable{
 	
+
 	
+
 	public static double [][] getZbarra(double [][] yBarra){
 		
 		
@@ -53,5 +55,26 @@ public class Zbarra implements Cloneable{
 	      
 	      return C;
 	}
+	
+	   public static double[][] multiplicacionMatrices ( double[][] a, double[][] b) {
+		   
+		   int cola= a[0].length;
+		   
+		   int rowb= b.length;	
+		   
+		   if(cola!=rowb) {
+			   throw new IllegalArgumentException("Las dimensiones de las matrices no coinciden");
+		   }
+		 
+		     double [][] c = new double[a.length][b[0].length];
+		      
+		      for (int i= 0; i<c.length; i++)
+		          for (int j=0; j<c[0].length; j++)
+		              for (int k=0; k<b.length; k++)
+		                  c[i][j] = c[i][j] + a[i][k] * b[k][j];
+		      return c;
+		   }
+	   
+	   
 	
 }

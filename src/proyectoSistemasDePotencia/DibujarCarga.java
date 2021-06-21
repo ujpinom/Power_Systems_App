@@ -23,11 +23,101 @@ public class DibujarCarga {
 				return dibujarCarga(banco);
 			}
 			
-			else {
+			else if(tipo.equals("B")){
 				Bancos banco=((Bancos)objecto);
 				return dibujarBanco(banco);
 			}
+			
+			else {
+				CompensadorEstatico compensador= ((CompensadorEstatico)objecto);
+				return dibujarCompensador(compensador);
+			}
 
+	}
+	
+	
+	public static List<Node> dibujarCompensador(CompensadorEstatico compensador){
+		
+		List<Node> lineas= new ArrayList<>();
+		
+		
+		if(compensador.getOrientacion().equals(CompensadorEstatico.LEFT)) {
+			
+			double x1=compensador.getBarra().getCoordenadaCompensador().getX();
+			double y1=compensador.getBarra().getCoordenadaCompensador().getY();
+			double x2=compensador.getBarra().getCoordenadaCompensador().getX()-10;
+			double y2=compensador.getBarra().getCoordenadaCompensador().getY();
+			
+			lineacarga=new Line(x1,y1,
+					x2,y2);
+			
+
+			Circle c1= new Circle();
+			c1.setRadius(5);
+			c1.setCenterX(x1);
+			c1.setCenterY(y1);
+			c1.setFill(Color.RED);
+			
+			Circle cirg = new Circle();
+			cirg.setRadius(15.5);
+			cirg.setCenterX(lineacarga.getEndX()-15);
+			cirg.setCenterY(lineacarga.getEndY());
+			cirg.setFill(Color.WHITE);
+			cirg.setStroke(Color.BLACK);
+			
+			compensador.setCiculoCompensador(cirg);
+			
+			Text nombreCompensador= new Text();
+			nombreCompensador.setText(compensador.getNombreCompensador());
+			nombreCompensador.setFill(Color.BLUE);
+			nombreCompensador.setX(cirg.getCenterX()-5);
+			nombreCompensador.setY(cirg.getCenterY()+5);
+			
+			lineas.add(cirg);lineas.add(lineacarga);lineas.add(c1);lineas.add(nombreCompensador);
+		}
+		
+		else if(compensador.getOrientacion().equals(CompensadorEstatico.RIGHT)) {
+			
+			double x1=compensador.getBarra().getCoordenadaCompensador().getX();
+			double y1=compensador.getBarra().getCoordenadaCompensador().getY();
+			double x2=compensador.getBarra().getCoordenadaCompensador().getX()+10;
+			double y2=compensador.getBarra().getCoordenadaCompensador().getY();
+			
+			lineacarga=new Line(x1,y1,
+					x2,y2);
+			
+
+			Circle c1= new Circle();
+			c1.setRadius(5);
+			c1.setCenterX(x1);
+			c1.setCenterY(y1);
+			c1.setFill(Color.RED);
+			
+			Circle cirg = new Circle();
+			cirg.setRadius(15.5);
+			cirg.setCenterX(lineacarga.getEndX()+15);
+			cirg.setCenterY(lineacarga.getEndY());
+			cirg.setFill(Color.WHITE);
+			cirg.setStroke(Color.BLACK);
+			
+			compensador.setCiculoCompensador(cirg);
+			
+			Text nombreCompensador= new Text();
+			nombreCompensador.setText(compensador.getNombreCompensador());
+			nombreCompensador.setFill(Color.BLUE);
+			nombreCompensador.setX(cirg.getCenterX()-5);
+			nombreCompensador.setY(cirg.getCenterY()+5);
+			
+			lineas.add(cirg);lineas.add(lineacarga);lineas.add(c1);lineas.add(nombreCompensador);
+	
+			
+		}
+		
+		
+		
+		return lineas;
+		
+		
 	}
 	
 	

@@ -18,7 +18,6 @@ public class Bancos {
 	private String orientacion="LEFT";
 	
 	public Bancos() {
-		
 	
 	}
 

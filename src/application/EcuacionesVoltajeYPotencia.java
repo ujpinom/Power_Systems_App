@@ -27,13 +27,8 @@ public class EcuacionesVoltajeYPotencia {
 	
 	private  Complejo [][] matrizAdj;
 	
-	private boolean llamadaDesdeBarraPV=false;  // Cuando la potencia Imaginaria calculada en una barra PV es superior al maximo programado del generador. Se haya el voltaje cambiando esta barra
-	// a barra tipo PQ
-	
-	
-	
-	
-	
+	private int iteConvergencia;
+
 	@SuppressWarnings("unchecked")
 	public EcuacionesVoltajeYPotencia(List<Barras> barras,int numeroIteraciones, double factorAceleracion,double epsilon) {
 	
@@ -144,10 +139,26 @@ public class EcuacionesVoltajeYPotencia {
 
 			iteracionActual++;
 		}
+		
+		iteConvergencia=iteracionActual;
 
 	}
+
 	
-	
+	/**
+	 * Retorna el número de la iteración para la cual el algoritmo alcanza la convergencia según el epsilón especificado.
+	 * @return
+	 */
+	public int getIteConvergencia() {
+		return iteConvergencia;
+	}
+
+
+	public void setIteConvergencia(int iteConvergencia) {
+		this.iteConvergencia = iteConvergencia;
+	}
+
+
 	private void acelerar(int i) {
 		
 		Complejo voltajeAnterior= infoIteraciones[i].get(infoIteraciones[i].size()-2);
@@ -273,17 +284,20 @@ public class EcuacionesVoltajeYPotencia {
 
 		}
 		
-		else if(b.containsCarga()) {
-			
-			
+		if(b.containsCarga()) {
+		
 			potenciaComplejaProgramada= Complejo.producto(new Complejo(-1,0), new Complejo(b.getCarga().getPotenciaActiva(),-b.getCarga().getPotenciaReactiva()));
 			
 				
 		}
 		
-		
-		
-		
+		if(b.containsBanco()) {
+			
+			potenciaComplejaProgramada= Complejo.suma(potenciaComplejaProgramada, 
+					Complejo.producto(new Complejo(-1,0), new Complejo(0,-b.getBanco().getPotenciaReactiva())));
+			
+		}
+
 		try {
 			
 			List<Complejo> primeraSumatoria= primeraSumatoria(indexBarra, matrizAdj);

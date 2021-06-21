@@ -29,6 +29,8 @@ public class InfoTrafo extends GridPane {
 	private Label z1l= new Label("Impedancia secuencia positiva [p,u]");
 	private Label z2l= new Label("Impedancia secuencia negativa [p,u]");
 	private Label z0l= new Label("Impedancia secuencia cero [p,u]");
+	private Label rTrafo= new Label("Resistencia [p,u]");
+	private TextField resistenciaTrafo= new TextField();
 	private TextField z1t= new TextField();
 	private TextField z2t= new TextField();
 	private TextField z0t= new TextField();
@@ -77,7 +79,7 @@ public class InfoTrafo extends GridPane {
 		this.add(hb, 0, 0);
 		this.add(hb1, 0, 2);
 		
-		vb.getChildren().addAll(z1l,z1t,z2l,z2t,z0l,z0t,cprimaria,cbo,csecundaria,cbo1);
+		vb.getChildren().addAll(z1l,z1t,z2l,z2t,z0l,z0t,rTrafo,resistenciaTrafo,cprimaria,cbo,csecundaria,cbo1);
 		
 		this.add(vb,0 , 1);
 		
@@ -103,7 +105,6 @@ public class InfoTrafo extends GridPane {
 			}
 		});
 		cbo1.setOnAction(e->{
-			
 			
 			if(items.indexOf(cbo1.getValue())==indexConexionprimaria) {
 				JOptionPane.showMessageDialog(null, "No puede seleccionar la misma barra dos veces. Escoja la otra barra");
@@ -135,6 +136,8 @@ public class InfoTrafo extends GridPane {
 		z1t.setText(""+trafo.getimpedanciaLineaZ1());
 		z2t.setText(""+ trafo.getimpedanciaLineaZ2());
 		z0t.setText(""+ trafo.getimpedanciaLineaZ0());
+		resistenciaTrafo.setText(""+trafo.getResitencia());
+		
 	
 		btncerrar.setOnAction(e->{
 
@@ -143,9 +146,10 @@ public class InfoTrafo extends GridPane {
 		     boolean vz1t= verificarEntrada(z1t.getText());
 		     boolean vz2t= verificarEntrada(z2t.getText());
 		     boolean vz0t= verificarEntrada(z0t.getText());
+		     boolean rtrafo= verificarEntrada(resistenciaTrafo.getText());
 		     
 		     
-		     if(z1t.getText().contains(",") ||z2t.getText().contains(",")||z0t.getText().contains(",")||vz1t||vz2t||vz0t ) {
+		     if(z1t.getText().contains(",") ||z2t.getText().contains(",")||z0t.getText().contains(",")||vz1t||vz2t||vz0t ||rtrafo) {
 		    	 
 		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
 		     }
@@ -154,6 +158,7 @@ public class InfoTrafo extends GridPane {
 		     trafo.setimpedanciaLineaZ1(Double.parseDouble(z1t.getText()));
 		     trafo.setimpedanciaLineaZ2(Double.parseDouble(z2t.getText()));
 		     trafo.setimpedanciaLineaZ0(Double.parseDouble(z0t.getText()));
+		     trafo.setResitencia(Double.parseDouble(resistenciaTrafo.getText()));
 		    }
 		     
 		     

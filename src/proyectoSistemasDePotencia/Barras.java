@@ -15,6 +15,7 @@ public class Barras {
 	private Bancos banco;
 	private Carga carga;
 	private Generadores generador;
+	private CompensadorEstatico compensador;
 	private double ancho=5;
 	private double largo=70;
 	static final double vprefalla=1.0;
@@ -59,7 +60,29 @@ public class Barras {
 	private boolean barraCompensacion;
 	private boolean barraPQ;
 	private boolean barraPV;
+	private Point2D coordenadaCompensador;
 	
+	
+	
+	public CompensadorEstatico getCompensador() {
+		return compensador;
+	}
+
+	public void setCompensador(CompensadorEstatico compensador) {
+		this.compensador = compensador;
+	}
+
+	public Point2D getCoordenadaCompensador() {
+		return coordenadaCompensador;
+	}
+
+	public void setCoordenadaCompensador(Point2D coordenadaCompensador) {
+		this.coordenadaCompensador = coordenadaCompensador;
+	}
+
+	public boolean containsGenerador() {
+		return generador!=null;
+	}
 	
 	public boolean containsCarga() {
 		return carga!=null;
@@ -96,6 +119,8 @@ public class Barras {
 	public boolean isBarraPQ() {
 		return barraPQ;
 	}
+	
+	
 
 	public void setBarraPQ(boolean barraPQ) {
 		this.barraPQ = barraPQ;

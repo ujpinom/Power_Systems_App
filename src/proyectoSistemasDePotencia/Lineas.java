@@ -2,8 +2,11 @@ package proyectoSistemasDePotencia;
 
 import com.sun.javafx.scene.paint.GradientUtils.Point;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.Polyline;
 
 public class Lineas {
 	
@@ -32,9 +35,45 @@ public class Lineas {
 	private double mVarDeCargaTotales;
 	private double YMediaParalela;
 	
+	private ObservableList<Double> listPuntosPolyLine;
+	
+	private Polyline polyline;
+	
+	private Path path;
+	
 	
 	
 		
+	public Path getPath() {
+		return path;
+	}
+
+
+	public void setPath(Path path) {
+		this.path = path;
+	}
+
+
+	public Polyline getPolyline() {
+		return polyline;
+	}
+
+
+	public void setPolyline(Polyline polyline) {
+		this.polyline = polyline;
+	}
+
+
+	public ObservableList<Double> getListPuntosPolyLine() {
+		return listPuntosPolyLine;
+	}
+
+
+	public void setListPuntosPolyLine(ObservableList<Double> listPuntosPolyLine) {
+		this.listPuntosPolyLine = listPuntosPolyLine;
+	}
+
+
 	public double getResitencia() {
 		return resitencia;
 	}
@@ -166,7 +205,9 @@ public class Lineas {
 	}
 
 
-	public Lineas(Barras barra1, Barras barra2,double impedancia1,double impedancia2,double impedancia0) {
+	public Lineas(Barras barra1, Barras barra2,double impedancia1,double impedancia2,double impedancia0,Path path) {
+		
+		this.path=path;
 		
 		this.barra1 = barra1;
 		this.barra2 = barra2;

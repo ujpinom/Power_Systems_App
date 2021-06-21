@@ -86,7 +86,7 @@
                   <Font name="Arial Bold Italic" size="18.0" />
                </font>
                <content>
-                  <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="236.0" prefWidth="182.0" spacing="20.0" style="-fx-background-color: #cfd8dc;">
+                  <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="236.0" prefWidth="182.0" spacing="8.0" style="-fx-background-color: #cfd8dc;">
                      <children>
                         <HBox alignment="CENTER" spacing="20.0">
                            <children>
@@ -128,12 +128,27 @@
                                  </tooltip></ToggleButton>
                            </children>
                         </HBox>
-                        <HBox alignment="CENTER" prefHeight="52.0" prefWidth="200.0">
+                        <HBox alignment="CENTER" layoutX="24.0" layoutY="131.0" spacing="20.0">
                            <children>
-                              <ToggleButton fx:id="none" mnemonicParsing="false" onAction="#editionSelected" prefHeight="39.0" prefWidth="60.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/pencil_79263.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                              <ToggleButton fx:id="Compensador" mnemonicParsing="false" onAction="#compensadorSelected" prefHeight="39.0" prefWidth="56.0" style="-fx-background-image: url(&quot;/application/alpha_c_circle_outline_icon_140018.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Compensador" />
+                                 </tooltip>
+                              </ToggleButton>
+                              <ToggleButton fx:id="generador1" mnemonicParsing="false" onAction="#genSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/flux_icon_177813.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
+                                 <tooltip>
+                                    <Tooltip text="Generador" />
+                                 </tooltip>
+                              </ToggleButton>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER">
+                           <children>
+                              <ToggleButton fx:id="none" mnemonicParsing="false" onAction="#editionSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/pencil_79263.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
                                  <tooltip>
                                     <Tooltip text="Modo Edición" />
-                                 </tooltip></ToggleButton>
+                                 </tooltip>
+                              </ToggleButton>
                            </children>
                         </HBox>
                      </children>
@@ -189,7 +204,7 @@
                <children>
                   <MenuButton fx:id="flujos" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="69.0" prefWidth="99.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/transmission_spread_transfer_move_flow_coronavirus_contagion_icon_141087%20(1).png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Flujos" textFill="WHITE">
                     <items>
-                      <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Action 1" />
+                      <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Newton Raphson" />
                       <MenuItem fx:id="GaussSeidel" mnemonicParsing="false" onAction="#GaussSeidel" text="Gauss-Seidel" />
                     </items>
                      <font>

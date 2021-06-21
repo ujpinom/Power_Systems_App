@@ -1,6 +1,7 @@
 package proyectoSistemasDePotencia;
 
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Path;
 
 public class Transformador extends Lineas {
 	
@@ -11,9 +12,9 @@ public class Transformador extends Lineas {
 	private Point2D puntoMedio;
 	
 	public Transformador(Barras barra1, Barras barra2, double impedancia1,
-			double impedancia2,double impedancia0) {
+			double impedancia2,double impedancia0,Path p) {
 		
-		super(barra1, barra2, impedancia1,impedancia2,impedancia0);
+		super(barra1, barra2, impedancia1,impedancia2,impedancia0,p);
 		this.conexionPrimaria="YN-"+barra1.getNombreBarra();
 		this.conexionSecundaria="YN-"+barra2.getNombreBarra();
 		

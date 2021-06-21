@@ -34,10 +34,8 @@ public class InfoLineas extends GridPane {
 	private Button btncerrar= new Button("Aceptar");
 	private HBox hb1= new HBox();
 	private TextField resistencia=new TextField();
-	private TextField mvartotales=new TextField();
 	private TextField ymediaparalela=new TextField();
 	private Label resi=new Label("Resistencia [p,u]");
-	private Label mvar=new Label("Mvar totales de carga");
 	private Label ymedia=new Label("Y/2 [p,u]");
 	
 	
@@ -62,7 +60,7 @@ public class InfoLineas extends GridPane {
 		this.add(hb, 0, 0);
 		this.add(hb1, 0, 2);
 		
-		vb.getChildren().addAll(z1l,z1t,z2l,z2t,z0l,z0t,resi,resistencia,mvar,mvartotales,ymedia,ymediaparalela);
+		vb.getChildren().addAll(z1l,z1t,z2l,z2t,z0l,z0t,resi,resistencia,ymedia,ymediaparalela);
 		
 		this.add(vb,0 , 1);
 		
@@ -73,7 +71,6 @@ public class InfoLineas extends GridPane {
 		z0t.setText(""+ linea.getimpedanciaLineaZ0());
 		
 		resistencia.setText(""+linea.getResitencia());
-		mvartotales.setText(""+linea.getmVarDeCargaTotales());
 		ymediaparalela.setText(""+linea.getYMediaParalela());
 	
 		btncerrar.setOnAction(e->{
@@ -83,12 +80,11 @@ public class InfoLineas extends GridPane {
 		     boolean vz0t= verificarEntrada(z0t.getText());
 		     
 		     boolean r=verificarEntrada(resistencia.getText());
-		     boolean mv=verificarEntrada(mvartotales.getText());
 		     boolean y=verificarEntrada(ymediaparalela.getText());
 
 		     Stage stage = (Stage) this.btncerrar.getScene().getWindow();
 		     
-		     if(z1t.getText().contains(",") ||z2t.getText().contains(",")||z0t.getText().contains(",")||vz1t||vz2t||vz0t||r||mv||y ) {
+		     if(z1t.getText().contains(",") ||z2t.getText().contains(",")||z0t.getText().contains(",")||vz1t||vz2t||vz0t||r||y ) {
 		    	 
 		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
 		    	
@@ -99,7 +95,6 @@ public class InfoLineas extends GridPane {
 		     linea.setimpedanciaLineaZ0(Double.parseDouble(z0t.getText()));
 		     
 		     linea.setResitencia(Double.parseDouble(resistencia.getText()));
-		     linea.setmVarDeCargaTotales(Double.parseDouble(mvartotales.getText()));
 		     linea.setYMediaParalela(Double.parseDouble(ymediaparalela.getText()));
 		     
 		     stage.close();

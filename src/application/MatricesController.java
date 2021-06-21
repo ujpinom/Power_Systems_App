@@ -35,7 +35,7 @@ public class MatricesController {
 
 	@FXML
 	private void aceptarButton() {
-		  Stage stage = (Stage) this.acceptar.getScene().getWindow();
+		 Stage stage = (Stage) this.acceptar.getScene().getWindow();
 		String tepsilon= epsilon.getText();
 		String tIteraciones= iteraciones.getText();
 		String tFAcele= aceleracion.getText();

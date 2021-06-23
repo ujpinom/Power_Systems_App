@@ -8,7 +8,7 @@ public class Barras {
 	
 	
 	private Ellipse ellipse;
-
+	
 	private double nombreBarraX;
 	private double nombreBarraY;
 	private String nombrePersonalizado;
@@ -61,9 +61,26 @@ public class Barras {
 	private boolean barraPQ;
 	private boolean barraPV;
 	private Point2D coordenadaCompensador;
+	private double flowPowerRealCalculada;  // Potencia calculada para las barras de compensación y PV luego de obtener la solución del problemas de flujos de potencia.
+	private double flowPowerImagCalculada;//// Potencia calculada para las barras de compensación y PV luego de obtener la solución del problemas de flujos de potencia.
 	
 	
-	
+	public double getFlowPowerRealCalculada() {
+		return flowPowerRealCalculada;
+	}
+
+	public void setFlowPowerRealCalculada(double flowPowerRealCalculada) {
+		this.flowPowerRealCalculada = flowPowerRealCalculada;
+	}
+
+	public double getFlowPowerImagCalculada() {
+		return flowPowerImagCalculada;
+	}
+
+	public void setFlowPowerImagCalculada(double flowPowerImagCalculada) {
+		this.flowPowerImagCalculada = flowPowerImagCalculada;
+	}
+
 	public CompensadorEstatico getCompensador() {
 		return compensador;
 	}
@@ -78,6 +95,10 @@ public class Barras {
 
 	public void setCoordenadaCompensador(Point2D coordenadaCompensador) {
 		this.coordenadaCompensador = coordenadaCompensador;
+	}
+	
+	public boolean containsCompensador() {
+		return compensador!=null;
 	}
 
 	public boolean containsGenerador() {

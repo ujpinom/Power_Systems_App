@@ -75,7 +75,7 @@ public class InfoCarga extends GridPane {
 			
 		     Stage stage = (Stage) this.btncerrar.getScene().getWindow();
 		     
-		     boolean vz1t= verificarEntrada(z1t.getText());
+		     boolean vz1t= verificar(z1t.getText());
 		     boolean vz2t= verificarEntrada(z2t.getText());
 		     
 		     
@@ -95,7 +95,7 @@ public class InfoCarga extends GridPane {
 		
 	}
 	
-	public boolean verificarEntrada(String entrada) {
+	public boolean verificar(String entrada) {
 		
 		int contador=0;
 		
@@ -121,6 +121,56 @@ public class InfoCarga extends GridPane {
 		return false;
 		
 	}
+	
+	public boolean verificarEntrada(String entrada) {
+		
+		int contador=0;
+		int contador1=0;
+		
+		for(int i=0;i<entrada.length();i++) {
+			
+			char c= entrada.charAt(i);
+			
+			if(c=='-' && i==0) {
+				++contador1;
+				continue;
+			}
+			
+			else if(c=='-' && i>0) {
+				return true;
+			}
+			
+
+			if(!Character.isDigit(c) && c!='.') {
+				
+				return true;
+			}
+			else if(c=='.') {
+				
+				++contador;
+				continue;
+			}
+			
+			else if(c=='-') {
+				
+			}
+			
+			if (contador>1 ||contador1>1) {
+				
+				return true;
+			}
+			
+			contador=0;
+			contador1=0;
+		}
+		
+		return false;
+		
+	}
+	
+	
+	
+	
 
 	public void setOrientacion(int index) {
 		carga.setOrientacion(orientaciones[index]);

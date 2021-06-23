@@ -97,24 +97,43 @@ public class infoBanco extends GridPane {
 	public boolean verificarEntrada(String entrada) {
 		
 		int contador=0;
+		int contador1=0;
 		
 		for(int i=0;i<entrada.length();i++) {
 			
 			char c= entrada.charAt(i);
+			
+			if(c=='-' && i==0) {
+				++contador1;
+				continue;
+			}
+			
+			else if(c=='-' && i>0) {
+				return true;
+			}
+			
 
 			if(!Character.isDigit(c) && c!='.') {
+				
 				return true;
 			}
 			else if(c=='.') {
+				
 				++contador;
 				continue;
 			}
 			
-			if (contador>1) {
+			else if(c=='-') {
+				
+			}
+			
+			if (contador>1 ||contador1>1) {
+				
 				return true;
 			}
 			
 			contador=0;
+			contador1=0;
 		}
 		
 		return false;

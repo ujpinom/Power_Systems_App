@@ -204,7 +204,7 @@
                <children>
                   <MenuButton fx:id="flujos" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="69.0" prefWidth="99.0" style="-fx-background-image: url(&quot;file:///C:/Users/SONY/eclipse-workspace/SistemasDePotencia/src/application/transmission_spread_transfer_move_flow_coronavirus_contagion_icon_141087%20(1).png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Flujos" textFill="WHITE">
                     <items>
-                      <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Newton Raphson" />
+                      <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Newton Raphson (Recomendado)" />
                       <MenuItem fx:id="GaussSeidel" mnemonicParsing="false" onAction="#GaussSeidel" text="Gauss-Seidel" />
                     </items>
                      <font>

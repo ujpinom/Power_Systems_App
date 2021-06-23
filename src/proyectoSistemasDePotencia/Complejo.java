@@ -65,6 +65,18 @@ public class Complejo implements Comparable<Complejo> {
 	 
 	 
  }
+ 
+ public static Complejo polar2CartesianoAnguloRad(double magnitud,double angulo) {
+	 
+	 double real=magnitud*(Math.cos(angulo));
+	 double imag=magnitud*(Math.sin(angulo));
+	 
+	 return new Complejo(real,imag);
+	 
+	 
+ }
+ 
+ 
 //producto de dos números complejos
 public static Complejo producto(Complejo c1, Complejo c2){
 	

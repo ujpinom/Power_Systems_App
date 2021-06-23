@@ -173,7 +173,119 @@ public class EcuacionesVoltajeYPotencia {
 	}
 	
 	
+	
+	private void calculoBarraPVCompensador(Barras b) {
+		
+	int indexBarra=barras.indexOf(b);
+		
+	Complejo voltajeIteAnteriorConjugado= Complejo.conjugado(infoIteraciones[indexBarra].get(infoIteraciones[indexBarra].size()-1));
+		
+	double potenciaReactivaMaximaCompensador= b.getCompensador().getPotenciaReactivaMax();
+		
+	double potenciaReactivaMinimaCompensador=b.getCompensador().getPotenciaReactivaMin();
+	
+	double potenciaActivaEntregada=0.0;
+	
+	if(b.containsCarga()) {
+		potenciaActivaEntregada-=b.getCarga().getPotenciaActiva();
+	}
+	
+	List<Complejo> primeraSumatoria= primeraSumatoria(indexBarra, matrizAdj);
+	
+	List<Complejo> segundaSumatoria= new ArrayList<>();
+	
+	Complejo resultado= new Complejo();
+	
+	for(int i=1;i<infoIteraciones.length;i++) {
+		
+		resultado=Complejo.suma(resultado, Complejo.producto(matrizAdj[indexBarra][i], infoIteraciones[i].get(infoIteraciones[i].size()-1)));
+		
+	}
+	
+	resultado= Complejo.producto(voltajeIteAnteriorConjugado,resultado);
+	
+	double potenciaImCalculada= -resultado.getImag();
+	
+	if(potenciaImCalculada>potenciaReactivaMaximaCompensador) {
+		
+		if(b.containsCarga()) {
+			double potenciaCarga=b.getCarga().getPotenciaReactiva();
+			
+			potenciaImCalculada=potenciaReactivaMaximaCompensador-potenciaCarga;
+			
+		}else
+		potenciaImCalculada=potenciaReactivaMaximaCompensador;
+		
+	}
+	
+	else if(potenciaImCalculada<potenciaReactivaMinimaCompensador) {
+		
+		
+		potenciaImCalculada=potenciaReactivaMinimaCompensador;
+	}
+	
+	
+	Complejo potenciaCompleja= new Complejo(potenciaActivaEntregada,-potenciaImCalculada);
+	
+	resultado= new Complejo();
+	
+	try {
+		
+		resultado= Complejo.cociente(potenciaCompleja, voltajeIteAnteriorConjugado);
+		
+		
+		for(int ii=0;ii<primeraSumatoria.size();ii++) {
+			
+			Complejo temp= primeraSumatoria.get(ii);
+			
+			resultado= Complejo.resta(resultado, temp);
+			
+		}
+		
+		
+		segundaSumatoria= segundaSumatoria(indexBarra, matrizAdj);
+		
+		for(int ii=0;ii<segundaSumatoria.size();ii++) {
+			
+			Complejo temp= segundaSumatoria.get(ii);
+			
+			resultado= Complejo.resta(resultado, temp);
+			
+		}
+		
+		resultado= Complejo.cociente(resultado, matrizAdj[indexBarra][indexBarra]);
+		
+		double magResultado=resultado.modulo();
+		
+		/**
+		 * Se corrige la magnitud del voltaje dado que es magnitud especificada en el problema de flujo de potencia.
+		 */
+		
+		resultado= Complejo.cociente(Complejo.producto(new Complejo(b.getVoltajePrefalla(),0), resultado),new Complejo(magResultado,0) ) ;
+		
+		infoIteraciones[indexBarra].add(resultado);
+		
+		
+	} catch (ExcepcionDivideCero e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
+	
+	
+	
+
+	}
+	
+	
 	private void calculoBarrasPV(Barras b) {
+		
+		if(b.containsCompensador()) {
+			calculoBarraPVCompensador(b);
+			
+			return;
+		}
+
 		int indexBarra=barras.indexOf(b);
 		
 		Complejo voltajeIteAnteriorConjugado= Complejo.conjugado(infoIteraciones[indexBarra].get(infoIteraciones[indexBarra].size()-1));
@@ -209,6 +321,12 @@ public class EcuacionesVoltajeYPotencia {
 		
 		if(potenciaImCalculada>potenciaReactivaMaximaGenerador) {
 			
+			if(b.containsCarga()) {
+				double potenciaCarga=b.getCarga().getPotenciaReactiva();
+				
+				potenciaImCalculada=potenciaReactivaMaximaGenerador-potenciaCarga;
+				
+			}else
 			potenciaImCalculada=potenciaReactivaMaximaGenerador;
 			
 		}
@@ -279,7 +397,7 @@ public class EcuacionesVoltajeYPotencia {
 		
 		
 		
-		if(!b.containsBanco()&& !b.containsCarga()) {
+		if(!b.containsCarga()) {
 			potenciaComplejaProgramada= new Complejo(0,0);
 
 		}
@@ -290,13 +408,7 @@ public class EcuacionesVoltajeYPotencia {
 			
 				
 		}
-		
-		if(b.containsBanco()) {
-			
-			potenciaComplejaProgramada= Complejo.suma(potenciaComplejaProgramada, 
-					Complejo.producto(new Complejo(-1,0), new Complejo(0,-b.getBanco().getPotenciaReactiva())));
-			
-		}
+
 
 		try {
 			

@@ -90,7 +90,7 @@ public class InfoGeneradores extends GridPane {
 		hb22.setSpacing(SPACING);
 		setPotenciaImaSalida.setPrefColumnCount(4);
 		setPotenciaImaSalida.setText(""+generador.getMVarSalida()*SPController.BASE_SISTEMA);
-		hb22.getChildren().addAll(new Label("MV.Out"),setPotenciaImaSalida);
+		hb22.getChildren().addAll(new Label("MVar.Out"),setPotenciaImaSalida);
 		
 		
 		
@@ -121,7 +121,7 @@ public class InfoGeneradores extends GridPane {
 		setPotenciaSalidaImMin.setPrefColumnCount(4);
 		setPotenciaSalidaImMin.setText(""+ generador.getMVarSalidaMin()*SPController.BASE_SISTEMA);
 		setPotenciaSalidaImMin.setMaxWidth(USE_COMPUTED_SIZE);
-		hb55.getChildren().addAll(new Label("MV.Min"),setPotenciaSalidaImMin);
+		hb55.getChildren().addAll(new Label("MVar.Min"),setPotenciaSalidaImMin);
 		
 		HBox hb66= new HBox();
 		hb66.setAlignment(Pos.CENTER_LEFT);
@@ -129,7 +129,7 @@ public class InfoGeneradores extends GridPane {
 		setPotenciaSalidaImMax.setPrefColumnCount(4);
 		setPotenciaSalidaImMax.setMaxWidth(USE_COMPUTED_SIZE);
 		setPotenciaSalidaImMax.setText(""+generador.getMVarSalidaMax()*SPController.BASE_SISTEMA);
-		hb66.getChildren().addAll(new Label("MV.Max"),setPotenciaSalidaImMax);
+		hb66.getChildren().addAll(new Label("MVar.Max"),setPotenciaSalidaImMax);
 		
 		
 		

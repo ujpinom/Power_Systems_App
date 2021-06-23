@@ -32,7 +32,7 @@ public class NewtonRaphson implements Cloneable {
 	
 	private double epsilon=0.001;
 	
-	private  Complejo [][] matrizAdj;	
+	private  Complejo [][] matrizAdj;
 //		{{new Complejo(),new Complejo(),new Complejo(),new Complejo(),new Complejo()}
 //							,{new Complejo(),new Complejo(8.985190,-44.835953),new Complejo(-3.815629,19.078144),new Complejo(-5.169561,25.847809),new Complejo()}
 //							,{new Complejo(),new Complejo(-3.815629,19.078144),new Complejo(8.985190,-44.835953),new Complejo(),new Complejo(-5.169561,25.847809)}
@@ -55,6 +55,8 @@ public class NewtonRaphson implements Cloneable {
 		this.barras=barras;
 		this.erroresPotencia= new double[2*(barras.size()-1)];
 		this.matrizAdj=matrizAdj;
+		this.numeroIteraciones=numeroIteraciones;
+		this.epsilon=epsilon;
 
 		jacobiana= new double [2*(barras.size()-1)][2*(barras.size()-1)];
 		infoIteracionesVoltajes= (List<Double>[]) new List[barras.size()];
@@ -147,6 +149,29 @@ public class NewtonRaphson implements Cloneable {
 	}
 	
 	
+	public List<Complejo>[] solucionFormaCompleja(){
+		
+		List<Complejo>[] solucion=(List<Complejo>[])new List[barras.size()];
+		
+		for(int i=0;i<solucion.length;i++) {
+			
+			solucion[i]= new ArrayList<Complejo>();
+			
+			if(i>0) {
+			
+			double voltaje= infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size()-1);
+			double angulo= infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size()-1);
+			
+			Complejo voltajeComplejo= Complejo.polar2CartesianoAnguloRad(voltaje, angulo);
+			
+			solucion[i].add(voltajeComplejo);}
+			
+		}
+		
+		return solucion;
+	}
+	
+	
 	public void calcularFlujoPotencia(List<Generadores> generadores,List<Bancos> bancos,List<Carga> cargas
 			){
 	
@@ -197,6 +222,7 @@ public class NewtonRaphson implements Cloneable {
 			
 			RealMatrix jacobianDroped= jaco.getSubMatrix(indicesAMantener, indicesAMantener);
 			
+			
 			double [] erroresPotenciaDroped= new double[jacobiana.length-dimensionMatrizjacobiana];
 			contador=0;
 			
@@ -215,8 +241,6 @@ public class NewtonRaphson implements Cloneable {
 			
 			RealVector erroresPotencia= new ArrayRealVector(erroresPotenciaDroped);
 			
-
-
 			SingularValueDecomposition svd = new SingularValueDecomposition(jacobianDroped);
 			DecompositionSolver solver = svd.getSolver();
 			
@@ -380,6 +404,7 @@ public class NewtonRaphson implements Cloneable {
 		double potenciaProgramadaReal=0.0;
 		
 		if(b.isBarraPV()) {
+			if(b.containsGenerador())
 			potenciaProgramadaReal= b.getGenerador().getMWSalida();
 		}
 		

@@ -514,7 +514,6 @@ public class SPController implements Initializable {
 
 				Complejo[][] m3 = calculoMatrizAdyacenciaFlujo();
 				
-	
 
 				if (metodoFlujoPotencia.equals("Seidel")) {
 
@@ -522,8 +521,11 @@ public class SPController implements Initializable {
 							FACTOR_ACELERACION, epsilon);
 
 					List<Complejo>[] solucion = gaussS.calcularFlujoPotencia(conexiongene, bancos, cargas, m3);
-
-					System.out.println("RESULTADOS:");
+					
+					
+					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
+			
+					System.out.println("RESULTADOS Angulos Y voltajes:");
 
 					for (int i = 1; i < solucion.length; i++) {
 
@@ -538,6 +540,43 @@ public class SPController implements Initializable {
 						System.out.println();
 
 					}
+					
+					System.out.println();
+
+					for(int i=1;i<barras.size();i++) {
+						
+						Barras b= barras.get(i);
+						
+						if(b.isBarraCompensacion()) {
+							
+							System.out.println("Generacion: ");
+							
+							System.out.println("Real: "+b.getFlowPowerRealCalculada()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							
+							
+						}
+						
+						else if(b.isBarraPV()) {
+							
+							
+							System.out.println("Generacion: ");
+							
+							System.out.println("Real: "+b.getGenerador().getMWSalida()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							
+							
+						}
+						
+						if(b.containsCarga()) {
+							
+							System.out.println("Carga: ");
+							
+							System.out.println("Real: "+b.getCarga().getPotenciaActiva()*BASE_SISTEMA+" Imag: "+b.getCarga().getPotenciaReactiva()*BASE_SISTEMA);
+							
+						}
+				
+					}
+					
+					
 					////
 
 				}
@@ -551,6 +590,11 @@ public class SPController implements Initializable {
 					List<Double>[] solucionVoltajes = raphson.solucionVoltajes();
 
 					List<Double>[] solucionAngulos = raphson.solucionAngulos();
+					
+					List<Complejo>[] solucion=raphson.solucionFormaCompleja();
+					
+					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
+		
 
 					System.out.println("\n\nSoluciones: ");
 
@@ -574,13 +618,53 @@ public class SPController implements Initializable {
 
 						for (Double d : solucionAngulos[i]) {
 
-							System.out.print(d + " ");
+							System.out.print(d*180/Math.PI + " ");
 
 						}
 
 						System.out.println();
 
 					}
+					
+					System.out.println();
+
+					for(int i=1;i<barras.size();i++) {
+						
+						Barras b= barras.get(i);
+						
+						if(b.isBarraCompensacion()) {
+							
+							System.out.println("Generacion: ");
+							
+							System.out.println("Real: "+b.getFlowPowerRealCalculada()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							
+							
+						}
+						
+						else if(b.isBarraPV()) {
+							
+							
+							System.out.println("Generacion: ");
+							
+							System.out.println("Real: "+b.getGenerador().getMWSalida()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							
+							
+						}
+						
+					if(b.containsCarga()) {
+							
+							System.out.println("Carga: ");
+							
+							System.out.println("Real: "+b.getCarga().getPotenciaActiva()*BASE_SISTEMA+" Imag: "+b.getCarga().getPotenciaReactiva()*BASE_SISTEMA);
+							
+						}
+				
+					}
+					
+					
+					
+					
+					
 					//
 
 				}
@@ -817,7 +901,7 @@ public class SPController implements Initializable {
 						else if (barraCompensacion != null && barraCompensacion != b) {
 
 							if (barraCompensacion.containsBanco()
-									|| barraCompensacion.containsCarga() && !barraCompensacion.containsGenerador()) {
+									|| barraCompensacion.containsCarga() && !barraCompensacion.containsGenerador() && !barraCompensacion.containsCompensador()) {
 								int index = barras.indexOf(barraCompensacion);
 
 								barras.get(index).setBarraPQ(true);
@@ -827,11 +911,22 @@ public class SPController implements Initializable {
 
 							}
 
-							else if (barraCompensacion.containsGenerador()) {
+							else if (barraCompensacion.containsGenerador() || barraCompensacion.containsCompensador()) {
 								int index = barras.indexOf(barraCompensacion);
 
 								barras.get(index).setBarraPQ(false);
 								barras.get(index).setBarraPV(true);
+								barras.get(index).setBarraCompensacion(false);
+								barraCompensacion = b;
+
+							}
+							
+							else if (!barraCompensacion.containsBanco()
+									&&! barraCompensacion.containsCarga() && !barraCompensacion.containsGenerador()) {
+								int index = barras.indexOf(barraCompensacion);
+
+								barras.get(index).setBarraPQ(true);
+								barras.get(index).setBarraPV(false);
 								barras.get(index).setBarraCompensacion(false);
 								barraCompensacion = b;
 
@@ -939,8 +1034,8 @@ public class SPController implements Initializable {
 						if (((Line) tipoElemento).contains(pntMedio)) {
 
 							display.setText("Elemento:   " + cargas.get(i).getNombreCarga() + "\nPotencia Activa [MW]: "
-									+ cargas.get(i).getPotenciaActiva() + "\nPotencia Reactiva [MVars]: "
-									+ cargas.get(i).getPotenciaReactiva());
+									+ cargas.get(i).getPotenciaActiva()*BASE_SISTEMA + "\nPotencia Reactiva [MVars]: "
+									+ cargas.get(i).getPotenciaReactiva()*BASE_SISTEMA);
 
 							bandera2 = true;
 
@@ -971,7 +1066,7 @@ public class SPController implements Initializable {
 						if (((Line) tipoElemento).contains(pntmedio)) {
 
 							display.setText("Elemento:   " + bancos.get(i).getNombreCarga()
-									+ "\nPotencia Reactiva [MVars]: " + bancos.get(i).getPotenciaReactiva());
+									+ "\nPotencia Reactiva [MVars]: " + bancos.get(i).getPotenciaReactiva()*BASE_SISTEMA);
 
 							if (e.isAltDown()) {
 
@@ -1141,9 +1236,9 @@ public class SPController implements Initializable {
 						Generadores g = conexiongene.get(i);
 
 						display.setText("Elemento:   " + conexiongene.get(i).getNombreGenerador() + " MW.Out: "
-								+ g.getMWSalida() + "  MW.OutMin: " + g.getMWSalidaMin() + "  MW.OutMax: "
-								+ g.getMWSalidaMax() + "\n" + "MVar.Out: " + g.getMVarSalida() + "  MVar.OutMin: "
-								+ g.getMVarSalidaMin() + "  MVar.OutMax: " + g.getMVarSalidaMax()
+								+ g.getMWSalida() *BASE_SISTEMA + "  MW.OutMin: " + g.getMWSalidaMin()*BASE_SISTEMA + "  MW.OutMax: "
+								+ g.getMWSalidaMax()*BASE_SISTEMA + "\n" + "MVar.Out: " + g.getMVarSalida()*BASE_SISTEMA + "  MVar.OutMin: "
+								+ g.getMVarSalidaMin()*BASE_SISTEMA + "  MVar.OutMax: " + g.getMVarSalidaMax()*BASE_SISTEMA
 								+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
 								+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
 								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° " + "[p,u]         Fase B: "
@@ -1391,6 +1486,8 @@ public class SPController implements Initializable {
 				
 					b.setCoordenadaCompensador(new Point2D(e.getX(), e.getY()));
 					CompensadorEstatico cp= new CompensadorEstatico(new Point2D(e.getX(), e.getY()), b, nombreCompensador);
+					b.setBarraPV(true);
+					b.setBarraPQ(false);
 					compensadores.add(cp);
 					objetosCreados.add(cp);
 					b.setCompensador(cp);
@@ -1972,6 +2069,10 @@ public class SPController implements Initializable {
 
 			Barras b = ((Barras) elemento);
 
+			if(b.isBarraCompensacion()) {
+					barraCompensacion=null;
+			}
+			
 			int indexBarrab = barras.indexOf(b);
 
 			for (int i : listaBarras[indexBarrab]) {
@@ -2000,12 +2101,34 @@ public class SPController implements Initializable {
 			repaint();
 
 		} else if (elemento instanceof Generadores && elemento != null && conexiongene.size() > 0) {
-
+			
+			Barras b= conexiongene.get(conexiongene.size() - 1).getBarra();
+			if(!b.containsCompensador()) {
+				b.setBarraPQ(true);
+				b.setBarraPV(false);
+			}
+			
+			b.setGenerador(null);
 			conexiongene.remove(conexiongene.size() - 1);
 			corGenerador.clear();
+			
 			repaint();
-
 		}
+		
+		else if (elemento instanceof CompensadorEstatico && elemento != null && compensadores.size() > 0) {
+			
+			Barras b= compensadores.get(compensadores.size() - 1).getBarra();
+			if(!b.containsGenerador()) {
+			b.setBarraPQ(true);
+			b.setBarraPV(false);}
+			b.setCompensador(null);
+			compensadores.remove(compensadores.size() - 1);
+			corCompensador.clear();
+			
+			repaint();
+		}
+		
+		
 
 		else if ((elemento instanceof Transformador) && (elemento instanceof Lineas) && elemento != null
 				&& conexiones1.size() > 0) {
@@ -2022,14 +2145,16 @@ public class SPController implements Initializable {
 		}
 
 		else if (elemento instanceof Carga && elemento != null && cargas.size() > 0) {
-
+			Barras b= cargas.get(cargas.size() - 1).getBarra();
+			b.setCarga(null);
 			cargas.remove(cargas.size() - 1);
 			corCarga.clear();
 			repaint();
 		}
 
 		else if (elemento instanceof Bancos && elemento != null && bancos.size() > 0) {
-
+			Barras b= bancos.get(bancos.size() - 1).getBarra();
+			b.setBanco(null);
 			bancos.remove(bancos.size() - 1);
 			corBanco.clear();
 			repaint();
@@ -3022,6 +3147,15 @@ public class SPController implements Initializable {
 
 			resultado[y][y] = new Complejo(real, complejo);
 		}
+		
+		for(int i=0;i<bancos.size();i++) {
+			
+			int b= barras.indexOf(bancos.get(i).getBarra());
+			
+			resultado[b][b]= Complejo.suma(resultado[b][b], new Complejo(0,bancos.get(i).getPotenciaReactiva()));
+			
+		}
+		
 	
 		return resultado;
 

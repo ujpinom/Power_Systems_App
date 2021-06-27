@@ -34,15 +34,13 @@ public class Lineas {
 	private double resitencia;
 	private double mVarDeCargaTotales;
 	private double YMediaParalela;
-	
+
 	private ObservableList<Double> listPuntosPolyLine;
 	
 	private Polyline polyline;
 	
 	private Path path;
-	
-	
-	
+
 		
 	public Path getPath() {
 		return path;

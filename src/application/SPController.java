@@ -159,7 +159,10 @@ public class SPController implements Initializable {
 	private TextField factorAceleracion;
 
 	public static double BASE_SISTEMA = 100;
-
+	private Complejo[][] perdidadsPotencia;
+	private Complejo [][] potenciaEntranteBarras;
+	
+	private List<Complejo>[] perdidasLineas;
 	private boolean lselected = false;
 	private boolean tselected = false;
 	private boolean gselected = false;
@@ -522,8 +525,26 @@ public class SPController implements Initializable {
 
 					List<Complejo>[] solucion = gaussS.calcularFlujoPotencia(conexiongene, bancos, cargas, m3);
 					
-					
 					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
+					
+					
+					perdidadsPotencia = new Complejo[barras.size()][barras.size()];
+					potenciaEntranteBarras= new Complejo[barras.size()][barras.size()];
+					
+					for(int i=0;i<perdidadsPotencia.length;i++) {
+						for(int j=0;j<perdidadsPotencia.length;j++) {
+							
+							perdidadsPotencia[i][j]= new Complejo(); // No se tiene en cuenta la admitancia de carga de la línea
+							potenciaEntranteBarras[i][j]= new Complejo();  // Se tiene en cuenta la admitancia de carga de la linea.
+						
+						}
+					}
+					
+		
+					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones, m3,perdidadsPotencia,potenciaEntranteBarras);
+					
+					
+					
 			
 					System.out.println("RESULTADOS Angulos Y voltajes:");
 
@@ -577,6 +598,21 @@ public class SPController implements Initializable {
 					}
 					
 					
+					
+					System.out.println("Potencia en barras");
+					
+					for(int i=0;i<perdidadsPotencia.length;i++) {
+						for(int j=0;j<perdidadsPotencia.length;j++) {
+							
+							System.out.print(potenciaEntranteBarras[i][j]+" ");
+							
+							
+						}
+						
+						System.out.println();
+					}
+					
+					
 					////
 
 				}
@@ -593,7 +629,25 @@ public class SPController implements Initializable {
 					
 					List<Complejo>[] solucion=raphson.solucionFormaCompleja();
 					
+			
+					
+					perdidadsPotencia = new Complejo[barras.size()][barras.size()];
+					potenciaEntranteBarras= new Complejo[barras.size()][barras.size()];
+	
+					for(int i=0;i<perdidadsPotencia.length;i++) {
+						for(int j=0;j<perdidadsPotencia.length;j++) {
+							
+							perdidadsPotencia[i][j]= new Complejo();
+							potenciaEntranteBarras[i][j]= new Complejo();
+						
+						}
+					}
+					
 					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
+		
+	
+					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones, m3,perdidadsPotencia,potenciaEntranteBarras); 
+					
 		
 
 					System.out.println("\n\nSoluciones: ");
@@ -662,10 +716,19 @@ public class SPController implements Initializable {
 					}
 					
 					
+					System.out.println("Potencia en barras");
 					
-					
-					
-					//
+					for(int i=0;i<perdidadsPotencia.length;i++) {
+						for(int j=0;j<perdidadsPotencia.length;j++) {
+							
+							System.out.print(potenciaEntranteBarras[i][j]+" ");
+							
+							
+						}
+						
+						System.out.println();
+					}
+
 
 				}
 

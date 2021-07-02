@@ -43,6 +43,7 @@ import proyectoSistemasDePotencia.Carga;
 import proyectoSistemasDePotencia.CompensadorEstatico;
 import proyectoSistemasDePotencia.Complejo;
 import proyectoSistemasDePotencia.DibujarCarga;
+import proyectoSistemasDePotencia.ExcepcionDivideCero;
 import proyectoSistemasDePotencia.FallaAsimetricaLineas;
 import proyectoSistemasDePotencia.FallaAsimetricas;
 import proyectoSistemasDePotencia.FallaLineaALinea;
@@ -60,6 +61,7 @@ import proyectoSistemasDePotencia.InfoImpedanciaFallaLinea;
 import proyectoSistemasDePotencia.InfoLineas;
 import proyectoSistemasDePotencia.InfoTrafo;
 import proyectoSistemasDePotencia.Lineas;
+import proyectoSistemasDePotencia.TapsTrafoController;
 import proyectoSistemasDePotencia.Transformador;
 import proyectoSistemasDePotencia.Zbarra;
 import proyectoSistemasDePotencia.infoBanco;
@@ -507,7 +509,7 @@ public class SPController implements Initializable {
 	}
 
 	@FXML
-	private void ejecutar(ActionEvent e) {
+	private void ejecutar(ActionEvent e) throws ExcepcionDivideCero {
 
 		List<List<Integer>> bb = getGraph().componentesConectados();
 
@@ -516,6 +518,18 @@ public class SPController implements Initializable {
 			if (fPotencia) {
 
 				Complejo[][] m3 = calculoMatrizAdyacenciaFlujo();
+		
+				perdidadsPotencia = new Complejo[barras.size()][barras.size()];
+				potenciaEntranteBarras= new Complejo[barras.size()][barras.size()];
+				
+				for(int i=0;i<perdidadsPotencia.length;i++) {
+					for(int j=0;j<perdidadsPotencia.length;j++) {
+						
+						perdidadsPotencia[i][j]= new Complejo(); // No se tiene en cuenta la admitancia de carga de la línea
+						potenciaEntranteBarras[i][j]= new Complejo();  // Se tiene en cuenta la admitancia de carga de la linea.
+					
+					}
+				}
 				
 
 				if (metodoFlujoPotencia.equals("Seidel")) {
@@ -527,18 +541,7 @@ public class SPController implements Initializable {
 					
 					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
 					
-					
-					perdidadsPotencia = new Complejo[barras.size()][barras.size()];
-					potenciaEntranteBarras= new Complejo[barras.size()][barras.size()];
-					
-					for(int i=0;i<perdidadsPotencia.length;i++) {
-						for(int j=0;j<perdidadsPotencia.length;j++) {
-							
-							perdidadsPotencia[i][j]= new Complejo(); // No se tiene en cuenta la admitancia de carga de la línea
-							potenciaEntranteBarras[i][j]= new Complejo();  // Se tiene en cuenta la admitancia de carga de la linea.
-						
-						}
-					}
+			
 					
 		
 					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones, m3,perdidadsPotencia,potenciaEntranteBarras);
@@ -628,20 +631,6 @@ public class SPController implements Initializable {
 					List<Double>[] solucionAngulos = raphson.solucionAngulos();
 					
 					List<Complejo>[] solucion=raphson.solucionFormaCompleja();
-					
-			
-					
-					perdidadsPotencia = new Complejo[barras.size()][barras.size()];
-					potenciaEntranteBarras= new Complejo[barras.size()][barras.size()];
-	
-					for(int i=0;i<perdidadsPotencia.length;i++) {
-						for(int j=0;j<perdidadsPotencia.length;j++) {
-							
-							perdidadsPotencia[i][j]= new Complejo();
-							potenciaEntranteBarras[i][j]= new Complejo();
-						
-						}
-					}
 					
 					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
 		
@@ -1064,6 +1053,7 @@ public class SPController implements Initializable {
 
 							bandera1 = true;
 
+							
 							if (e.isAltDown()) {
 
 								InfoTrafo infotrafo = new InfoTrafo(conexiones1.get(i));
@@ -1080,6 +1070,9 @@ public class SPController implements Initializable {
 										infotrafo.getImpedanciaAterrizamientoPrimaria());
 								conexiones1.get(i).setImpedanciaAterrizamientoSecundaria(
 										infotrafo.getImpedanciaAterrizamientoSecundaria());
+							
+								
+								repaint();
 							}
 							break;
 
@@ -1192,6 +1185,9 @@ public class SPController implements Initializable {
 									infotrafo.getImpedanciaAterrizamientoPrimaria());
 							conexiones1.get(i).setImpedanciaAterrizamientoSecundaria(
 									infotrafo.getImpedanciaAterrizamientoSecundaria());
+						
+							repaint();
+							
 						}
 						break;
 
@@ -2071,7 +2067,7 @@ public class SPController implements Initializable {
 		for (int i = 1; i < barras.size(); i++) {
 
 			if (obtenerDistancia(x, y, barras.get(i).getPuntoMedioBarra().getX(),
-					barras.get(i).getPuntoMedioBarra().getY())) {
+					barras.get(i).getPuntoMedioBarra().getY()) && barras.get(i).getOrientacion().equals("V") ) {
 				return true;
 			}
 
@@ -2614,6 +2610,9 @@ public class SPController implements Initializable {
 		}
 
 		for (int i = 0; i < conexiones1.size(); i++) {
+			
+			
+			
 
 			Line linea = new Line(conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX(),
 					conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY(),
@@ -2646,16 +2645,29 @@ public class SPController implements Initializable {
 			cc2.setFill(Color.WHITE);
 
 			;
+			
+			
 
 			linea.setStroke(Color.BLACK);
 			linea.setStrokeWidth(2);
 
 			areaDibujo.getChildren().add(linea);
 			areaDibujo.getChildren().addAll(cc1, cc2);
+			
+			
 
 			Text textLinea = new Text(conexiones1.get(i).getNombreLinea());
-			textLinea.setStroke(Color.GREEN);
+			textLinea.setStroke(Color.BLACK);
 			textLinea.setStrokeWidth(1);
+			
+			if(conexiones1.get(i).isHasTap()) {
+				textLinea.setStroke(Color.BLUE);
+			}
+			
+
+			if(conexiones1.get(i).isHasTap() && conexiones1.get(i).getAngtab()!=0) {
+				textLinea.setStroke(Color.GREEN);
+			}
 
 			textLinea.setX(puntoMedioX);
 			textLinea.setY(puntoMedioY);
@@ -3129,7 +3141,7 @@ public class SPController implements Initializable {
 
 	}
 
-	public Complejo[][] calculoMatrizAdyacenciaFlujo() {
+	public Complejo[][] calculoMatrizAdyacenciaFlujo() throws ExcepcionDivideCero {
 
 		Complejo[][] resultado = new Complejo[barras.size()][barras.size()];
 
@@ -3177,9 +3189,38 @@ public class SPController implements Initializable {
 		}
 		
 		for (int i = 0; i < conexiones1.size(); i++) {
+			
+			Transformador trafo= conexiones1.get(i);
+			
 
 			int x = barras.indexOf(conexiones1.get(i).getBarra1());
 			int y = barras.indexOf(conexiones1.get(i).getBarra2());
+			
+			if(trafo.isHasTap()) {
+				
+				Complejo a= Complejo.polar2Cartesiano(trafo.getMagTab(), trafo.getAngtab());
+				Complejo a_conj= Complejo.conjugado(a);
+				
+				double reactancia= -1/ trafo.getimpedanciaLineaZ1();
+				
+				Complejo Y_trafo= new Complejo(0.0,reactancia);
+				
+				resultado[y][y]= Complejo.suma(resultado[y][y], Complejo.cociente(Y_trafo, a));
+				
+				double magnitud_a_squared=1/a.getReal()*a.getReal()+a.getImag()*a.getImag(); 
+				
+				resultado[x][x]= Complejo.suma(resultado[x][x], Complejo.producto(new Complejo(magnitud_a_squared,0), Y_trafo));
+				
+				
+				resultado[y][x]=Complejo.producto(new Complejo(-1,0), Complejo.cociente(Y_trafo, a));
+
+				resultado[x][y]= Complejo.producto(new Complejo(-1,0), Complejo.cociente(Y_trafo, a_conj));
+				
+				continue;
+				
+			}
+			else {
+			
 
 			double B = -conexiones1.get(i).getimpedanciaLineaZ1()
 					/ (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
@@ -3209,6 +3250,8 @@ public class SPController implements Initializable {
 			complejo += B ;
 
 			resultado[y][y] = new Complejo(real, complejo);
+			
+			}
 		}
 		
 		for(int i=0;i<bancos.size();i++) {

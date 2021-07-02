@@ -5,12 +5,15 @@ import javafx.scene.shape.Path;
 
 public class Transformador extends Lineas {
 	
+	private double magTab=1.0;
+	private double angtab=0.0;
+	private Barras barraConTap;
 	private String conexionPrimaria="YN-";
 	private String conexionSecundaria="YN-";
 	private double impedanciaAterrizamientoPrimaria;
 	private double impedanciaAterrizamientoSecundaria;
 	private Point2D puntoMedio;
-	
+	private boolean hasTap;
 	public Transformador(Barras barra1, Barras barra2, double impedancia1,
 			double impedancia2,double impedancia0,Path p) {
 		
@@ -21,6 +24,51 @@ public class Transformador extends Lineas {
 		
 	}
 	
+	
+	
+	public double getMagTab() {
+		return magTab;
+	}
+
+
+
+	public void setMagTab(double magTab) {
+		this.magTab = magTab;
+	}
+
+
+
+	public double getAngtab() {
+		return angtab;
+	}
+
+
+
+	public void setAngtab(double angtab) {
+		this.angtab = angtab;
+	}
+
+
+
+	public Barras getBarraConTap() {
+		return barraConTap;
+	}
+
+
+	public void setBarraConTap(Barras barraConTap) {
+		this.barraConTap = barraConTap;
+	}
+
+	public boolean isHasTap() {
+		return hasTap;
+	}
+
+
+	public void setHasTap(boolean hasTap) {
+		this.hasTap = hasTap;
+	}
+
+
 	public Point2D getPuntoMedio() {
 		return puntoMedio;
 	}

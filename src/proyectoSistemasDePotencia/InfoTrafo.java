@@ -1,13 +1,17 @@
 package proyectoSistemasDePotencia;
+import java.io.IOException;
+
 import javax.swing.JOptionPane;
 
-import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -19,6 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
 public class InfoTrafo extends GridPane {
 	
 	private Text infolinea= new Text();
@@ -46,11 +51,26 @@ public class InfoTrafo extends GridPane {
 	private ObservableList<String> items;
 	private JOptionPane jop= new JOptionPane();
 	private int indexConexionprimaria;
-	
+	private Label hasTap= new Label("El tranformador posee tap? ");
+	private CheckBox tap= new CheckBox();
+	private HBox taps= new HBox();
 	public InfoTrafo(Transformador trafo) {
 		
 		super();
-		
+		taps.setSpacing(5);
+		taps.getChildren().addAll(hasTap,tap);
+		if(trafo.isHasTap()) {
+			
+			tap.setSelected(true);
+			trafo.setHasTap(true);
+			
+		}
+		else {
+			
+			tap.setSelected(false);
+			trafo.setHasTap(false);
+			
+		}
 		String [] tipoConexiones= {"YN-"+trafo.getBarra1().getNombreBarra(),"YN-"+
 		trafo.getBarra2().getNombreBarra(),"Y-"+trafo.getBarra1().getNombreBarra(),
 				"Y-"+trafo.getBarra2().getNombreBarra(),"DELTA-"+trafo.getBarra1().getNombreBarra(),
@@ -79,7 +99,7 @@ public class InfoTrafo extends GridPane {
 		this.add(hb, 0, 0);
 		this.add(hb1, 0, 2);
 		
-		vb.getChildren().addAll(z1l,z1t,z2l,z2t,z0l,z0t,rTrafo,resistenciaTrafo,cprimaria,cbo,csecundaria,cbo1);
+		vb.getChildren().addAll(z1l,z1t,z2l,z2t,z0l,z0t,rTrafo,resistenciaTrafo,cprimaria,cbo,csecundaria,cbo1,taps);
 		
 		this.add(vb,0 , 1);
 		
@@ -103,6 +123,50 @@ public class InfoTrafo extends GridPane {
 				sta.showAndWait();
 				impedanciaAterrizamientoPrimaria=infoimpedancia.getImpedanciaAterrizada();
 			}
+		});
+		
+		
+		tap.setOnAction(e->{
+
+			if(tap.isSelected()) {
+				
+				trafo.setHasTap(true);
+				
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("TapsTrafo.fxml"));
+					Parent root;
+					try {
+						root = fxmlLoader.load();
+						
+						
+						Scene scene = new Scene(root);
+
+						Stage s = new Stage();
+
+						TapsTrafoController p = fxmlLoader.getController();
+						
+						p.initialize(trafo);
+						p.setAngTap(""+trafo.getAngtab());
+						p.setMagTap(""+trafo.getMagTab());
+						s.setTitle("Especificaciones del Tap");
+						s.setScene(scene);
+						s.show();
+						s.setResizable(false);
+						
+						
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+			}
+			
+			else {
+				trafo.setHasTap(false);
+			}
+			
+			
+			
+			
 		});
 		cbo1.setOnAction(e->{
 			
@@ -140,6 +204,13 @@ public class InfoTrafo extends GridPane {
 		
 	
 		btncerrar.setOnAction(e->{
+			
+			if(tap.isSelected()) {
+				trafo.setHasTap(true);
+			}
+			else if(!tap.isSelected()) {
+				trafo.setHasTap(false);
+			}
 
 		     Stage stage = (Stage) this.btncerrar.getScene().getWindow();
 		     

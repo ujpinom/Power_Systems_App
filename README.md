@@ -1,6 +1,7 @@
 # Power_Systems_App
 
-![image](https://user-images.githubusercontent.com/77131311/124368985-8f8d3580-dc2c-11eb-81c6-47fabbbcdb32.png)
+
+![image](https://user-images.githubusercontent.com/77131311/124371307-17336e00-dc46-11eb-9434-8ace296810b3.png)
 
 
 Una app pensada para el cálculo de elementos del sistema de potencia, eventos de falla y flujos de potencia ( la app aún sigue en construcción y el objetivo es agregar más 

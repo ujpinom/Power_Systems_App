@@ -15,7 +15,16 @@ public class CompensadorEstatico {
 	public static final String ARRIBA="ARRIBA";
 	public static final String ABAJO="ABAJO";
 	private String orientacion="IZQUIERDA";
+	private double MvarSalida;
 	
+	public double getMvarSalida() {
+		return MvarSalida;
+	}
+
+
+	public void setMvarSalida(double mvarSalida) {
+		MvarSalida = mvarSalida;
+	}
 	private Circle ciculoCompensador;
 	
 	public Circle getCiculoCompensador() {

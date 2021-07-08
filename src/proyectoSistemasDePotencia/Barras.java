@@ -6,9 +6,27 @@ import javafx.scene.shape.Rectangle;
 
 public class Barras {
 	
+	private boolean barraFromPV2PQ=false; // Indica si la barra fue cambiada de barra PV a PQ debido a violaciones de limites de potencia reactiva del
+	                                                     // generador.
+	public boolean isBarraFromPV2PQ() {
+		return barraFromPV2PQ;
+	}
+
+	public void setBarraFromPV2PQ(boolean barraFromPV2PQ) {
+		this.barraFromPV2PQ = barraFromPV2PQ;
+	}
 	
+	private Carga cargaFromPVtoPQ;
+
+	public Carga getCargaFromPVtoPQ() {
+		return cargaFromPVtoPQ;
+	}
+
+	public void setCargaFromPVtoPQ(Carga cargaFromPVtoPQ) {
+		this.cargaFromPVtoPQ = cargaFromPVtoPQ;
+	}
+
 	private Ellipse ellipse;
-	
 	private double nombreBarraX;
 	private double nombreBarraY;
 	private String nombrePersonalizado;

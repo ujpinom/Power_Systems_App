@@ -26,7 +26,7 @@ public class Bancos {
 	}
 
 	public void setPotenciaReactiva(double potenciaReactiva) {
-		this.potenciaReactiva = potenciaReactiva/SPController.BASE_SISTEMA;
+		this.potenciaReactiva = potenciaReactiva;
 	}
 
 	public Point2D getPuntoMedio() {

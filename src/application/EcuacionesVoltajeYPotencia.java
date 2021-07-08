@@ -119,8 +119,7 @@ public class EcuacionesVoltajeYPotencia {
 				else if(b.isBarraPV()) {
 					
 					calculoBarrasPV(b);
-					
-					
+			
 					if(Math.abs(infoIteraciones[i].get(infoIteraciones[i].size()-1).argumento()-infoIteraciones[i].get(infoIteraciones[i].size()-2).argumento())<=epsilon) {
 						objetosCumplenEpsilon++;
 					}
@@ -176,6 +175,8 @@ public class EcuacionesVoltajeYPotencia {
 	
 	private void calculoBarraPVCompensador(Barras b) {
 		
+		boolean violaLimites=false;
+		
 	int indexBarra=barras.indexOf(b);
 		
 	Complejo voltajeIteAnteriorConjugado= Complejo.conjugado(infoIteraciones[indexBarra].get(infoIteraciones[indexBarra].size()-1));
@@ -187,7 +188,7 @@ public class EcuacionesVoltajeYPotencia {
 	double potenciaActivaEntregada=0.0;
 	
 	if(b.containsCarga()) {
-		potenciaActivaEntregada-=b.getCarga().getPotenciaActiva();
+		potenciaActivaEntregada-=b.getCarga().getPotenciaActiva()/SPController.BASE_SISTEMA;
 	}
 	
 	List<Complejo> primeraSumatoria= primeraSumatoria(indexBarra, matrizAdj);
@@ -206,21 +207,27 @@ public class EcuacionesVoltajeYPotencia {
 	
 	double potenciaImCalculada= -resultado.getImag();
 	
-	if(potenciaImCalculada>potenciaReactivaMaximaCompensador) {
+	double potenciaReactivaCarga= 0.0;
+	
+	if(b.containsCarga()) {
 		
-		if(b.containsCarga()) {
-			double potenciaCarga=b.getCarga().getPotenciaReactiva();
-			
-			potenciaImCalculada=potenciaReactivaMaximaCompensador-potenciaCarga;
-			
-		}else
-		potenciaImCalculada=potenciaReactivaMaximaCompensador;
+		potenciaReactivaCarga= b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA;
+	}
+
+
+	if((potenciaImCalculada+potenciaReactivaCarga)>potenciaReactivaMaximaCompensador) {
 		
+		// Se trata la barra PV como barra PQ ya que el generador no es capaz de suplir la Q para mantener el nivel de voltaje  especificado.
+		
+		violaLimites=true;
+	
+		potenciaImCalculada=potenciaReactivaMaximaCompensador-potenciaReactivaCarga;
+
 	}
 	
 	else if(potenciaImCalculada<potenciaReactivaMinimaCompensador) {
 		
-		
+		violaLimites=true;
 		potenciaImCalculada=potenciaReactivaMinimaCompensador;
 	}
 	
@@ -255,30 +262,49 @@ public class EcuacionesVoltajeYPotencia {
 		
 		resultado= Complejo.cociente(resultado, matrizAdj[indexBarra][indexBarra]);
 		
+		if(violaLimites) {
+			
+			infoIteraciones[indexBarra].add(resultado);
+			
+			acelerar(indexBarra);
+			
+			b.getCompensador().setMvarSalida(b.getCompensador().getPotenciaReactivaMax());
+			
+		
+			Carga c= new Carga(); // La carga combinada del generador y la carga de la barra;
+			
+			c.setPotenciaActiva(potenciaActivaEntregada*SPController.BASE_SISTEMA);
+			c.setPotenciaReactiva(potenciaImCalculada*SPController.BASE_SISTEMA);	
+			b.setCargaFromPVtoPQ(c);			
+			b.setBarraPV(false);
+			b.setBarraPQ(true);
+			b.setBarraFromPV2PQ(true);
+			
+		}
+		else {
+		
 		double magResultado=resultado.modulo();
 		
 		/**
 		 * Se corrige la magnitud del voltaje dado que es magnitud especificada en el problema de flujo de potencia.
 		 */
 		
-		resultado= Complejo.cociente(Complejo.producto(new Complejo(b.getVoltajePrefalla(),0), resultado),new Complejo(magResultado,0) ) ;
+		resultado= Complejo.cociente(Complejo.producto(new Complejo(infoIteraciones[indexBarra].get(infoIteraciones[indexBarra].size()-1).modulo(),0), resultado),new Complejo(magResultado,0) ) ;
 		
 		infoIteraciones[indexBarra].add(resultado);
-		
+	}
 		
 	} catch (ExcepcionDivideCero e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
-	
-	
-	
-	
 
 	}
 	
 	
 	private void calculoBarrasPV(Barras b) {
+		
+		boolean violaLimiites=false;
 		
 		if(b.containsCompensador()) {
 			calculoBarraPVCompensador(b);
@@ -290,14 +316,14 @@ public class EcuacionesVoltajeYPotencia {
 		
 		Complejo voltajeIteAnteriorConjugado= Complejo.conjugado(infoIteraciones[indexBarra].get(infoIteraciones[indexBarra].size()-1));
 		
-		double potenciaReactivaMaximaGenerador= b.getGenerador().getMVarSalidaMax();
+		double potenciaReactivaMaximaGenerador= b.getGenerador().getMVarSalidaMax()/SPController.BASE_SISTEMA;
 		
-		double potenciaReactivaMinimaGenerador=b.getGenerador().getMVarSalidaMin();
+		double potenciaReactivaMinimaGenerador=b.getGenerador().getMVarSalidaMin()/SPController.BASE_SISTEMA;
 		
-		double potenciaActivaEntregada= b.getGenerador().getMWSalida();
+		double potenciaActivaEntregada= b.getGenerador().getMWSalida()/SPController.BASE_SISTEMA;
 		
 		if(b.containsCarga()) {
-			potenciaActivaEntregada-=b.getCarga().getPotenciaActiva();
+			potenciaActivaEntregada-=b.getCarga().getPotenciaActiva()/SPController.BASE_SISTEMA;
 		}
 		
 		
@@ -319,26 +345,32 @@ public class EcuacionesVoltajeYPotencia {
 		
 		double potenciaImCalculada= -resultado.getImag();
 		
-		if(potenciaImCalculada>potenciaReactivaMaximaGenerador) {
+		double potenciaReactivaCarga= 0.0;
+		
+		if(b.containsCarga()) {
 			
-			if(b.containsCarga()) {
-				double potenciaCarga=b.getCarga().getPotenciaReactiva();
+			potenciaReactivaCarga= b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA;
+		}
+
+	
+		if((potenciaImCalculada+potenciaReactivaCarga)>potenciaReactivaMaximaGenerador) {
+			
+			// Se trata la barra PV como barra PQ ya que el generador no es capaz de suplir la Q para mantener el nivel de voltaje  especificado.
+			
+			violaLimiites=true;
+		
+			potenciaImCalculada=potenciaReactivaMaximaGenerador-potenciaReactivaCarga;
 				
-				potenciaImCalculada=potenciaReactivaMaximaGenerador-potenciaCarga;
-				
-			}else
-			potenciaImCalculada=potenciaReactivaMaximaGenerador;
+		
 			
 		}
 		
 		else if(potenciaImCalculada<potenciaReactivaMinimaGenerador) {
 			
-			
+			violaLimiites=true;
 			potenciaImCalculada=potenciaReactivaMinimaGenerador;
 		}
-		
-		
-		
+	
 		Complejo potenciaCompleja= new Complejo(potenciaActivaEntregada,-potenciaImCalculada);
 		
 		resultado= new Complejo();
@@ -369,17 +401,41 @@ public class EcuacionesVoltajeYPotencia {
 			
 			resultado= Complejo.cociente(resultado, matrizAdj[indexBarra][indexBarra]);
 			
+			if(violaLimiites) {
+				
+				infoIteraciones[indexBarra].add(resultado);
+				
+				acelerar(indexBarra);
+				System.out.println(b.getGenerador().getMVarSalidaMax());
+				
+				b.getGenerador().setMVarSalida(b.getGenerador().getMVarSalidaMax() );
+			
+				System.out.println("Potencia limite gen: "+ b.getGenerador().getMVarSalida());
+				
+				Carga c= new Carga(); // La carga combinada del generador y la carga de la barra;
+				
+				c.setPotenciaActiva(potenciaActivaEntregada*SPController.BASE_SISTEMA);
+				c.setPotenciaReactiva(potenciaImCalculada*SPController.BASE_SISTEMA);	
+				
+				System.out.println(potenciaActivaEntregada* SPController.BASE_SISTEMA);
+				System.out.println(potenciaImCalculada*SPController.BASE_SISTEMA);
+				b.setCargaFromPVtoPQ(c);			
+				b.setBarraPV(false);
+				b.setBarraPQ(true);
+				b.setBarraFromPV2PQ(true);
+	
+			}
+			else {
 			double magResultado=resultado.modulo();
 			
 			/**
 			 * Se corrige la magnitud del voltaje dado que es magnitud especificada en el problema de flujo de potencia.
 			 */
 			
-			resultado= Complejo.cociente(Complejo.producto(new Complejo(b.getVoltajePrefalla(),0), resultado),new Complejo(magResultado,0) ) ;
-			
+			resultado= Complejo.cociente(Complejo.producto(new Complejo(infoIteraciones[indexBarra].get(infoIteraciones[indexBarra].size()-1).modulo(),0), resultado),new Complejo(magResultado,0) ) ;
 			infoIteraciones[indexBarra].add(resultado);
-			
-			
+			}
+	
 		} catch (ExcepcionDivideCero e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -397,19 +453,24 @@ public class EcuacionesVoltajeYPotencia {
 		
 		
 		
-		if(!b.containsCarga()) {
+		if(!b.containsCarga()&& ! b.isBarraFromPV2PQ()) {
 			potenciaComplejaProgramada= new Complejo(0,0);
 
 		}
 		
-		if(b.containsCarga()) {
-		
-			potenciaComplejaProgramada= Complejo.producto(new Complejo(-1,0), new Complejo(b.getCarga().getPotenciaActiva(),-b.getCarga().getPotenciaReactiva()));
+		else if(b.containsCarga() && ! b.isBarraFromPV2PQ()) {
 			
+			potenciaComplejaProgramada= Complejo.producto(new Complejo(-1,0), new Complejo(b.getCarga().getPotenciaActiva()/SPController.BASE_SISTEMA,-b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA));
 				
 		}
-
-
+		
+		else if(b.isBarraFromPV2PQ()) {
+			
+			
+			potenciaComplejaProgramada= new Complejo(b.getCargaFromPVtoPQ().getPotenciaActiva()/SPController.BASE_SISTEMA,-b.getCargaFromPVtoPQ().getPotenciaReactiva()/SPController.BASE_SISTEMA);
+		}
+		
+	
 		try {
 			
 			List<Complejo> primeraSumatoria= primeraSumatoria(indexBarra, matrizAdj);

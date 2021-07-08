@@ -544,7 +544,7 @@ public class SPController implements Initializable {
 			
 					
 		
-					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones, m3,perdidadsPotencia,potenciaEntranteBarras);
+					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones, conexiones1,m3,perdidadsPotencia,potenciaEntranteBarras);
 					
 					
 					
@@ -575,29 +575,39 @@ public class SPController implements Initializable {
 							
 							System.out.println("Generacion: ");
 							
-							System.out.println("Real: "+b.getFlowPowerRealCalculada()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							System.out.println("Real: "+b.getFlowPowerRealCalculada()+" Imag: "+b.getFlowPowerImagCalculada());
 							
 							
 						}
 						
-						else if(b.isBarraPV()) {
+						if(b.isBarraPV()) {
 							
 							
 							System.out.println("Generacion: ");
 							
-							System.out.println("Real: "+b.getGenerador().getMWSalida()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							System.out.println("Real: "+b.getGenerador().getMWSalida()+" Imag: "+b.getFlowPowerImagCalculada());
 							
 							
 						}
+						
+						
+						if(b.isBarraFromPV2PQ()) {
+							
+							System.out.println("Generacion: ");
+							
+							System.out.println("Real: "+b.getGenerador().getMWSalida()+" Imag: "+b.getGenerador().getMVarSalida());
+							
+						}
+				
 						
 						if(b.containsCarga()) {
 							
 							System.out.println("Carga: ");
 							
-							System.out.println("Real: "+b.getCarga().getPotenciaActiva()*BASE_SISTEMA+" Imag: "+b.getCarga().getPotenciaReactiva()*BASE_SISTEMA);
+							System.out.println("Real: "+b.getCarga().getPotenciaActiva()+" Imag: "+b.getCarga().getPotenciaReactiva());
 							
 						}
-				
+					
 					}
 					
 					
@@ -635,7 +645,7 @@ public class SPController implements Initializable {
 					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
 		
 	
-					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones, m3,perdidadsPotencia,potenciaEntranteBarras); 
+					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones,conexiones1 ,m3,perdidadsPotencia,potenciaEntranteBarras); 
 					
 		
 
@@ -679,7 +689,7 @@ public class SPController implements Initializable {
 							
 							System.out.println("Generacion: ");
 							
-							System.out.println("Real: "+b.getFlowPowerRealCalculada()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							System.out.println("Real: "+b.getFlowPowerRealCalculada()+" Imag: "+b.getFlowPowerImagCalculada());
 							
 							
 						}
@@ -689,7 +699,7 @@ public class SPController implements Initializable {
 							
 							System.out.println("Generacion: ");
 							
-							System.out.println("Real: "+b.getGenerador().getMWSalida()*BASE_SISTEMA+" Imag: "+b.getFlowPowerImagCalculada()*BASE_SISTEMA);
+							System.out.println("Real: "+b.getGenerador().getMWSalida()+" Imag: "+b.getFlowPowerImagCalculada());
 							
 							
 						}
@@ -698,7 +708,7 @@ public class SPController implements Initializable {
 							
 							System.out.println("Carga: ");
 							
-							System.out.println("Real: "+b.getCarga().getPotenciaActiva()*BASE_SISTEMA+" Imag: "+b.getCarga().getPotenciaReactiva()*BASE_SISTEMA);
+							System.out.println("Real: "+b.getCarga().getPotenciaActiva()+" Imag: "+b.getCarga().getPotenciaReactiva());
 							
 						}
 				
@@ -952,8 +962,8 @@ public class SPController implements Initializable {
 							barraCompensacion = b;
 						else if (barraCompensacion != null && barraCompensacion != b) {
 
-							if (barraCompensacion.containsBanco()
-									|| barraCompensacion.containsCarga() && !barraCompensacion.containsGenerador() && !barraCompensacion.containsCompensador()) {
+							if ((barraCompensacion.containsBanco()
+									|| barraCompensacion.containsCarga()) && (!barraCompensacion.containsGenerador() && !barraCompensacion.containsCompensador())) {
 								int index = barras.indexOf(barraCompensacion);
 
 								barras.get(index).setBarraPQ(true);
@@ -1090,8 +1100,8 @@ public class SPController implements Initializable {
 						if (((Line) tipoElemento).contains(pntMedio)) {
 
 							display.setText("Elemento:   " + cargas.get(i).getNombreCarga() + "\nPotencia Activa [MW]: "
-									+ cargas.get(i).getPotenciaActiva()*BASE_SISTEMA + "\nPotencia Reactiva [MVars]: "
-									+ cargas.get(i).getPotenciaReactiva()*BASE_SISTEMA);
+									+ cargas.get(i).getPotenciaActiva()+ "\nPotencia Reactiva [MVars]: "
+									+ cargas.get(i).getPotenciaReactiva());
 
 							bandera2 = true;
 
@@ -1122,7 +1132,7 @@ public class SPController implements Initializable {
 						if (((Line) tipoElemento).contains(pntmedio)) {
 
 							display.setText("Elemento:   " + bancos.get(i).getNombreCarga()
-									+ "\nPotencia Reactiva [MVars]: " + bancos.get(i).getPotenciaReactiva()*BASE_SISTEMA);
+									+ "\nPotencia Reactiva [MVars]: " + bancos.get(i).getPotenciaReactiva());
 
 							if (e.isAltDown()) {
 
@@ -1295,9 +1305,9 @@ public class SPController implements Initializable {
 						Generadores g = conexiongene.get(i);
 
 						display.setText("Elemento:   " + conexiongene.get(i).getNombreGenerador() + " MW.Out: "
-								+ g.getMWSalida() *BASE_SISTEMA + "  MW.OutMin: " + g.getMWSalidaMin()*BASE_SISTEMA + "  MW.OutMax: "
-								+ g.getMWSalidaMax()*BASE_SISTEMA + "\n" + "MVar.Out: " + g.getMVarSalida()*BASE_SISTEMA + "  MVar.OutMin: "
-								+ g.getMVarSalidaMin()*BASE_SISTEMA + "  MVar.OutMax: " + g.getMVarSalidaMax()*BASE_SISTEMA
+								+ g.getMWSalida()  + "  MW.OutMin: " + g.getMWSalidaMin() + "  MW.OutMax: "
+								+ g.getMWSalidaMax() + "\n" + "MVar.Out: " + g.getMVarSalida() + "  MVar.OutMin: "
+								+ g.getMVarSalidaMin() + "  MVar.OutMax: " + g.getMVarSalidaMax()
 								+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
 								+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
 								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° " + "[p,u]         Fase B: "
@@ -3258,7 +3268,7 @@ public class SPController implements Initializable {
 			
 			int b= barras.indexOf(bancos.get(i).getBarra());
 			
-			resultado[b][b]= Complejo.suma(resultado[b][b], new Complejo(0,bancos.get(i).getPotenciaReactiva()));
+			resultado[b][b]= Complejo.suma(resultado[b][b], new Complejo(0,bancos.get(i).getPotenciaReactiva()/SPController.BASE_SISTEMA));
 			
 		}
 		

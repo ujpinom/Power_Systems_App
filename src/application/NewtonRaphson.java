@@ -244,7 +244,7 @@ public class NewtonRaphson implements Cloneable {
 			erroresParametros = sol.toArray();
 
 			correcionParametros(indicesAMantener);
-
+		
 			int cont = 0;
 
 			for (int i = 1; i < infoIteracionesAngulos.length; i++) {
@@ -260,7 +260,7 @@ public class NewtonRaphson implements Cloneable {
 				else if (barras.get(i).isBarraPV()) {
 
 					if (Math.abs(infoIteracionesAngulos[i].get(angulos - 1)
-							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon) {
+							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon ) {
 
 						++cont;
 
@@ -271,8 +271,7 @@ public class NewtonRaphson implements Cloneable {
 				} else if (barras.get(i).isBarraPQ()) {
 
 					if (Math.abs(infoIteracionesAngulos[i].get(angulos - 1)
-							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon
-							&& (Math.abs(infoIteracionesVoltajes[i].get(voltajes - 1)
+							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon && (Math.abs(infoIteracionesVoltajes[i].get(voltajes - 1)
 									- infoIteracionesVoltajes[i].get(voltajes - 2)) <= epsilon)) {
 						++cont;
 
@@ -293,6 +292,71 @@ public class NewtonRaphson implements Cloneable {
 
 		iteConvergencia = iteracionActual;
 
+	}
+	
+	public void verificarLimitesPotenciaReactiva() {
+		
+		for(int i=0;i<barras.size();i++) {
+			
+			Barras b= barras.get(i);
+			
+			
+			if(b.isBarraPV()) {
+				
+				double voltaje= b.getVoltajePrefalla();
+				
+				Complejo potenciaCompleja=new Complejo();
+				
+				double mag = infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size()-1);
+				
+				double ang = infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size()-1);
+				
+				Complejo tensionBarra= Complejo.polar2CartesianoAnguloRad(mag, ang);
+				
+				Complejo tensionBarraConjugada=Complejo.conjugado(tensionBarra) ;
+				
+				for(int j=1;j<barras.size();j++) {
+					
+					
+					Complejo Yin=matrizAdj[i][j];
+					double magn = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size()-1);
+					
+					double angn = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size()-1);
+					
+					Complejo Vn= Complejo.polar2CartesianoAnguloRad(magn, angn);
+			
+					potenciaCompleja= Complejo.suma(potenciaCompleja, Complejo.producto(Yin, Vn));
+					
+				}
+			
+				potenciaCompleja= Complejo.producto(potenciaCompleja, tensionBarraConjugada);
+				
+				double Q= - potenciaCompleja.getImag();
+				
+				if(b.containsCarga()) {
+					
+					Q+=b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA;
+				}
+				
+				if(Q>b.getGenerador().getMVarSalidaMax()/SPController.BASE_SISTEMA) {
+					
+					voltaje-=0.01;
+					b.setVoltajePrefalla(voltaje);
+					infoIteracionesVoltajes[i].add(voltaje);
+					
+				}	
+				else if(Q<b.getGenerador().getMVarSalidaMax()/SPController.BASE_SISTEMA) {
+
+					voltaje+=0.01;
+					b.setVoltajePrefalla(voltaje);
+					infoIteracionesVoltajes[i].add(voltaje);
+					
+				}
+		
+			}
+	
+		}
+	
 	}
 
 	public int getIteConvergencia() {
@@ -393,11 +457,11 @@ public class NewtonRaphson implements Cloneable {
 
 		if (b.isBarraPV()) {
 			if (b.containsGenerador())
-				potenciaProgramadaReal = b.getGenerador().getMWSalida();
+				potenciaProgramadaReal = b.getGenerador().getMWSalida()/SPController.BASE_SISTEMA;
 		}
 
 		if (b.containsCarga()) {
-			potenciaProgramadaReal -= b.getCarga().getPotenciaActiva();
+			potenciaProgramadaReal -= b.getCarga().getPotenciaActiva()/SPController.BASE_SISTEMA;
 		}
 
 		Complejo admitancia = matrizAdj[index][index];
@@ -450,12 +514,12 @@ public class NewtonRaphson implements Cloneable {
 		double potenciaImaginariaProgramada = 0.0;
 
 		if (b.containsCarga()) {
-			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getCarga().getPotenciaReactiva();
+			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA;
 		}
 
-		if (b.containsBanco()) {
-			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getBanco().getPotenciaReactiva();
-		}
+//		if (b.containsBanco()) {
+//			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getBanco().getPotenciaReactiva()/SPController.BASE_SISTEMA;
+//		}
 
 		double react = admitancia.getImag();
 

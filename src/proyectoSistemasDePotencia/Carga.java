@@ -42,7 +42,7 @@ public class Carga {
 	}
 
 	public void setPotenciaActiva(double potenciaActiva) {
-		this.potenciaActiva = potenciaActiva/SPController.BASE_SISTEMA;
+		this.potenciaActiva = potenciaActiva;
 	}
 
 	public double getPotenciaReactiva() {
@@ -50,7 +50,7 @@ public class Carga {
 	}
 
 	public void setPotenciaReactiva(double potenciaReactiva) {
-		this.potenciaReactiva = potenciaReactiva/SPController.BASE_SISTEMA;
+		this.potenciaReactiva = potenciaReactiva;
 	}
 
 	public Point2D getPuntoMedio() {

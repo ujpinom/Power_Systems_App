@@ -59,8 +59,8 @@ public class InfoCarga extends GridPane {
 		this.add(vb,0 , 1);
 		infolinea.setText("INFORMACIÓN DE LA CARGA "+ carga.getNombreCarga());
 		
-		z1t.setText(""+carga.getPotenciaActiva()*SPController.BASE_SISTEMA);
-		z2t.setText(""+ carga.getPotenciaReactiva()*SPController.BASE_SISTEMA);
+		z1t.setText(""+carga.getPotenciaActiva());
+		z2t.setText(""+ carga.getPotenciaReactiva());
 	
 		
 		cbo1.setOnAction(e->{

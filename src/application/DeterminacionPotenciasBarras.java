@@ -5,6 +5,7 @@ import java.util.List;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Complejo;
 import proyectoSistemasDePotencia.Lineas;
+import proyectoSistemasDePotencia.Transformador;
 
 public class DeterminacionPotenciasBarras {
 	
@@ -55,7 +56,7 @@ public class DeterminacionPotenciasBarras {
 		
 		if(b.containsCarga()) {
 			
-			potenciaCarga=b.getCarga().getPotenciaActiva();
+			potenciaCarga=b.getCarga().getPotenciaActiva()/SPController.BASE_SISTEMA;
 			
 		}
 		
@@ -76,7 +77,7 @@ public class DeterminacionPotenciasBarras {
 		
 		potenciaCompleja= Complejo.producto(potenciaCompleja, tensionBarraConjugada);
 	
-		return potenciaCompleja.getReal()+potenciaCarga;
+		return (potenciaCompleja.getReal()+potenciaCarga)*SPController.BASE_SISTEMA;
 	
 	}
 	
@@ -86,7 +87,7 @@ public class DeterminacionPotenciasBarras {
 		
 		if(b.containsCarga()) {
 			
-			potenciaCarga=b.getCarga().getPotenciaReactiva();
+			potenciaCarga=b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA;
 			
 		}
 		
@@ -107,11 +108,12 @@ public class DeterminacionPotenciasBarras {
 		
 		potenciaCompleja= Complejo.producto(potenciaCompleja, tensionBarraConjugada);
 	
-		return -potenciaCompleja.getImag()+potenciaCarga;
+		return (-potenciaCompleja.getImag()+potenciaCarga)*SPController.BASE_SISTEMA
+				;
 	}
 	
 	
-	public static void calculoPerdidasPotenciaLineas(List<Barras> barras,List<Complejo>[] solucion,List<Lineas> lineas, Complejo[][] yBus,Complejo[][] perdidasLineas,
+	public static void calculoPerdidasPotenciaLineas(List<Barras> barras,List<Complejo>[] solucion,List<Lineas> lineas,List<Transformador> trafos ,Complejo[][] yBus,Complejo[][] perdidasLineas,
 			Complejo[][] potenciaEnBarras) {
 		
 		int contador=0;
@@ -168,6 +170,10 @@ public class DeterminacionPotenciasBarras {
 			potenciaEnBarras[indexB2][indexB1]= SB1B2;
 	
 		}
+		
+		
+		
+		
 	
 	}
 	

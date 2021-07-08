@@ -46,11 +46,11 @@ public class Generadores {
 		}		
 		
 		else if(mWSalida> MWSalidaMax) {
-			MWSalida=MWSalidaMax/SPController.BASE_SISTEMA;
+			MWSalida=MWSalidaMax;
 		}
 		
 		else
-			MWSalida = mWSalida/SPController.BASE_SISTEMA;
+			MWSalida = mWSalida;
 		
 		
 	}
@@ -64,13 +64,13 @@ public class Generadores {
 	public void setMVarSalida(double mVarSalida) {
 		
 		if(mVarSalida>MVarSalidaMax) {
-			MVarSalida=MVarSalidaMax/SPController.BASE_SISTEMA;
+			MVarSalida=MVarSalidaMax;
 		}
 		else if(mVarSalida<MVarSalidaMin) {
-			MVarSalida=MVarSalidaMin/SPController.BASE_SISTEMA;
+			MVarSalida=MVarSalidaMin;
 		}
 		else
-		MVarSalida = mVarSalida/SPController.BASE_SISTEMA;
+		MVarSalida = mVarSalida;
 	}
 
 
@@ -85,7 +85,7 @@ public class Generadores {
 			MWSalidaMin=0.0000;
 		}
 		else
-		MWSalidaMin = mWSalidaMin/SPController.BASE_SISTEMA;
+		MWSalidaMin = mWSalidaMin;
 	}
 
 
@@ -99,7 +99,7 @@ public class Generadores {
 			MWSalidaMax=0.0000;
 		}
 		else
-		MWSalidaMax = mWSalidaMax/SPController.BASE_SISTEMA;
+		MWSalidaMax = mWSalidaMax;
 	}
 
 
@@ -109,7 +109,7 @@ public class Generadores {
 
 
 	public void setMVarSalidaMin(double mVarSalidaMin) {
-		MVarSalidaMin = mVarSalidaMin/SPController.BASE_SISTEMA;
+		MVarSalidaMin = mVarSalidaMin;
 	}
 
 
@@ -119,7 +119,7 @@ public class Generadores {
 
 
 	public void setMVarSalidaMax(double mVarSalidaMax) {
-		MVarSalidaMax = mVarSalidaMax/SPController.BASE_SISTEMA;
+		MVarSalidaMax = mVarSalidaMax;
 	}
 
 

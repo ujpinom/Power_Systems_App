@@ -406,19 +406,14 @@ public class EcuacionesVoltajeYPotencia {
 				infoIteraciones[indexBarra].add(resultado);
 				
 				acelerar(indexBarra);
-				System.out.println(b.getGenerador().getMVarSalidaMax());
 				
 				b.getGenerador().setMVarSalida(b.getGenerador().getMVarSalidaMax() );
-			
-				System.out.println("Potencia limite gen: "+ b.getGenerador().getMVarSalida());
 				
 				Carga c= new Carga(); // La carga combinada del generador y la carga de la barra;
 				
 				c.setPotenciaActiva(potenciaActivaEntregada*SPController.BASE_SISTEMA);
 				c.setPotenciaReactiva(potenciaImCalculada*SPController.BASE_SISTEMA);	
-				
-				System.out.println(potenciaActivaEntregada* SPController.BASE_SISTEMA);
-				System.out.println(potenciaImCalculada*SPController.BASE_SISTEMA);
+			
 				b.setCargaFromPVtoPQ(c);			
 				b.setBarraPV(false);
 				b.setBarraPQ(true);

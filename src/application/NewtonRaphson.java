@@ -20,7 +20,7 @@ public class NewtonRaphson implements Cloneable {
 
 	private int dimensionMatrizjacobiana = 0; // Determina cuantas filas y columnas hay que quitar de la jacobiana.
 	private List<Integer> indicesBarrasCompPV = new ArrayList<>(); // Almacena el indice de las barras que son de
-																	// compensación o PV.
+	// compensación o PV.
 	private List<Double>[] infoIteracionesVoltajes;
 
 	private List<Double>[] infoIteracionesAngulos;
@@ -72,6 +72,29 @@ public class NewtonRaphson implements Cloneable {
 
 		for (int i = 0; i < barras.size(); i++) {
 
+			infoIteracionesAngulos[i] = new ArrayList<Double>();
+			infoIteracionesVoltajes[i] = new ArrayList<Double>();
+
+		}
+
+		for (int i = 1; i < barras.size(); i++) {
+
+			infoIteracionesAngulos[i].add(barras.get(i).getAnguloVoltajeBarra());
+			infoIteracionesVoltajes[i].add(barras.get(i).getVoltajePrefalla());
+
+		}
+		
+		adjustarIndicesBarrasCompPV();
+
+	}
+	
+	private void adjustarIndicesBarrasCompPV() {
+		
+		indicesBarrasCompPV.clear();
+		dimensionMatrizjacobiana=0;
+		
+		for (int i = 0; i < barras.size(); i++) {
+
 			Barras b = barras.get(i);
 
 			if (b.isBarraCompensacion()) {
@@ -84,18 +107,9 @@ public class NewtonRaphson implements Cloneable {
 				dimensionMatrizjacobiana += 1;
 			}
 
-			infoIteracionesAngulos[i] = new ArrayList<Double>();
-			infoIteracionesVoltajes[i] = new ArrayList<Double>();
 
 		}
-
-		for (int i = 1; i < barras.size(); i++) {
-
-			infoIteracionesAngulos[i].add(barras.get(i).getAnguloVoltajeBarra());
-			infoIteracionesVoltajes[i].add(barras.get(i).getVoltajePrefalla());
-
-		}
-
+		
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,36 +190,40 @@ public class NewtonRaphson implements Cloneable {
 
 		while (iteracionActual <= numeroIteraciones) {
 
-			for (int i = 1; i < barras.size(); i++) {
 
-				Barras b = barras.get(i);
+				for (int i = 1; i < barras.size(); i++) {
 
-				if (b.isBarraCompensacion()) {
-					continue;
+					Barras b = barras.get(i);
+
+					if (b.isBarraCompensacion()) {
+						continue;
+					}
+
+					else if (b.isBarraPQ()) {
+
+						calcularJacobiana(i, b);
+						calcularPotencias(i, b);
+
+					}
+
+					else if (b.isBarraPV()) {
+						calcularJacobiana(i, b);
+						calcularPotencias(i, b);
+					}
+
 				}
-
-				else if (b.isBarraPQ()) {
-
-					calcularJacobiana(i, b);
-					calcularPotencias(i, b);
-
-				}
-
-				else if (b.isBarraPV()) {
-					calcularJacobiana(i, b);
-					calcularPotencias(i, b);
-				}
-
-			}
+			
 
 			RealMatrix jaco = new Array2DRowRealMatrix(jacobiana);
+			
+			adjustarIndicesBarrasCompPV();
 
 			List<Integer> indicesAEliminar = dropIndices();
 
 			int[] indicesAMantener = new int[jacobiana.length - dimensionMatrizjacobiana]; /// La solución del problema
-																							/// de flujos de potencia
-																							/// corresponden a estas
-																							/// barras +1.
+			/// de flujos de potencia
+			/// corresponden a estas
+			/// barras +1.
 			int contador = 0;
 			for (int i = 0; i < jacobiana.length; i++) {
 
@@ -244,10 +262,16 @@ public class NewtonRaphson implements Cloneable {
 			erroresParametros = sol.toArray();
 
 			correcionParametros(indicesAMantener);
-		
+			
+			
+			verificarLimitesPotenciaReactiva();
+			
+
 			int cont = 0;
 
-			for (int i = 1; i < infoIteracionesAngulos.length; i++) {
+			for (int i = 1; i < infoIteracionesAngulos.length; i++) { // Verificación con el proposito de verificar la convergencia del sistema de potencia  
+				// Diferencia de Angulos y voltajes menor que el epsilon estipulado.Si todas las barras cumplen este criterio se da por entendido que una solución ha sido 
+				// encontrada y por consiguiente el algoritmo es detenido.
 
 				int angulos = infoIteracionesAngulos[i].size();
 				int voltajes = infoIteracionesVoltajes[i].size();
@@ -260,7 +284,7 @@ public class NewtonRaphson implements Cloneable {
 				else if (barras.get(i).isBarraPV()) {
 
 					if (Math.abs(infoIteracionesAngulos[i].get(angulos - 1)
-							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon ) {
+							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon) {
 
 						++cont;
 
@@ -271,7 +295,8 @@ public class NewtonRaphson implements Cloneable {
 				} else if (barras.get(i).isBarraPQ()) {
 
 					if (Math.abs(infoIteracionesAngulos[i].get(angulos - 1)
-							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon && (Math.abs(infoIteracionesVoltajes[i].get(voltajes - 1)
+							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon
+							&& (Math.abs(infoIteracionesVoltajes[i].get(voltajes - 1)
 									- infoIteracionesVoltajes[i].get(voltajes - 2)) <= epsilon)) {
 						++cont;
 
@@ -293,70 +318,74 @@ public class NewtonRaphson implements Cloneable {
 		iteConvergencia = iteracionActual;
 
 	}
-	
+
 	public void verificarLimitesPotenciaReactiva() {
 		
-		for(int i=0;i<barras.size();i++) {
-			
-			Barras b= barras.get(i);
-			
-			
-			if(b.isBarraPV()) {
-				
-				double voltaje= b.getVoltajePrefalla();
-				
-				Complejo potenciaCompleja=new Complejo();
-				
-				double mag = infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size()-1);
-				
-				double ang = infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size()-1);
-				
-				Complejo tensionBarra= Complejo.polar2CartesianoAnguloRad(mag, ang);
-				
-				Complejo tensionBarraConjugada=Complejo.conjugado(tensionBarra) ;
-				
-				for(int j=1;j<barras.size();j++) {
-					
-					
-					Complejo Yin=matrizAdj[i][j];
-					double magn = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size()-1);
-					
-					double angn = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size()-1);
-					
-					Complejo Vn= Complejo.polar2CartesianoAnguloRad(magn, angn);
-			
-					potenciaCompleja= Complejo.suma(potenciaCompleja, Complejo.producto(Yin, Vn));
-					
-				}
-			
-				potenciaCompleja= Complejo.producto(potenciaCompleja, tensionBarraConjugada);
-				
-				double Q= - potenciaCompleja.getImag();
-				
-				if(b.containsCarga()) {
-					
-					Q+=b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA;
-				}
-				
-				if(Q>b.getGenerador().getMVarSalidaMax()/SPController.BASE_SISTEMA) {
-					
-					voltaje-=0.01;
-					b.setVoltajePrefalla(voltaje);
-					infoIteracionesVoltajes[i].add(voltaje);
-					
-				}	
-				else if(Q<b.getGenerador().getMVarSalidaMax()/SPController.BASE_SISTEMA) {
+		double potenciaReactivaCarga=0.0;
+		double potenciaRealCarga=0.0;
 
-					voltaje+=0.01;
-					b.setVoltajePrefalla(voltaje);
-					infoIteracionesVoltajes[i].add(voltaje);
-					
+		for (int i = 0; i < barras.size(); i++) {
+
+			Barras b = barras.get(i);
+
+			if (b.isBarraPV()) {
+
+
+				Complejo potenciaCompleja = new Complejo();
+
+				double mag = infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size() - 1);
+
+				double ang = infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size() - 1);
+
+				Complejo tensionBarra = Complejo.polar2CartesianoAnguloRad(mag, ang);
+
+				Complejo tensionBarraConjugada = Complejo.conjugado(tensionBarra);
+
+				for (int j = 1; j < barras.size(); j++) {
+
+					Complejo Yin = matrizAdj[i][j];
+					double magn = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size() - 1);
+
+					double angn = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size() - 1);
+
+					Complejo Vn = Complejo.polar2CartesianoAnguloRad(magn, angn);
+
+					potenciaCompleja = Complejo.suma(potenciaCompleja, Complejo.producto(Yin, Vn));
+
 				}
-		
+
+				potenciaCompleja = Complejo.producto(potenciaCompleja, tensionBarraConjugada);
+
+				double Q = -potenciaCompleja.getImag();
+
+				if (b.containsCarga()) {
+
+					 potenciaReactivaCarga= b.getCarga().getPotenciaReactiva() / SPController.BASE_SISTEMA;
+					 potenciaRealCarga= b.getCarga().getPotenciaActiva() / SPController.BASE_SISTEMA;
+				}
+
+				if ( (Q+potenciaReactivaCarga) > b.getGenerador().getMVarSalidaMax() / SPController.BASE_SISTEMA) {
+					
+					b.getGenerador().setMVarSalida(b.getGenerador().getMVarSalidaMax());
+					
+					double potenciaActivaEntregada= b.getGenerador().getMWSalida()-potenciaRealCarga;
+					double potenciaImCalculada= b.getGenerador().getMVarSalida()-potenciaReactivaCarga;
+					
+					Carga c= new Carga(); // La carga combinada del generador y la carga de la barra;
+					
+					c.setPotenciaActiva(potenciaActivaEntregada*SPController.BASE_SISTEMA);
+					c.setPotenciaReactiva(potenciaImCalculada*SPController.BASE_SISTEMA);	
+				
+					b.setCargaFromPVtoPQ(c);			
+					b.setBarraPV(false);
+					b.setBarraPQ(true);
+					b.setBarraFromPV2PQ(true);
+					
+				} 
 			}
-	
+
 		}
-	
+
 	}
 
 	public int getIteConvergencia() {
@@ -457,11 +486,17 @@ public class NewtonRaphson implements Cloneable {
 
 		if (b.isBarraPV()) {
 			if (b.containsGenerador())
-				potenciaProgramadaReal = b.getGenerador().getMWSalida()/SPController.BASE_SISTEMA;
+				potenciaProgramadaReal = b.getGenerador().getMWSalida() / SPController.BASE_SISTEMA;
 		}
 
-		if (b.containsCarga()) {
-			potenciaProgramadaReal -= b.getCarga().getPotenciaActiva()/SPController.BASE_SISTEMA;
+		if (b.containsCarga() && !b.isBarraFromPV2PQ()) {
+			potenciaProgramadaReal -= b.getCarga().getPotenciaActiva() / SPController.BASE_SISTEMA;
+		}
+		
+		if(b.isBarraFromPV2PQ()) {
+			
+			potenciaProgramadaReal= b.getCargaFromPVtoPQ().getPotenciaActiva()/SPController.BASE_SISTEMA;
+			
 		}
 
 		Complejo admitancia = matrizAdj[index][index];
@@ -509,17 +544,25 @@ public class NewtonRaphson implements Cloneable {
 		if (b.isBarraPV()) {
 			return;
 		}
-
+		
+		
 		double potenciaImaginariaCalculada = 0.0;
 		double potenciaImaginariaProgramada = 0.0;
 
-		if (b.containsCarga()) {
-			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getCarga().getPotenciaReactiva()/SPController.BASE_SISTEMA;
+		if (b.containsCarga() && ! b.isBarraFromPV2PQ()) {
+			potenciaImaginariaProgramada = potenciaImaginariaProgramada
+					- b.getCarga().getPotenciaReactiva() / SPController.BASE_SISTEMA;
 		}
-
-//		if (b.containsBanco()) {
-//			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getBanco().getPotenciaReactiva()/SPController.BASE_SISTEMA;
-//		}
+		
+		if( b.isBarraFromPV2PQ()) {
+			
+			potenciaImaginariaProgramada= b.getCargaFromPVtoPQ().getPotenciaReactiva() / SPController.BASE_SISTEMA;
+			
+		}
+		
+		//		if (b.containsBanco()) {
+		//			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getBanco().getPotenciaReactiva()/SPController.BASE_SISTEMA;
+		//		}
 
 		double react = admitancia.getImag();
 
@@ -658,7 +701,7 @@ public class NewtonRaphson implements Cloneable {
 
 				jacobiana[i][j] = jacobiana[i + barras.size() - 1][j - (barras.size() - 1)]
 						+ 2 * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-								* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * resis;
+						* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * resis;
 
 			}
 
@@ -688,7 +731,7 @@ public class NewtonRaphson implements Cloneable {
 
 				jacobiana[i][j] = -jacobiana[i - (barras.size() - 1)][j - (barras.size() - 1)]
 						- 2 * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-								* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * react;
+						* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * react;
 
 			}
 

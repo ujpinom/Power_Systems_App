@@ -6,6 +6,11 @@
  -fx-text-fill: white;
 }
 
+.content{
+    -fx-background-image: url('/application/alpha_c_circle_outline_icon_140018.png'),
+         				url('/application/circular-arrow41_41902.png');
+}
+
 .button:hover{
 -fx-font-size: 16;
  -fx-font-weight: bold;

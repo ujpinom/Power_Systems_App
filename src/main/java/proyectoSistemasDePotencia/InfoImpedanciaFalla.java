@@ -37,7 +37,7 @@ public class InfoImpedanciaFalla extends GridPane {
 		this.getRowConstraints().add(new RowConstraints(50) );
 		
 		infolinea.setText("IMPEDANCIA DE FALLA OCURRIDA SOBRE EL ELEMENTO "+nombreElemento+
-				"\nNOTA: Si la falla ocurre sobre una línea, esta se calcula en la mitad de dicha línea. ");
+				"\nNOTA: Si la falla ocurre sobre una lÃ­nea, esta se calcula en la mitad de dicha lÃ­nea. ");
 		
 		
 		this.add(infolinea, 0, 0);
@@ -55,7 +55,7 @@ public class InfoImpedanciaFalla extends GridPane {
 		 
 		     if(z1t.getText().contains(",") ||vz1t ) {
 		    	 
-		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
+		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico utilizando punto como separador decimal");
 		     }
 		     else {
 		     

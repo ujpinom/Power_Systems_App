@@ -19,7 +19,7 @@ public class InfoImpedanciaFallaLinea extends GridPane {
 	private Text infolinea= new Text();
 	private GridPane gd= new GridPane();
 	private Label z1l= new Label("Ingrese el valor de la impedancia en el lugar de la falla: ");
-	private Label descripcionvoltajePuntoFalla= new Label("Ingrese la tensión en el punto de falla de la línea");
+	private Label descripcionvoltajePuntoFalla= new Label("Ingrese la tensiÃ³n en el punto de falla de la lÃ­nea");
 	private TextField voltajePuntoFalla= new TextField();
 	private TextField z1t= new TextField();
 	private String nombreElemento;
@@ -39,7 +39,7 @@ public class InfoImpedanciaFallaLinea extends GridPane {
 		this.getRowConstraints().add(new RowConstraints(50) );
 		
 		infolinea.setText("IMPEDANCIA DE FALLA OCURRIDA SOBRE EL ELEMENTO "+nombreElemento+
-				"\nNOTA: Si la falla ocurre sobre una línea, esta se calcula en la mitad de dicha línea. ");
+				"\nNOTA: Si la falla ocurre sobre una lÃ­nea, esta se calcula en la mitad de dicha lÃ­nea. ");
 		
 		
 		this.add(infolinea, 0, 0);
@@ -61,7 +61,7 @@ public class InfoImpedanciaFallaLinea extends GridPane {
 		 
 		     if(z1t.getText().contains(",") ||vz1t||voltaje ) {
 		    	 
-		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
+		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico utilizando punto como separador decimal");
 		     }
 		     else {
 		     

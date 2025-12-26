@@ -32,16 +32,16 @@ public class Complejo implements Comparable<Complejo> {
     return Math.sqrt(real*real+imag*imag);
  }
  
-//devuelve el ángulo en grados
+//devuelve el Ã¡ngulo en grados
  public double argumento(){
 	 
     double angulo=Math.atan2(imag, real); 
-    //devuelve el ángulo entre -PI y +PI
+    //devuelve el Ã¡ngulo entre -PI y +PI
 //    if(angulo<0)  angulo=2*Math.PI+angulo;
     
     return angulo*180/Math.PI;
  }
-//suma de dos números complejos
+//suma de dos nÃºmeros complejos
  public static Complejo suma(Complejo c1, Complejo c2){
 	 
     double x=c1.real+c2.real;
@@ -77,29 +77,29 @@ public class Complejo implements Comparable<Complejo> {
  }
  
  
-//producto de dos números complejos
+//producto de dos nÃºmeros complejos
 public static Complejo producto(Complejo c1, Complejo c2){
 	
     double x=c1.real*c2.real-c1.imag*c2.imag;
     double y=c1.real*c2.imag+c1.imag*c2.real;
     return new Complejo(x, y);
  }
-//producto de un complejo por un número real
+//producto de un complejo por un nÃºmero real
  public static Complejo producto(Complejo c, double d){
 	 
     double x=c.real*d;
     double y=c.imag*d;
     return new Complejo(x, y);
 }
-//producto de un número real  por un complejo
+//producto de un nÃºmero real  por un complejo
  public static Complejo producto(double d, Complejo c){
 	 
     double x=c.real*d;
     double y=c.imag*d;
     return new Complejo(x, y);
 }
-//cociente de dos números complejos
-//excepción cuando el complejo denominador es cero
+//cociente de dos nÃºmeros complejos
+//excepciÃ³n cuando el complejo denominador es cero
  public static Complejo cociente(Complejo c1, Complejo c2)throws ExcepcionDivideCero{
     double aux, x, y;
     
@@ -116,7 +116,7 @@ public static Complejo producto(Complejo c1, Complejo c2){
     return new Complejo(x, y);
  }
  
-//cociente entre un número complejo y un número real
+//cociente entre un nÃºmero complejo y un nÃºmero real
  public static Complejo cociente(Complejo c, double d)throws ExcepcionDivideCero{
 	 
    double x, y;
@@ -130,20 +130,20 @@ public static Complejo producto(Complejo c1, Complejo c2){
     return new Complejo(x, y);
  }
  
-//el número e elevado a un número complejo
+//el nÃºmero e elevado a un nÃºmero complejo
  public static Complejo exponencial(Complejo c){
 	 
     double x=Math.cos(c.imag)*Math.exp(c.real);
     double y=Math.sin(c.imag)*Math.exp(c.real);
     return new Complejo(x, y);
  }
-//raíz cuadrada de un número positivo o negativo
+//raÃ­z cuadrada de un nÃºmero positivo o negativo
  public static Complejo csqrt(double d){
 	 
     if(d>=0) return new Complejo(Math.sqrt(d), 0);
     return new Complejo(0, Math.sqrt(-d));
  }
-//función auxiliar  para la potencia de un número complejo
+//funciÃ³n auxiliar  para la potencia de un nÃºmero complejo
  private static double potencia(double base, int exponente){
 	 
    double resultado=1.0;
@@ -153,7 +153,7 @@ public static Complejo producto(Complejo c1, Complejo c2){
    }
    return resultado;
  }
-//función auxiliar para la potencia de un número complejo
+//funciÃ³n auxiliar para la potencia de un nÃºmero complejo
  private static double combinatorio(int m, int n){
 	 
    long num=1;
@@ -167,7 +167,7 @@ public static Complejo producto(Complejo c1, Complejo c2){
    }
    return (double)num/den;
  }
-//potencia de un número complejo
+//potencia de un nÃºmero complejo
  public static Complejo potencia(Complejo c, int exponente){
 	 
    double x=0.0, y=0.0;
@@ -182,7 +182,7 @@ public static Complejo producto(Complejo c1, Complejo c2){
    }
    return new Complejo(x, y);
  }
-//traduce un número complejo a un string
+//traduce un nÃºmero complejo a un string
  public String toString(){
     if(imag>0)     return new String((double)Math.round(100*real)/100+" + "+(double)Math.round(100*imag)/100+"*i");
     return new String((double)Math.round(100*real)/100+" - "+(double)Math.round(-100*imag)/100+"*i");

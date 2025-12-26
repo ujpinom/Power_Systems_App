@@ -64,7 +64,7 @@ public class InfoLineas extends GridPane {
 		
 		this.add(vb,0 , 1);
 		
-		infolinea.setText("INFORMACION DE LA LÕNEA "+linea.getNombreLinea());
+		infolinea.setText("INFORMACION DE LA L√çNEA "+linea.getNombreLinea());
 		
 		z1t.setText(""+linea.getimpedanciaLineaZ1());
 		z2t.setText(""+ linea.getimpedanciaLineaZ2());
@@ -86,7 +86,7 @@ public class InfoLineas extends GridPane {
 		     
 		     if(z1t.getText().contains(",") ||z2t.getText().contains(",")||z0t.getText().contains(",")||vz1t||vz2t||vz0t||r||y ) {
 		    	 
-		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo n˙merico utilizando punto como separador decimal");
+		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo n√∫merico utilizando punto como separador decimal");
 		    	
 		     }
 		     else {

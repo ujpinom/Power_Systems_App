@@ -79,8 +79,8 @@ public class Barras {
 	private boolean barraPQ;
 	private boolean barraPV;
 	private Point2D coordenadaCompensador;
-	private double flowPowerRealCalculada;  // Potencia calculada para las barras de compensación y PV luego de obtener la solución del problemas de flujos de potencia.
-	private double flowPowerImagCalculada;//// Potencia calculada para las barras de compensación y PV luego de obtener la solución del problemas de flujos de potencia.
+	private double flowPowerRealCalculada;  // Potencia calculada para las barras de compensaciÃ³n y PV luego de obtener la soluciÃ³n del problemas de flujos de potencia.
+	private double flowPowerImagCalculada;//// Potencia calculada para las barras de compensaciÃ³n y PV luego de obtener la soluciÃ³n del problemas de flujos de potencia.
 	
 	
 	public double getFlowPowerRealCalculada() {
@@ -303,9 +303,9 @@ public class Barras {
 	}
 
     /**
-     *Establece la orientación de la barra
+     *Establece la orientaciÃ³n de la barra
      *
-     * @param  orientacion String que representa la orientación
+     * @param  orientacion String que representa la orientaciÃ³n
      */
 	public void setOrientacion(String orientacion) {
 		this.orientacion = orientacion;

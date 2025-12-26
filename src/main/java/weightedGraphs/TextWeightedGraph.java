@@ -20,7 +20,7 @@ public class TextWeightedGraph {
 
 		System.out.println("El numero de vertices del grafo es: "+ grafo.getSize());
 		
-		System.out.println("El indice 1 está: "+grafo.getVertex(1));
+		System.out.println("El indice 1 estÃ¡: "+grafo.getVertex(1));
 		
 		System.out.println("El peso entre Seattle y Denver es: "+ grafo.getWeight(0, 3));
 		

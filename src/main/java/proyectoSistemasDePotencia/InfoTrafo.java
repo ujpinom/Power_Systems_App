@@ -41,8 +41,8 @@ public class InfoTrafo extends GridPane {
 	private TextField z0t= new TextField();
 	private Button btncerrar= new Button("Aceptar");
 	private HBox hb1= new HBox();
-	private Text cprimaria= new Text("Conexión lado primaria (-BX indica la barra de conexión)");
-	private Text csecundaria= new Text("Conexión lado secundario (-BX indica la barra de conexión)");
+	private Text cprimaria= new Text("ConexiÃ³n lado primaria (-BX indica la barra de conexiÃ³n)");
+	private Text csecundaria= new Text("ConexiÃ³n lado secundario (-BX indica la barra de conexiÃ³n)");
 	private String[] tipoconexiones;
 	private ComboBox<String> cbo = new ComboBox<>();
 	private ComboBox<String> cbo1 = new ComboBox<>();
@@ -103,7 +103,7 @@ public class InfoTrafo extends GridPane {
 		
 		this.add(vb,0 , 1);
 		
-		infolinea.setText("INFORMACIÓN DEL TRANSFORMADOR "+ trafo.getNombreLinea());
+		infolinea.setText("INFORMACIÃN DEL TRANSFORMADOR "+ trafo.getNombreLinea());
 		infolinea.setStroke(Color.rgb(241, 196, 15));
 		
 		cbo.setOnAction(e->{
@@ -117,7 +117,7 @@ public class InfoTrafo extends GridPane {
 				Scene dad= new Scene(infoimpedancia);
 				Stage sta= new Stage();
 				sta.setScene(dad);
-				sta.setTitle("INFORMACIÓN IMPEDANCIA ATERRIZAMIENTO");
+				sta.setTitle("INFORMACIÃN IMPEDANCIA ATERRIZAMIENTO");
 				sta.setResizable(false);
 				sta.initModality(Modality.APPLICATION_MODAL);
 				sta.showAndWait();
@@ -185,7 +185,7 @@ public class InfoTrafo extends GridPane {
 				Stage sta= new Stage();
 				
 				sta.setScene(dad);
-				sta.setTitle("INFORMACIÓN IMPEDANCIA ATERRIZAMIENTO");
+				sta.setTitle("INFORMACIÃN IMPEDANCIA ATERRIZAMIENTO");
 				sta.setResizable(false);
 				sta.initModality(Modality.APPLICATION_MODAL);
 				sta.showAndWait();
@@ -222,7 +222,7 @@ public class InfoTrafo extends GridPane {
 		     
 		     if(z1t.getText().contains(",") ||z2t.getText().contains(",")||z0t.getText().contains(",")||vz1t||vz2t||vz0t ||rtrafo) {
 		    	 
-		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
+		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico utilizando punto como separador decimal");
 		     }
 		     else {
 		     

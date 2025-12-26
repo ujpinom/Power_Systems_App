@@ -32,7 +32,7 @@ public class InfoCarga extends GridPane {
 	private TextField z2t= new TextField();
 	private Button btncerrar= new Button("Aceptar");
 	private HBox hb1= new HBox();
-	private Label orientacion= new Label("Orientación");
+	private Label orientacion= new Label("OrientaciÃ³n");
 	private String [] orientaciones= {Carga.LEFT,Carga.RIGHT,Carga.ARRIBA,Carga.ABAJO};
 	private ObservableList<String> hor= FXCollections.observableArrayList(orientaciones);
 	private ComboBox<String> cbo1 = new ComboBox<>();
@@ -57,7 +57,7 @@ public class InfoCarga extends GridPane {
 		cbo1.getItems().addAll(orientaciones);
 		vb.getChildren().addAll(z1l,z1t,z2l,z2t,orientacion,cbo1);
 		this.add(vb,0 , 1);
-		infolinea.setText("INFORMACIÓN DE LA CARGA "+ carga.getNombreCarga());
+		infolinea.setText("INFORMACIÃ“N DE LA CARGA "+ carga.getNombreCarga());
 		
 		z1t.setText(""+carga.getPotenciaActiva());
 		z2t.setText(""+ carga.getPotenciaReactiva());
@@ -81,7 +81,7 @@ public class InfoCarga extends GridPane {
 		     
 		     if(vz1t||vz2t) {
 		    	 
-		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
+		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico utilizando punto como separador decimal");
 		     }
 		     else {
 		    	 

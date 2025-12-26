@@ -47,7 +47,7 @@ public class InfoImpendanciAterrizadaG extends GridPane{
 		     
 		     if(z1t.getText().contains(",") ||vz1t ) {
 		    	 
-		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
+		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico utilizando punto como separador decimal");
 		     }
 		     else {
 		     

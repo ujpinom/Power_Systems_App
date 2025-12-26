@@ -33,7 +33,7 @@ public class InfoBarras extends GridPane {
 	private String nombreElemento;
 	private Button btncerrar= new Button("Aceptar");
 	private double voltajePrefalla;
-	private Label orientacion= new Label("ORIENTACI”N");
+	private Label orientacion= new Label("ORIENTACI√ìN");
 	private RadioButton hori= new RadioButton("Horizontal");
 	private RadioButton verti= new RadioButton("Vertical");
 	private HBox hb= new HBox();
@@ -45,7 +45,7 @@ public class InfoBarras extends GridPane {
 	private String nombreActualBarra;
 	private Label nombrePersonalizadoL= new Label("Nombre de la barra");
 	private Label tipoBarra=new Label("Seleccione el tipo de barra");
-	private CheckBox barraComp= new CheckBox("Barra de compensaciÛn");
+	private CheckBox barraComp= new CheckBox("Barra de compensaci√≥n");
 	
 	private TextField nombrePersonalizadoT= new TextField();
 	
@@ -69,8 +69,8 @@ public class InfoBarras extends GridPane {
 			infolinea.setStroke(Color.rgb(241, 196, 15));
 			hori.setToggleGroup(group);
 			verti.setToggleGroup(group);
-			z1l.setText("TensiÛn p,u de la barra "+barra.getNombreBarra()+" :");
-			anguloTensionBarra.setText("¡ngulo del voltaje en la barra "+barra.getNombreBarra()+" :");
+			z1l.setText("Tensi√≥n p,u de la barra "+barra.getNombreBarra()+" :");
+			anguloTensionBarra.setText("√Ångulo del voltaje en la barra "+barra.getNombreBarra()+" :");
 			this.setPadding(new Insets(10));
 			this.setVgap(10);
 			hb.setAlignment(Pos.CENTER);
@@ -111,7 +111,7 @@ public class InfoBarras extends GridPane {
 			     
 			     if(z1t.getText().contains(",") ||vz1t||vangulo ) {
 			    	 
-			    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo n˙merico utilizando punto como separador decimal");
+			    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo n√∫merico utilizando punto como separador decimal");
 			     }
 			     else {
 			     

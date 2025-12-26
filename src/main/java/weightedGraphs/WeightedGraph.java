@@ -94,7 +94,7 @@ public class WeightedGraph<V> extends UnweightedGraph<V> {
 			}
 		}
 		
-		throw new Exception("La conexión entre los nodos especificados no existe!");
+		throw new Exception("La conexiÃ³n entre los nodos especificados no existe!");
 	
 	}
 	

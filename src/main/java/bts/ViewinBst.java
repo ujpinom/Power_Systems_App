@@ -83,7 +83,7 @@ class DibujoTree extends JPanel{
 					panel.repaint();
 				}
 				else
-					JOptionPane.showMessageDialog(null,"No se econtró el elemento");
+					JOptionPane.showMessageDialog(null,"No se econtrÃ³ el elemento");
 			}
 			
 			

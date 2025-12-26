@@ -30,7 +30,7 @@ public class InfoGeneradores extends GridPane {
 	private Label z1l= new Label("Impedancia secuencia positiva [p,u]");
 	private Label z2l= new Label("Impedancia secuencia negativa [p,u]");
 	private Label z0l= new Label("Impedancia secuencia cero [p,u]");
-	private Label tipoconexion= new Label("Tipo de conexión devanados internos");
+	private Label tipoconexion= new Label("Tipo de conexiÃ³n devanados internos");
 	private TextField z1t= new TextField();
 	private TextField z2t= new TextField();
 	private TextField z0t= new TextField();
@@ -40,7 +40,7 @@ public class InfoGeneradores extends GridPane {
 	private ObservableList<String> items= FXCollections.observableArrayList(tipoconexiones);
 	private ComboBox<String> cbo = new ComboBox<>();
 	private double impedanciaAterrizamiento;
-	private Label orientacion= new Label("Orientación");
+	private Label orientacion= new Label("OrientaciÃ³n");
 	private String [] orientaciones= {Generadores.LEFT,Generadores.RIGHT,Generadores.ARRIBA,Generadores.ABAJO};
 	private ObservableList<String> hor= FXCollections.observableArrayList(orientaciones);
 	private ComboBox<String> cbo1 = new ComboBox<>();
@@ -167,7 +167,7 @@ public class InfoGeneradores extends GridPane {
 		vb.getChildren().addAll(z1l,z1t,z2l,z2t,z0l,z0t,tipoconexion,cbo,orientacion,cbo1);
 		this.add(vb,0 , 1);
 		this.add(infoPotencia, 0, 2);
-		infolinea.setText("INFORMACIÓN DEL GENERADOR "+ generador.getNombreGenerador());
+		infolinea.setText("INFORMACIÃ“N DEL GENERADOR "+ generador.getNombreGenerador());
 		
 		z1t.setText(""+generador.getImpedanciaZ1());
 		z2t.setText(""+ generador.getImpedanciaZ2());
@@ -185,7 +185,7 @@ public class InfoGeneradores extends GridPane {
 				Stage sta= new Stage();
 				
 				sta.setScene(dad);
-				sta.setTitle("INFORMACIÓN IMPEDANCIA ATERRIZAMIENTO");
+				sta.setTitle("INFORMACIÃ“N IMPEDANCIA ATERRIZAMIENTO");
 				sta.setResizable(false);
 				sta.initModality(Modality.APPLICATION_MODAL);
 				sta.showAndWait();
@@ -219,7 +219,7 @@ public class InfoGeneradores extends GridPane {
 		     if(z1t.getText().contains(",") ||z2t.getText().contains(",")||z0t.getText().contains(",")||vz1t||vz2t||vz0t
 		    		 ||mwout ||mvarout||mwmin||mwmax||mvarmin||mvarmax) {
 		    	 
-		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico utilizando punto como separador decimal");
+		    	 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico utilizando punto como separador decimal");
 		     }
 		     else {
 		    	 

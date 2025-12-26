@@ -61,7 +61,7 @@ public class TapsTrafoController  {
     	
 		if(ep||ite) {
 			
-			 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico positivos utilizando punto como separador decimal");
+			 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico positivos utilizando punto como separador decimal");
 			
 		}
 		

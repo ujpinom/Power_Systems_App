@@ -20,7 +20,7 @@ public class NewtonRaphson implements Cloneable {
 
 	private int dimensionMatrizjacobiana = 0; // Determina cuantas filas y columnas hay que quitar de la jacobiana.
 	private List<Integer> indicesBarrasCompPV = new ArrayList<>(); // Almacena el indice de las barras que son de
-	// compensación o PV.
+	// compensaciÃ³n o PV.
 	private List<Double>[] infoIteracionesVoltajes;
 
 	private List<Double>[] infoIteracionesAngulos;
@@ -220,7 +220,7 @@ public class NewtonRaphson implements Cloneable {
 
 			List<Integer> indicesAEliminar = dropIndices();
 
-			int[] indicesAMantener = new int[jacobiana.length - dimensionMatrizjacobiana]; /// La solución del problema
+			int[] indicesAMantener = new int[jacobiana.length - dimensionMatrizjacobiana]; /// La soluciÃ³n del problema
 			/// de flujos de potencia
 			/// corresponden a estas
 			/// barras +1.
@@ -269,8 +269,8 @@ public class NewtonRaphson implements Cloneable {
 
 			int cont = 0;
 
-			for (int i = 1; i < infoIteracionesAngulos.length; i++) { // Verificación con el proposito de verificar la convergencia del sistema de potencia  
-				// Diferencia de Angulos y voltajes menor que el epsilon estipulado.Si todas las barras cumplen este criterio se da por entendido que una solución ha sido 
+			for (int i = 1; i < infoIteracionesAngulos.length; i++) { // VerificaciÃ³n con el proposito de verificar la convergencia del sistema de potencia  
+				// Diferencia de Angulos y voltajes menor que el epsilon estipulado.Si todas las barras cumplen este criterio se da por entendido que una soluciÃ³n ha sido 
 				// encontrada y por consiguiente el algoritmo es detenido.
 
 				int angulos = infoIteracionesAngulos[i].size();

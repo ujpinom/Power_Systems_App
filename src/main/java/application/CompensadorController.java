@@ -68,7 +68,7 @@ public class CompensadorController implements Initializable  {
 		
 		if(ep||ite) {
 			
-			 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo númerico positivos utilizando punto como separador decimal");
+			 JOptionPane.showMessageDialog(null, "Ingrese datos de tipo nÃºmerico positivos utilizando punto como separador decimal");
 			
 		}
 		
@@ -120,7 +120,7 @@ public class CompensadorController implements Initializable  {
 	
 	public void setTitle(String title) {
 		
-		 titulo.setText("COMPENSADOR ESTÁTICO "+title);
+		 titulo.setText("COMPENSADOR ESTÃTICO "+title);
 		
 	}
 	

@@ -132,7 +132,7 @@ public class DeterminacionPotenciasBarras {
 			
 			// Potencia Compleja = VI*  B1-->B2
 			
-			// #####  Cálculo de I: B1-->B2
+			// #####  CÃ¡lculo de I: B1-->B2
 			
 			Complejo I= Complejo.producto(Complejo.resta(tensionB1, tensionB2), Y_B1_B2);
 			
@@ -152,7 +152,7 @@ public class DeterminacionPotenciasBarras {
 	
 			// Potencia Compleja = VI*  B2-->B1
 			
-			// #####  Cálculo de I: B2-->B1
+			// #####  CÃ¡lculo de I: B2-->B1
 			
 			
 			I= Complejo.producto(Complejo.resta(tensionB2, tensionB1), Y_B1_B2);

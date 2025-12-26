@@ -145,7 +145,7 @@ public class EcuacionesVoltajeYPotencia {
 
 	
 	/**
-	 * Retorna el número de la iteración para la cual el algoritmo alcanza la convergencia según el epsilón especificado.
+	 * Retorna el nÃºmero de la iteraciÃ³n para la cual el algoritmo alcanza la convergencia segÃºn el epsilÃ³n especificado.
 	 * @return
 	 */
 	public int getIteConvergencia() {

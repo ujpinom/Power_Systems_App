@@ -311,7 +311,7 @@ public class SPController implements Initializable {
 	}
 
 	public void setTextInfoPotencia() {
-		infoFlujo.setText("Método: " + metodoFlujoPotencia + "\nAceleración: " + FACTOR_ACELERACION + "\nIteraciones: "
+		infoFlujo.setText("MÃ©todo: " + metodoFlujoPotencia + "\nAceleraciÃ³n: " + FACTOR_ACELERACION + "\nIteraciones: "
 				+ String.format("%d", NUMERO_ITERACIONES) + "\nEpsilon: " + epsilon + "\nConvergencia: " + 0);
 	}
 
@@ -334,7 +334,7 @@ public class SPController implements Initializable {
 		bifasicaATierra = false;
 		fPotencia = false;
 
-		infoTare.setText("Tarea: Falla Trifásica");
+		infoTare.setText("Tarea: Falla TrifÃ¡sica");
 
 		matrizSecuencia.setDisable(false);
 		fallaTabular.setDisable(false);
@@ -351,7 +351,7 @@ public class SPController implements Initializable {
 		bifasicaATierra = false;
 		fPotencia = false;
 
-		infoTare.setText("Tarea: Falla Monofásica");
+		infoTare.setText("Tarea: Falla MonofÃ¡sica");
 
 		matrizSecuencia.setDisable(false);
 		fallaTabular.setDisable(false);
@@ -368,7 +368,7 @@ public class SPController implements Initializable {
 		bifasicaATierra = false;
 		fPotencia = false;
 
-		infoTare.setText("Tarea: Falla Línea a Línea");
+		infoTare.setText("Tarea: Falla LÃ­nea a LÃ­nea");
 
 		matrizSecuencia.setDisable(false);
 		fallaTabular.setDisable(false);
@@ -384,7 +384,7 @@ public class SPController implements Initializable {
 		bifasicaATierra = true;
 		fPotencia = false;
 
-		infoTare.setText("Tarea: Falla Línea-Línea a tierra");
+		infoTare.setText("Tarea: Falla LÃ­nea-LÃ­nea a tierra");
 
 		matrizSecuencia.setDisable(false);
 		fallaTabular.setDisable(false);
@@ -400,7 +400,7 @@ public class SPController implements Initializable {
 		cSelected = false;
 		bancoSelected = false;
 		compensadorSelected=false;
-		infoElemento.setText("Elemento: Línea");
+		infoElemento.setText("Elemento: LÃ­nea");
 	}
 
 	@FXML
@@ -427,7 +427,7 @@ public class SPController implements Initializable {
 		cSelected = false;
 		bancoSelected = false;
 		compensadorSelected=true;
-		infoElemento.setText("Elemento: Compensador Estático");
+		infoElemento.setText("Elemento: Compensador EstÃ¡tico");
 	
 	}
 	@FXML
@@ -492,7 +492,7 @@ public class SPController implements Initializable {
 		cSelected = false;
 		bancoSelected = false;
 		compensadorSelected=false;
-		infoElemento.setText("Elemento: Edición");
+		infoElemento.setText("Elemento: EdiciÃ³n");
 	}
 
 	@FXML
@@ -525,7 +525,7 @@ public class SPController implements Initializable {
 				for(int i=0;i<perdidadsPotencia.length;i++) {
 					for(int j=0;j<perdidadsPotencia.length;j++) {
 						
-						perdidadsPotencia[i][j]= new Complejo(); // No se tiene en cuenta la admitancia de carga de la línea
+						perdidadsPotencia[i][j]= new Complejo(); // No se tiene en cuenta la admitancia de carga de la lÃ­nea
 						potenciaEntranteBarras[i][j]= new Complejo();  // Se tiene en cuenta la admitancia de carga de la linea.
 					
 					}
@@ -737,7 +737,7 @@ public class SPController implements Initializable {
 			}
 		} else {
 
-			JOptionPane.showMessageDialog(null, "El sistema no es cerrado. Réviselo por favor.");
+			JOptionPane.showMessageDialog(null, "El sistema no es cerrado. RÃ©viselo por favor.");
 		}
 
 	}
@@ -921,25 +921,25 @@ public class SPController implements Initializable {
 
 				if (fPotencia) {
 					display.setText("Elemento:   " + nombreBarra + "    Voltaje: " + b.getVoltajePrefalla() + " [p,u]"
-							+ "    Ángulo: " + b.getAnguloVoltajeBarra() + "    Barra de Compensación: "
+							+ "    Ãngulo: " + b.getAnguloVoltajeBarra() + "    Barra de CompensaciÃ³n: "
 							+ b.isBarraCompensacion() + "\n" + b.isBarraCompensacion() + "  " + b.isBarraPQ() + "  "
 							+ b.isBarraPV());
 				} else {
 					display.setText("Elemento:   " + nombreBarra + "    Voltaje: " + b.getVoltajePrefalla() + " [p,u]"
 							+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":" + "\nFase A: "
 							+ String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-							+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° " + "[p,u]         Fase B: "
+							+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° " + "[p,u]         Fase B: "
 							+ String.format("%.4f", magCorrientePuntoFallaFaseB) + " Ang. "
-							+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "° " + "[p,u]         Fase C: "
+							+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° " + "[p,u]         Fase C: "
 							+ String.format("%.4f", magCorrientePuntoFallaFaseC) + " Ang. "
-							+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "° " + "[p,u]"
+							+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
 							+ "\nVoltaje/Fase Post-Falla:  " + "\nFase A: "
 							+ String.format("%.4f", b.getVoltajePosFallaFaseA()) + " Ang. "
-							+ String.format("%.4f", b.getAnguloVoltajeFaseA()) + "° " + "[p,u]         Fase B: "
+							+ String.format("%.4f", b.getAnguloVoltajeFaseA()) + "Â° " + "[p,u]         Fase B: "
 							+ String.format("%.4f", b.getVoltajePosFallaFaseB()) + " Ang. "
-							+ String.format("%.4f", b.getAnguloVoltajeFaseB()) + "° " + "[p,u]         " + "Fase C: "
+							+ String.format("%.4f", b.getAnguloVoltajeFaseB()) + "Â° " + "[p,u]         " + "Fase C: "
 							+ String.format("%.4f", b.getVoltajePosFallaFaseC()) + " Ang. "
-							+ String.format("%.4f", b.getAnguloVoltajeFaseC()) + "° " + "[p,u]");
+							+ String.format("%.4f", b.getAnguloVoltajeFaseC()) + "Â° " + "[p,u]");
 				}
 
 				if (e.isAltDown()) {
@@ -949,7 +949,7 @@ public class SPController implements Initializable {
 					Stage sta = new Stage();
 
 					sta.setScene(dad);
-					sta.setTitle("INFORMACIÓN DE BARRAS");
+					sta.setTitle("INFORMACIÃN DE BARRAS");
 					sta.setResizable(false);
 					sta.initModality(Modality.APPLICATION_MODAL);
 					sta.showAndWait();
@@ -1044,16 +1044,16 @@ public class SPController implements Initializable {
 
 						if (((Line) tipoElemento).contains(pntmedio)) {
 
-							display.setText("Elemento:   " + conexiones1.get(i).getNombreLinea() + "   Conexión( "
+							display.setText("Elemento:   " + conexiones1.get(i).getNombreLinea() + "   ConexiÃ³n( "
 									+ conexiones1.get(i).getConexionPrimaria() + ","
 									+ conexiones1.get(i).getConexionSecundaria() + " )"
 									+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
 									+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° "
+									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° "
 									+ "[p,u]         Fase B: " + String.format("%.4f", magCorrientePuntoFallaFaseB)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "° "
+									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° "
 									+ "[p,u]         Fase C: " + String.format("%.4f", magCorrientePuntoFallaFaseC)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "° " + "[p,u]"
+									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
 									+ "\nCorriente/Fase Post-Falla:  " + "\nFase A: "
 									+ String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseA()) + "[p,u]"
 									+ "         Fase B: "
@@ -1071,7 +1071,7 @@ public class SPController implements Initializable {
 								Stage sta = new Stage();
 
 								sta.setScene(dad);
-								sta.setTitle("INFORMACIÓN DE TRANSFORMADORES");
+								sta.setTitle("INFORMACIÃN DE TRANSFORMADORES");
 								sta.setResizable(false);
 								sta.initModality(Modality.APPLICATION_MODAL);
 								sta.showAndWait();
@@ -1111,7 +1111,7 @@ public class SPController implements Initializable {
 								Scene dad = new Scene(infoCarga);
 								Stage sta = new Stage();
 								sta.setScene(dad);
-								sta.setTitle("INFORMACIÓN DE CARGAS");
+								sta.setTitle("INFORMACIÃN DE CARGAS");
 								sta.setResizable(false);
 								sta.initModality(Modality.APPLICATION_MODAL);
 								sta.showAndWait();
@@ -1141,7 +1141,7 @@ public class SPController implements Initializable {
 								Stage sta = new Stage();
 
 								sta.setScene(dad);
-								sta.setTitle("INFORMACIÓN DEl BANCO");
+								sta.setTitle("INFORMACIÃN DEl BANCO");
 								sta.setResizable(false);
 								sta.initModality(Modality.APPLICATION_MODAL);
 								sta.showAndWait();
@@ -1162,16 +1162,16 @@ public class SPController implements Initializable {
 
 					if (((Circle) tipoElemento).contains(pntMedio)) {
 
-						display.setText("Elemento:   " + conexiones1.get(i).getNombreLinea() + "   Conexión( "
+						display.setText("Elemento:   " + conexiones1.get(i).getNombreLinea() + "   ConexiÃ³n( "
 								+ conexiones1.get(i).getConexionPrimaria() + ","
 								+ conexiones1.get(i).getConexionSecundaria() + " )"
 								+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
 								+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° " + "[p,u]         Fase B: "
+								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° " + "[p,u]         Fase B: "
 								+ String.format("%.4f", magCorrientePuntoFallaFaseB) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "° " + "[p,u]         Fase C: "
+								+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° " + "[p,u]         Fase C: "
 								+ String.format("%.4f", magCorrientePuntoFallaFaseC) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "° " + "[p,u]"
+								+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
 								+ "\nCorriente/Fase Post-Falla:  " + "\nFase A: "
 								+ String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseA()) + "[p,u]"
 								+ "         Fase B: "
@@ -1186,7 +1186,7 @@ public class SPController implements Initializable {
 							Stage sta = new Stage();
 
 							sta.setScene(dad);
-							sta.setTitle("INFORMACIÓN DE TRANSFORMADORES");
+							sta.setTitle("INFORMACIÃN DE TRANSFORMADORES");
 							sta.setResizable(false);
 							sta.initModality(Modality.APPLICATION_MODAL);
 							sta.showAndWait();
@@ -1221,11 +1221,11 @@ public class SPController implements Initializable {
 							display.setText("Elemento:   " + conexiones.get(i).getNombreLinea()
 									+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
 									+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° "
+									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° "
 									+ "[p,u]         Fase B: " + String.format("%.4f", magCorrientePuntoFallaFaseB)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "° "
+									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° "
 									+ "[p,u]         Fase C: " + String.format("%.4f", magCorrientePuntoFallaFaseC)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "° " + "[p,u]"
+									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
 									+ "\nCorriente/Fase Post-Falla:  " + "\nFase A: "
 									+ String.format("%.4f", conexiones.get(i).getCorrienteFallaFaseA()) + "[p,u]"
 									+ "         Fase B: "
@@ -1238,38 +1238,38 @@ public class SPController implements Initializable {
 							display.setText("Elemento:   " + conexiones.get(i).getNombreLinea()
 									+ "\nCorriente punto de falla (Elemento 50%-" + tipoElementoFallado + ")" + ":"
 									+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° "
+									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° "
 									+ "[p,u]         Fase B: " + String.format("%.4f", magCorrientePuntoFallaFaseB)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "° "
+									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° "
 									+ "[p,u]         Fase C: " + String.format("%.4f", magCorrientePuntoFallaFaseC)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "° " + "[p,u]"
-									+ "\nContribucción Barra-" + conexiones.get(i).getBarra1().getNombreBarra() + " : "
+									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
+									+ "\nContribucciÃ³n Barra-" + conexiones.get(i).getBarra1().getNombreBarra() + " : "
 									+ "\nFase A: "
 									+ String.format("%.4f", conexiones.get(i).getBarra1().getContribuccionFallaFaseA())
 									+ " Ang. "
 									+ String.format("%.4f", conexiones.get(i).getBarra1().getAnguloContribucionFaseA())
-									+ "° " + "[p,u]" + "         Fase B: "
+									+ "Â° " + "[p,u]" + "         Fase B: "
 									+ String.format("%.4f", conexiones.get(i).getBarra1().getContribuccionFallaFaseB())
 									+ " Ang. "
 									+ String.format("%.4f", conexiones.get(i).getBarra1().getAnguloContribucionFaseB())
-									+ "° " + "[p,u]" + "         Fase C: "
+									+ "Â° " + "[p,u]" + "         Fase C: "
 									+ String.format("%.4f", conexiones.get(i).getBarra1().getContribuccionFallaFaseC())
 									+ " Ang. "
 									+ String.format("%.4f", conexiones.get(i).getBarra1().getAnguloContribucionFaseC())
-									+ "° " + "[p,u]" + "\nContribucción Barra-"
+									+ "Â° " + "[p,u]" + "\nContribucciÃ³n Barra-"
 									+ conexiones.get(i).getBarra2().getNombreBarra() + " : " + "\nFase A: "
 									+ String.format("%.4f", conexiones.get(i).getBarra2().getContribuccionFallaFaseA())
 									+ " Ang. "
 									+ String.format("%.4f", conexiones.get(i).getBarra2().getAnguloContribucionFaseA())
-									+ "° " + "[p,u]" + "         Fase B: "
+									+ "Â° " + "[p,u]" + "         Fase B: "
 									+ String.format("%.4f", conexiones.get(i).getBarra2().getContribuccionFallaFaseB())
 									+ " Ang. "
 									+ String.format("%.4f", conexiones.get(i).getBarra2().getAnguloContribucionFaseB())
-									+ "° " + "[p,u]" + "         Fase C: "
+									+ "Â° " + "[p,u]" + "         Fase C: "
 									+ String.format("%.4f", conexiones.get(i).getBarra2().getContribuccionFallaFaseC())
 									+ " Ang. "
 									+ String.format("%.4f", conexiones.get(i).getBarra2().getAnguloContribucionFaseC())
-									+ "° " + "[p,u]");
+									+ "Â° " + "[p,u]");
 
 						}
 
@@ -1279,7 +1279,7 @@ public class SPController implements Initializable {
 							Scene dad = new Scene(infolinea);
 							Stage sta = new Stage();
 							sta.setScene(dad);
-							sta.setTitle("INFORMACIÓN DE LÍNEAS");
+							sta.setTitle("INFORMACIÃN DE LÃNEAS");
 							sta.setResizable(false);
 							sta.initModality(Modality.APPLICATION_MODAL);
 							sta.showAndWait();
@@ -1310,19 +1310,19 @@ public class SPController implements Initializable {
 								+ g.getMVarSalidaMin() + "  MVar.OutMax: " + g.getMVarSalidaMax()
 								+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
 								+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "° " + "[p,u]         Fase B: "
+								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° " + "[p,u]         Fase B: "
 								+ String.format("%.4f", magCorrientePuntoFallaFaseB) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "° " + "[p,u]         Fase C: "
+								+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° " + "[p,u]         Fase C: "
 								+ String.format("%.4f", magCorrientePuntoFallaFaseC) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "° " + "[p,u]"
-								+ "\nContribucción de la máquina a la falla: " + "\nFase A: "
+								+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
+								+ "\nContribucciÃ³n de la mÃ¡quina a la falla: " + "\nFase A: "
 								+ String.format("%.2f", conexiongene.get(i).getCorrienteFaseA()) + " Ang. "
-								+ String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseA()) + "° " + "[p,u]"
+								+ String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseA()) + "Â° " + "[p,u]"
 								+ "         Fase B: " + String.format("%.2f", conexiongene.get(i).getCorrienteFaseB())
-								+ " Ang. " + String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseB()) + "° "
+								+ " Ang. " + String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseB()) + "Â° "
 								+ "[p,u]         " + "Fase C: "
 								+ String.format("%.2f", conexiongene.get(i).getCorrienteFaseC()) + " Ang. "
-								+ String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseC()) + "° "
+								+ String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseC()) + "Â° "
 								+ "[p,u]");
 
 						if (e.isAltDown()) {
@@ -1332,7 +1332,7 @@ public class SPController implements Initializable {
 							Stage sta = new Stage();
 
 							sta.setScene(dad);
-							sta.setTitle("INFORMACIÓN DE GENERADORES");
+							sta.setTitle("INFORMACIÃN DE GENERADORES");
 							sta.setResizable(false);
 							sta.initModality(Modality.APPLICATION_MODAL);
 							sta.showAndWait();
@@ -1361,7 +1361,7 @@ public class SPController implements Initializable {
 						
 						CompensadorEstatico compensador= compensadores.get(i);
 						
-						display.setText("Elemento: Compensador Estático " + compensadores.get(i).getNombreCompensador() + " Mvar.Min: "
+						display.setText("Elemento: Compensador EstÃ¡tico " + compensadores.get(i).getNombreCompensador() + " Mvar.Min: "
 								+ compensador.getPotenciaReactivaMin() +" [p,u] "+ " Mvar.Max: " + compensador.getPotenciaReactivaMax()+ " [p,u] "
 							);
 						
@@ -1593,7 +1593,7 @@ public class SPController implements Initializable {
 				Stage sta = new Stage();
 
 				sta.setScene(dad);
-				sta.setTitle("INFORMACIÓN IMPEDANCIA FALLA");
+				sta.setTitle("INFORMACIÃN IMPEDANCIA FALLA");
 				sta.setResizable(false);
 				sta.initModality(Modality.APPLICATION_MODAL);
 				sta.showAndWait();
@@ -1631,7 +1631,7 @@ public class SPController implements Initializable {
 						Stage sta = new Stage();
 
 						sta.setScene(dad);
-						sta.setTitle("INFORMACIÓN IMPEDANCIA FALLA");
+						sta.setTitle("INFORMACIÃN IMPEDANCIA FALLA");
 						sta.setResizable(false);
 						sta.initModality(Modality.APPLICATION_MODAL);
 						sta.showAndWait();
@@ -1677,7 +1677,7 @@ public class SPController implements Initializable {
 						Stage sta = new Stage();
 
 						sta.setScene(dad);
-						sta.setTitle("INFORMACIÓN IMPEDANCIA FALLA");
+						sta.setTitle("INFORMACIÃN IMPEDANCIA FALLA");
 						sta.setResizable(false);
 						sta.initModality(Modality.APPLICATION_MODAL);
 						sta.showAndWait();
@@ -2731,7 +2731,7 @@ public class SPController implements Initializable {
 				fallaLineaALinea();
 		} else {
 
-			JOptionPane.showMessageDialog(null, "POR FAVOR UBIQUE LA FALLA YA SEA SOBRE UNA BARRA O LÍNEA");
+			JOptionPane.showMessageDialog(null, "POR FAVOR UBIQUE LA FALLA YA SEA SOBRE UNA BARRA O LÃNEA");
 		}
 
 	}

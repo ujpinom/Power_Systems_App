@@ -942,7 +942,7 @@ public class SPController implements Initializable {
 							+ String.format("%.4f", b.getAnguloVoltajeFaseC()) + "Â° " + "[p,u]");
 				}
 
-				if (e.isAltDown()) {
+				if (e.isShiftDown()) {
 
 					InfoBarras infoBarra = new InfoBarras(b);
 					Scene dad = new Scene(infoBarra);
@@ -1043,7 +1043,7 @@ public class SPController implements Initializable {
 						Point2D pntmedio = conexiones1.get(i).getPuntoMedio();
 
 						if (((Line) tipoElemento).contains(pntmedio)) {
-
+							System.out.println("ENTRO AQUI EN TRAFO");
 							display.setText("Elemento:   " + conexiones1.get(i).getNombreLinea() + "   ConexiÃ³n( "
 									+ conexiones1.get(i).getConexionPrimaria() + ","
 									+ conexiones1.get(i).getConexionSecundaria() + " )"
@@ -1064,8 +1064,8 @@ public class SPController implements Initializable {
 							bandera1 = true;
 
 							
-							if (e.isAltDown()) {
-
+							if (e.isShiftDown()) {
+								System.out.println("ENTRO AQUIIII");
 								InfoTrafo infotrafo = new InfoTrafo(conexiones1.get(i));
 								Scene dad = new Scene(infotrafo);
 								Stage sta = new Stage();
@@ -1105,7 +1105,7 @@ public class SPController implements Initializable {
 
 							bandera2 = true;
 
-							if (e.isAltDown()) {
+							if (e.isShiftDown()) {
 
 								InfoCarga infoCarga = new InfoCarga(cargas.get(i));
 								Scene dad = new Scene(infoCarga);
@@ -1134,7 +1134,7 @@ public class SPController implements Initializable {
 							display.setText("Elemento:   " + bancos.get(i).getNombreCarga()
 									+ "\nPotencia Reactiva [MVars]: " + bancos.get(i).getPotenciaReactiva());
 
-							if (e.isAltDown()) {
+							if (e.isShiftDown()) {
 
 								infoBanco infoBanco = new infoBanco(bancos.get(i));
 								Scene dad = new Scene(infoBanco);
@@ -1179,7 +1179,7 @@ public class SPController implements Initializable {
 								+ "Fase C: " + String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseC())
 								+ "[p,u]");
 
-						if (e.isAltDown()) {
+						if (e.isShiftDown()) {
 
 							InfoTrafo infotrafo = new InfoTrafo(conexiones1.get(i));
 							Scene dad = new Scene(infotrafo);
@@ -1215,6 +1215,19 @@ public class SPController implements Initializable {
 					Point2D pntMedio = conexiones.get(i).getPuntomedio();
 
 					if (((Rectangle) tipoElemento).contains(pntMedio)) {
+
+						if (e.isShiftDown()) {
+
+							InfoLineas infolinea = new InfoLineas(conexiones.get(i));
+							Scene dad = new Scene(infolinea);
+							Stage sta = new Stage();
+							sta.setScene(dad);
+							sta.setTitle("INFORMACIÃN DE LÃNEAS");
+							sta.setResizable(false);
+							sta.initModality(Modality.APPLICATION_MODAL);
+							sta.showAndWait();
+
+						}
 
 						if (!fallaEnLinea || conexiones.get(i) != lineaFallada) {
 
@@ -1273,18 +1286,6 @@ public class SPController implements Initializable {
 
 						}
 
-						if (e.isAltDown()) {
-
-							InfoLineas infolinea = new InfoLineas(conexiones.get(i));
-							Scene dad = new Scene(infolinea);
-							Stage sta = new Stage();
-							sta.setScene(dad);
-							sta.setTitle("INFORMACIÃN DE LÃNEAS");
-							sta.setResizable(false);
-							sta.initModality(Modality.APPLICATION_MODAL);
-							sta.showAndWait();
-
-						}
 						break;
 
 					}
@@ -1325,7 +1326,7 @@ public class SPController implements Initializable {
 								+ String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseC()) + "Â° "
 								+ "[p,u]");
 
-						if (e.isAltDown()) {
+						if (e.isShiftDown()) {
 
 							InfoGeneradores infog = new InfoGeneradores(conexiongene.get(i));
 							Scene dad = new Scene(infog);
@@ -1365,7 +1366,7 @@ public class SPController implements Initializable {
 								+ compensador.getPotenciaReactivaMin() +" [p,u] "+ " Mvar.Max: " + compensador.getPotenciaReactivaMax()+ " [p,u] "
 							);
 						
-						if(e.isAltDown()) {
+						if(e.isShiftDown()) {
 							
 							
 							FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("CompensadorEstaticoFXML.fxml"));

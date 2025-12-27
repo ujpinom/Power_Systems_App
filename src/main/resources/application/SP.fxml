@@ -6,6 +6,8 @@
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
@@ -13,268 +15,171 @@
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="675.0" prefWidth="1056.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SPController">
-  <columnConstraints>
-    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="233.0" minWidth="10.0" prefWidth="206.0" />
-    <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="842.0" />
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints maxHeight="301.0" minHeight="3.0" prefHeight="138.0" vgrow="SOMETIMES" />
-    <RowConstraints maxHeight="-Infinity" minHeight="10.0" prefHeight="473.0" vgrow="SOMETIMES" />
-      <RowConstraints maxHeight="-Infinity" minHeight="0.0" prefHeight="43.0" vgrow="SOMETIMES" />
-  </rowConstraints>
-   <children>
-      <AnchorPane fx:id="areaDibujo" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onMouseClicked="#mouseClicked" onMouseDragged="#dragEvent" onMouseMoved="#mouseEvent" prefHeight="354.0" prefWidth="793.0" style="-fx-background-color: white;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <VBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="443.0" prefWidth="210.0" spacing="8.0" style="-fx-background-color: #90a4ae;" GridPane.rowIndex="1">
-         <padding>
-            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-         </padding>
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SPController">
+   
+   <!-- TOP: RIBBON INTERFACE -->
+   <top>
+      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+          <!-- TAB 1: HOME (Edit & General) -->
+          <Tab text="Home">
+            <content>
+              <HBox spacing="10.0" styleClass="tab-content-area">
+                 <children>
+                    <!-- Group: Edit Actions -->
+                    <HBox styleClass="ribbon-group">
+                       <children>
+                          <Button fx:id="undo1" mnemonicParsing="false" onAction="#borrarUltimoElemento" text="Undo" />
+                          <Button fx:id="undo" mnemonicParsing="false" onAction="#limpiarArea" text="Clear Canvas" />
+                       </children>
+                    </HBox>
+                     <!-- Group: Quick Run -->
+                    <HBox styleClass="ribbon-group">
+                        <children>
+                            <Button fx:id="ejecutar" mnemonicParsing="false" onAction="#ejecutar" text="Run Calculation" style="-fx-font-weight: bold;" />
+                        </children>
+                    </HBox>
+                 </children>
+              </HBox>
+            </content>
+          </Tab>
+          
+          <!-- TAB 2: ANALYSIS (Simulation Settings) -->
+          <Tab text="Analysis">
+            <content>
+              <HBox spacing="10.0" styleClass="tab-content-area">
+                 <children>
+                    <!-- Group: Study Type -->
+                    <HBox styleClass="ribbon-group">
+                       <children>
+                          <MenuButton fx:id="flujos" mnemonicParsing="false" text="Flow Method">
+                            <items>
+                              <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Newton Raphson" />
+                              <MenuItem fx:id="GaussSeidel" mnemonicParsing="false" onAction="#GaussSeidel" text="Gauss-Seidel" />
+                            </items>
+                          </MenuButton>
+                          <MenuButton fx:id="tiposFalla" mnemonicParsing="false" text="Short Circuit">
+                            <items>
+                              <MenuItem fx:id="fallattrifa" mnemonicParsing="false" onAction="#fallaTrifasica" text="3-Phase" />
+                              <MenuItem fx:id="fallaMono" mnemonicParsing="false" onAction="#fallaMono" text="Line-Ground" />
+                              <MenuItem fx:id="fallaLaL" mnemonicParsing="false" onAction="#fallaLaL" text="Line-Line" />
+                              <MenuItem fx:id="fallaLLT" mnemonicParsing="false" onAction="#fallaLLTierra" text="LL-Ground" />
+                            </items>
+                          </MenuButton>
+                       </children>
+                    </HBox>
+                    
+                    <!-- Group: Visualization -->
+                     <HBox styleClass="ribbon-group">
+                       <children>
+                          <MenuButton fx:id="visualizacion" mnemonicParsing="false" text="Reports">
+                             <items>
+                                <MenuItem fx:id="matrizSecuencia" mnemonicParsing="false" onAction="#fallaTrifasica" text="Sequence Matrices" />
+                                <MenuItem fx:id="fallaTabular" mnemonicParsing="false" onAction="#fallaMono" text="Fault Report" />
+                                <MenuItem fx:id="flujoTabular" mnemonicParsing="false" onAction="#fallaLaL" text="Flow Report" />
+                             </items>
+                          </MenuButton>
+                       </children>
+                    </HBox>
+                 </children>
+              </HBox>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </top>
+
+   <!-- LEFT: TOOLBOX SIDEBAR -->
+   <left>
+      <VBox prefWidth="90.0" spacing="5.0" style="-fx-background-color: #f0f0f0; -fx-border-color: transparent #9e9e9e transparent transparent;" BorderPane.alignment="CENTER">
          <children>
-            <TitledPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="180.0" prefWidth="216.0" style="-fx-border-color: black;" text="Control" textFill="#d35400">
-               <font>
-                  <Font name="Arial Bold Italic" size="18.0" />
-               </font>
-               <content>
-                  <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="144.0" prefWidth="109.0" spacing="5.0" style="-fx-background-color: #cfd8dc;">
-                     <children>
-                        <Button fx:id="ejecutar" maxWidth="-Infinity" mnemonicParsing="false" onAction="#ejecutar" prefHeight="41.0" prefWidth="123.0" style="-fx-background-image: url(&quot;/application/ic_play_arrow_128_28560.png&quot;); -fx-background-repeat: no-repeat; -fx-font-family: &quot;Helvetica&quot;; -fx-background-position: left;" stylesheets="@application.css" text="Ejecutar" textAlignment="RIGHT" textFill="#311c09">
-                           <font>
-                              <Font name="Arial Bold" size="18.0" />
-                           </font>
-                           <tooltip>
-                              <Tooltip text="Empty Tooltip" />
-                           </tooltip>
-                           <tooltip>
-                              <Tooltip text="Empty Tooltip" />
-                           </tooltip>
-                           <tooltip>
-                              <Tooltip text="Empty Tooltip" />
-                           </tooltip>
-                           <tooltip>
-                              <Tooltip text="Empty Tooltip" />
-                           </tooltip>
-                           <tooltip>
-                              <Tooltip text="Empty Tooltip" />
-                           </tooltip>
-                           <tooltip>
-                              <Tooltip text="Empty Tooltip" />
-                           </tooltip>
-                           <tooltip>
-                              <Tooltip text="Ejecutar" />
-                           </tooltip>
-                        </Button>
-                        <Separator prefHeight="0.0" prefWidth="270.0" />
-                        <HBox alignment="TOP_CENTER" spacing="12.0">
-                           <children>
-                              <Button fx:id="undo1" contentDisplay="TOP" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#borrarUltimoElemento" prefHeight="56.0" prefWidth="62.0" style="-fx-background-image: url(&quot;/application/circular-arrow41_41902.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css">
-                                 <tooltip>
-                                    <Tooltip text="Borrar Último Elemento" />
-                                 </tooltip>
-                              </Button>
-                              <Button fx:id="undo" mnemonicParsing="false" onAction="#limpiarArea" prefHeight="56.0" prefWidth="65.0" style="-fx-background-image: url(&quot;/application/gnome_edit_clear.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css">
-                                 <tooltip>
-                                    <Tooltip text="Limpiar" />
-                                 </tooltip>
-                              </Button>
-                           </children>
-                        </HBox>
-                     </children>
-                  </VBox>
-               </content>
-            </TitledPane>
-            <TitledPane maxWidth="-Infinity" prefHeight="270.0" prefWidth="216.0" style="-fx-border-color: black;" text="Elementos" textFill="#d35400">
-               <font>
-                  <Font name="Arial Bold Italic" size="18.0" />
-               </font>
-               <content>
-                  <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="236.0" prefWidth="182.0" spacing="8.0" style="-fx-background-color: #cfd8dc;">
-                     <children>
-                        <HBox alignment="CENTER" spacing="20.0">
-                           <children>
-                              <ToggleButton fx:id="linea" mnemonicParsing="false" onAction="#lineaSelected" prefHeight="39.0" prefWidth="55.0" style="-fx-background-image: url(&quot;/application/minus-gross-horizontal-straight-line-symbol_icon-icons.com_74137.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css">
-                                 <toggleGroup>
-                                    <ToggleGroup fx:id="group" />
-                                 </toggleGroup>
-                                 <tooltip>
-                                    <Tooltip text="Línea" />
-                                 </tooltip>
-                              </ToggleButton>
-                              <ToggleButton fx:id="trafo" mnemonicParsing="false" onAction="#trafoSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;/application/transformer_icon_180260.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: left;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Transformador" />
-                                 </tooltip></ToggleButton>
-                           </children>
-                        </HBox>
-                        <HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="20.0">
-                           <children>
-                              <ToggleButton fx:id="barra" mnemonicParsing="false" onAction="#barraSelected" prefHeight="39.0" prefWidth="55.0" style="-fx-background-image: url(&quot;/application/rod_barbells-48_44503.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Barra" />
-                                 </tooltip></ToggleButton>
-                              <ToggleButton fx:id="carga" mnemonicParsing="false" onAction="#cargaSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;/application/downloadupdates_theapplication_thearrow_descarg_2915.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Carga" />
-                                 </tooltip></ToggleButton>
-                           </children>
-                        </HBox>
-                        <HBox alignment="CENTER" spacing="20.0">
-                           <children>
-                              <ToggleButton fx:id="banco" mnemonicParsing="false" onAction="#bancoSelected" prefHeight="39.0" prefWidth="56.0" style="-fx-background-image: url(&quot;/application/file_type_capacitor_icon_130703.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Banco" />
-                                 </tooltip></ToggleButton>
-                              <ToggleButton fx:id="generador" mnemonicParsing="false" onAction="#genSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;/application/flux_icon_177813.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Generador" />
-                                 </tooltip></ToggleButton>
-                           </children>
-                        </HBox>
-                        <HBox alignment="CENTER" layoutX="24.0" layoutY="131.0" spacing="20.0">
-                           <children>
-                              <ToggleButton fx:id="Compensador" mnemonicParsing="false" onAction="#compensadorSelected" prefHeight="39.0" prefWidth="56.0" style="-fx-background-image: url(&quot;/application/alpha_c_circle_outline_icon_140018.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Compensador" />
-                                 </tooltip>
-                              </ToggleButton>
-                              <ToggleButton fx:id="generador1" mnemonicParsing="false" onAction="#genSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;/application/flux_icon_177813.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Generador" />
-                                 </tooltip>
-                              </ToggleButton>
-                           </children>
-                        </HBox>
-                        <HBox alignment="CENTER">
-                           <children>
-                              <ToggleButton fx:id="none" mnemonicParsing="false" onAction="#editionSelected" prefHeight="39.0" prefWidth="54.0" style="-fx-background-image: url(&quot;/application/pencil_79263.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center;" stylesheets="@application.css" toggleGroup="$group">
-                                 <tooltip>
-                                    <Tooltip text="Modo Edición" />
-                                 </tooltip>
-                              </ToggleButton>
-                           </children>
-                        </HBox>
-                     </children>
-                  </VBox>
-               </content>
-            </TitledPane>
+            <Label text="Toolbox" style="-fx-font-weight: bold; -fx-padding: 5; -fx-alignment: CENTER;" maxWidth="Infinity" />
+            <Separator />
+            <VBox spacing="5.0" alignment="TOP_CENTER" style="-fx-padding: 5;">
+                 <ToggleButton fx:id="none" mnemonicParsing="false" onAction="#editionSelected" text="Select" prefWidth="70.0">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="group" />
+                     </toggleGroup>
+                     <tooltip><Tooltip text="Selection/Edit Mode" /></tooltip>
+                  </ToggleButton>
+                  <Separator />
+                  <ToggleButton fx:id="barra" mnemonicParsing="false" onAction="#barraSelected" text="Bus" toggleGroup="$group" prefWidth="70.0">
+                     <tooltip><Tooltip text="Add Bus" /></tooltip>
+                  </ToggleButton>
+                  <ToggleButton fx:id="linea" mnemonicParsing="false" onAction="#lineaSelected" text="Line" toggleGroup="$group" prefWidth="70.0">
+                     <tooltip><Tooltip text="Add Line" /></tooltip>
+                  </ToggleButton>
+                  <ToggleButton fx:id="trafo" mnemonicParsing="false" onAction="#trafoSelected" text="Trafo" toggleGroup="$group" prefWidth="70.0">
+                     <tooltip><Tooltip text="Add Transformer" /></tooltip>
+                  </ToggleButton>
+                  <ToggleButton fx:id="carga" mnemonicParsing="false" onAction="#cargaSelected" text="Load" toggleGroup="$group" prefWidth="70.0">
+                     <tooltip><Tooltip text="Add Load" /></tooltip>
+                  </ToggleButton>
+                  <ToggleButton fx:id="generador" mnemonicParsing="false" onAction="#genSelected" text="Gen" toggleGroup="$group" prefWidth="70.0">
+                     <tooltip><Tooltip text="Add Generator" /></tooltip>
+                  </ToggleButton>
+                  <ToggleButton fx:id="banco" mnemonicParsing="false" onAction="#bancoSelected" text="Cap" toggleGroup="$group" prefWidth="70.0">
+                     <tooltip><Tooltip text="Add Capacitor Bank" /></tooltip>
+                  </ToggleButton>
+                   <ToggleButton fx:id="Compensador" mnemonicParsing="false" onAction="#compensadorSelected" text="SVC" toggleGroup="$group" prefWidth="70.0">
+                     <tooltip><Tooltip text="Add Static Compensator" /></tooltip>
+                  </ToggleButton>
+            </VBox>
          </children>
       </VBox>
-      <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="16.0" prefWidth="1048.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+   </left>
+
+   <!-- CENTER: CANVAS -->
+   <center>
+      <AnchorPane fx:id="areaDibujo" onMouseClicked="#mouseClicked" onMouseDragged="#dragEvent" onMouseMoved="#mouseEvent" BorderPane.alignment="CENTER" />
+   </center>
+
+   <!-- BOTTOM: OUTPUT & STATUS -->
+   <bottom>
+      <VBox BorderPane.alignment="CENTER">
          <children>
-            <TextField fx:id="infoElemento" disable="true" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" opacity="0.95" prefHeight="28.0" prefWidth="367.0" text="Elemento: " />
-            <TextField fx:id="infoTare" disable="true" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" opacity="0.95" prefHeight="39.0" prefWidth="354.0" text="Tarea: " />
-            <TextField fx:id="infoPosiMouse" disable="true" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" opacity="0.98" prefHeight="43.0" prefWidth="323.0" text="X=     Y=     " />
+             <!-- Status Row -->
+             <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-width: 1 0 0 0; -fx-border-color: #9e9e9e;">
+                 <children>
+                    <Label text="Element:" styleClass="status-label" />
+                    <TextField fx:id="infoElemento" disable="true" editable="false" prefWidth="200.0" text="-" />
+                    <Label text="Task:" styleClass="status-label" />
+                    <TextField fx:id="infoTare" disable="true" editable="false" prefWidth="200.0" text="Idle" />
+                    <Label text="Base:" styleClass="status-label" />
+                    <TextField fx:id="MVAbase" alignment="CENTER" disable="true" editable="false" prefWidth="80.0" text="100 MVA" />
+                    <Separator orientation="VERTICAL" />
+                    <TextField fx:id="infoPosiMouse" disable="true" editable="false" prefWidth="150.0" text="X=0.0 Y=0.0" style="-fx-background-color: transparent; -fx-border-color: transparent;" alignment="CENTER_RIGHT" />
+                 </children>
+                 <padding>
+                    <Insets top="2" right="5" bottom="2" left="5"/>
+                 </padding>
+             </HBox>
+             
+             <!-- Collapsible/Resizable Log Area (Using TitledPane for structure) -->
+             <TitledPane text="Output Logs &amp; Results" expanded="true" animated="false">
+                <content>
+                    <HBox spacing="5.0" prefHeight="120.0">
+                        <children>
+                             <VBox HBox.hgrow="ALWAYS">
+                                <Label text="System Log" style="-fx-font-size: 10px; -fx-text-fill: #666;" />
+                                <TextArea fx:id="display" editable="false" wrapText="true" VBox.vgrow="ALWAYS" />
+                             </VBox>
+                             <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Calculation Results" style="-fx-font-size: 10px; -fx-text-fill: #666;" />
+                                <TextArea fx:id="infoFlujo" editable="false" VBox.vgrow="ALWAYS" />
+                             </VBox>
+                        </children>
+                    </HBox>
+                </content>
+             </TitledPane>
          </children>
-      </HBox>
-      <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="154.0" prefWidth="210.0" spacing="1.0" style="-fx-background-color: #90a4ae; -fx-border-color: #90a4ae; -fx-border-width: 3;">
-         <children>
-            <VBox prefHeight="200.0" prefWidth="100.0" spacing="3.0">
-               <children>
-                  <MenuButton fx:id="tiposFalla" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="68.0" prefWidth="100.0" style="-fx-background-image: url(&quot;/application/iconfinder-weather-weather-forecast-lightning-storm-energy-3859139_121230%20(2).png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Fallas" textFill="WHITE">
-                    <items>
-                      <MenuItem fx:id="fallattrifa" mnemonicParsing="false" onAction="#fallaTrifasica" text="Trifásica Balanceada" />
-                      <MenuItem fx:id="fallaMono" mnemonicParsing="false" onAction="#fallaMono" text="Línea a tierra" />
-                        <MenuItem fx:id="fallaLaL" mnemonicParsing="false" onAction="#fallaLaL" text="Línea a Línea" />
-                        <MenuItem fx:id="fallaLLT" mnemonicParsing="false" onAction="#fallaLLTierra" text="Línea-Línea a tierra" />
-                    </items>
-                     <font>
-                        <Font name="Arial Bold Italic" size="17.0" />
-                     </font>
-                     <tooltip>
-                        <Tooltip text="Seleccionar Tipo Falla" />
-                     </tooltip>
-                  </MenuButton>
-                  <MenuButton fx:id="visualizacion" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="70.0" prefWidth="100.0" style="-fx-background-image: url(&quot;/application/vision_view_eye_icon_153887.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Visualización" textFill="WHITE">
-                     <font>
-                        <Font name="Arial Bold Italic" size="17.0" />
-                     </font>
-                     <items>
-                        <MenuItem fx:id="matrizSecuencia" mnemonicParsing="false" onAction="#fallaTrifasica" text="Matrices de secuencia" />
-                        <MenuItem fx:id="fallaTabular" mnemonicParsing="false" onAction="#fallaMono" text="Fallas forma tabular" />
-                        <MenuItem fx:id="flujoTabular" mnemonicParsing="false" onAction="#fallaLaL" text="Flujos forma tabular" />
-                     </items>
-                     <tooltip>
-                        <Tooltip text="Visualización" />
-                     </tooltip>
-                  </MenuButton>
-               </children>
-               <HBox.margin>
-                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
-               </HBox.margin>
-            </VBox>
-            <VBox prefHeight="1.0" prefWidth="100.0">
-               <children>
-                  <MenuButton fx:id="flujos" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" popupSide="RIGHT" prefHeight="69.0" prefWidth="99.0" style="-fx-background-image: url(&quot;/application/transmission_spread_transfer_move_flow_coronavirus_contagion_icon_141087%20(1).png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: top center; -fx-background-color: #85C1E9; -fx-background-radius: 6,5; -fx-background-insets: 0,1; -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );" text="Flujos" textFill="WHITE">
-                    <items>
-                      <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Newton Raphson (Recomendado)" />
-                      <MenuItem fx:id="GaussSeidel" mnemonicParsing="false" onAction="#GaussSeidel" text="Gauss-Seidel" />
-                    </items>
-                     <font>
-                        <Font name="Arial Bold Italic" size="17.0" />
-                     </font>
-                     <tooltip>
-                        <Tooltip text="Seleccionar Modo Cálculo" />
-                     </tooltip>
-                  </MenuButton>
-               </children>
-               <HBox.margin>
-                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
-               </HBox.margin></VBox>
-         </children>
-         <GridPane.margin>
-            <Insets top="3.0" />
-         </GridPane.margin>
-      </HBox>
-      <HBox maxHeight="-Infinity" prefHeight="154.0" prefWidth="840.0" style="-fx-background-color: #90a4ae; -fx-border-color: #90a4ae; -fx-border-width: 3;" GridPane.columnIndex="1">
-         <children>
-            <TextArea fx:id="display" editable="false" prefHeight="139.0" prefWidth="601.0" style="-fx-background-color: #19D518;">
-               <padding>
-                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-               </padding>
-               <HBox.margin>
-                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-               </HBox.margin>
-               <font>
-                  <Font name="Arial Bold" size="11.0" />
-               </font>
-               <tooltip>
-                  <Tooltip text="Display" />
-               </tooltip>
-            </TextArea>
-            <VBox prefHeight="149.0" prefWidth="87.0">
-               <children>
-                  <Label text="S_BASE" textFill="WHITE">
-                     <font>
-                        <Font name="System Bold" size="12.0" />
-                     </font>
-                  </Label>
-                  <TextField fx:id="MVAbase" alignment="CENTER" disable="true" editable="false" focusTraversable="false" maxWidth="1.7976931348623157E308" opacity="0.99" prefHeight="28.0" prefWidth="63.0" text="100 MVA">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </TextField>
-                  <Separator disable="true" prefHeight="11.0" prefWidth="64.0" style="-fx-border-color: transparent;" />
-                  <Label prefHeight="17.0" prefWidth="86.0" text="Info-Flujo" textFill="WHITE">
-                     <font>
-                        <Font name="System Bold" size="12.0" />
-                     </font>
-                  </Label>
-                  <TextArea fx:id="infoFlujo" editable="false" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white;">
-                     <font>
-                        <Font name="System Bold" size="9.5" />
-                     </font>
-                  </TextArea>
-               </children>
-            </VBox>
-         </children></HBox>
-   </children>
-   <padding>
-      <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-   </padding>
-</GridPane>
+      </VBox>
+   </bottom>
+
+</BorderPane>

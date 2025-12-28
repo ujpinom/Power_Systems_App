@@ -20,72 +20,112 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.transform.Scale?>
+<?import javafx.scene.layout.StackPane?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SPController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1280.0" stylesheets="@application.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SPController">
    
    <!-- TOP: RIBBON INTERFACE -->
    <top>
-      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" style="-fx-background-color: #f4f4f4; -fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;">
         <tabs>
-          <!-- TAB 1: HOME (Edit & General) -->
-          <Tab text="Home">
+          
+          <Tab text="Inicio">
+            <graphic>
+                <SVGPath content="M10 20 v-6 h4 v6 h5 v-8 h3 L12 3 2 12 h3 v8 z" fill="#555555" scaleX="0.7" scaleY="0.7"/>
+            </graphic>
             <content>
-              <HBox spacing="10.0" styleClass="tab-content-area">
+              <HBox spacing="15.0" style="-fx-padding: 10; -fx-alignment: CENTER_LEFT;">
                  <children>
-                    <!-- Group: Edit Actions -->
-                    <HBox styleClass="ribbon-group">
-                       <children>
-                          <Button fx:id="undo1" mnemonicParsing="false" onAction="#borrarUltimoElemento" text="Undo" />
-                          <Button fx:id="undo" mnemonicParsing="false" onAction="#limpiarArea" text="Clear Canvas" />
-                       </children>
+                    
+                    <HBox spacing="5" style="-fx-alignment: CENTER_LEFT;">
+                          
+                          <Button fx:id="undo1" mnemonicParsing="false" onAction="#borrarUltimoElemento" text="Deshacer" contentDisplay="TOP">
+                              <graphic>
+                                  <SVGPath content="M12 5 V1 L7 6 L12 11 V7 C15.31 7 18 9.69 18 13 C18 16.31 15.31 19 12 19 C8.69 19 6 16.31 6 13 H4 C4 17.42 7.58 21 12 21 C16.42 21 20 17.42 20 13 C20 8.58 16.42 5 12 5 Z" 
+                                           fill="#555555" scaleX="0.8" scaleY="0.8"/>
+                              </graphic>
+                              <tooltip><Tooltip text="Deshacer última acción" /></tooltip>
+                          </Button>
+
+                          <Button fx:id="undo" mnemonicParsing="false" onAction="#limpiarArea" text="Limpiar Todo" contentDisplay="TOP">
+                              <graphic>
+                                  <SVGPath content="M15 4 V3 H9 V4 H4 V6 H20 V4 H15 Z M6 8 V21 H18 V8 H6 Z" 
+                                           fill="#555555" scaleX="0.8" scaleY="0.8"/>
+                              </graphic>
+                              <tooltip><Tooltip text="Borrar todo el diagrama" /></tooltip>
+                          </Button>
                     </HBox>
-                     <!-- Group: Quick Run -->
-                    <HBox styleClass="ribbon-group">
-                        <children>
-                            <Button fx:id="ejecutar" mnemonicParsing="false" onAction="#ejecutar" text="Run Calculation" style="-fx-font-weight: bold;" />
-                        </children>
+
+                    <Separator orientation="VERTICAL" />
+
+                    <HBox spacing="5" style="-fx-alignment: CENTER_LEFT;">
+                       
+                       <Button fx:id="ejecutar" mnemonicParsing="false" onAction="#ejecutar" text="Ejecutar Flujo" contentDisplay="TOP" 
+                               style="-fx-font-weight: bold; -fx-base: #e6ffe6;">
+                            <graphic>
+                                <SVGPath content="M8 5 V19 L19 12 Z" fill="#009900" stroke="#006600" strokeWidth="1" scaleX="0.9" scaleY="0.9"/>
+                            </graphic>
+                            <tooltip><Tooltip text="Correr Simulación de Flujo de Potencia" /></tooltip>
+                       </Button>
                     </HBox>
                  </children>
               </HBox>
             </content>
           </Tab>
-          
-          <!-- TAB 2: ANALYSIS (Simulation Settings) -->
-          <Tab text="Analysis">
+   
+          <Tab text="Análisis">
+            <graphic>
+                <SVGPath content="M19 3 H5 C3.9 3 3 3.9 3 5 V19 C3 20.1 3.9 21 5 21 H19 C20.1 21 21 20.1 21 19 V5 C21 3.9 20.1 3 19 3 Z M9 17 H7 V10 H9 V17 Z M13 17 H11 V7 H13 V17 Z M17 17 H15 V13 H17 V17 Z" fill="#555555" scaleX="0.7" scaleY="0.7"/>
+            </graphic>
             <content>
-              <HBox spacing="10.0" styleClass="tab-content-area">
+              <HBox spacing="15.0" style="-fx-padding: 10; -fx-alignment: CENTER_LEFT;">
                  <children>
-                    <!-- Group: Study Type -->
-                    <HBox styleClass="ribbon-group">
-                       <children>
-                          <MenuButton fx:id="flujos" mnemonicParsing="false" text="Flow Method">
-                            <items>
-                              <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Newton Raphson" />
-                              <MenuItem fx:id="GaussSeidel" mnemonicParsing="false" onAction="#GaussSeidel" text="Gauss-Seidel" />
-                            </items>
-                          </MenuButton>
-                          <MenuButton fx:id="tiposFalla" mnemonicParsing="false" text="Short Circuit">
-                            <items>
-                              <MenuItem fx:id="fallattrifa" mnemonicParsing="false" onAction="#fallaTrifasica" text="3-Phase" />
-                              <MenuItem fx:id="fallaMono" mnemonicParsing="false" onAction="#fallaMono" text="Line-Ground" />
-                              <MenuItem fx:id="fallaLaL" mnemonicParsing="false" onAction="#fallaLaL" text="Line-Line" />
-                              <MenuItem fx:id="fallaLLT" mnemonicParsing="false" onAction="#fallaLLTierra" text="LL-Ground" />
-                            </items>
-                          </MenuButton>
-                       </children>
-                    </HBox>
                     
-                    <!-- Group: Visualization -->
-                     <HBox styleClass="ribbon-group">
-                       <children>
-                          <MenuButton fx:id="visualizacion" mnemonicParsing="false" text="Reports">
+                    <HBox spacing="10" style="-fx-alignment: CENTER_LEFT;">
+                       
+                          <MenuButton fx:id="flujos" mnemonicParsing="false" text="Método de Flujo">
+                             <graphic>
+                                 <SVGPath content="M4 16 A3 3 0 1 0 4 22 A3 3 0 1 0 4 16 M10 4 A3 3 0 1 0 10 10 A3 3 0 1 0 10 4 M20 12 A3 3 0 1 0 20 18 A3 3 0 1 0 20 12 M7 18 L10 18 L18 16 M12 9 L18 13" 
+                                          fill="TRANSPARENT" stroke="#333" strokeWidth="2" scaleX="0.7" scaleY="0.7"/>
+                             </graphic>
                              <items>
-                                <MenuItem fx:id="matrizSecuencia" mnemonicParsing="false" onAction="#fallaTrifasica" text="Sequence Matrices" />
-                                <MenuItem fx:id="fallaTabular" mnemonicParsing="false" onAction="#fallaMono" text="Fault Report" />
-                                <MenuItem fx:id="flujoTabular" mnemonicParsing="false" onAction="#fallaLaL" text="Flow Report" />
+                                  <MenuItem fx:id="Action1" mnemonicParsing="false" onAction="#Action1" text="Newton-Raphson" />
+                                  <MenuItem fx:id="GaussSeidel" mnemonicParsing="false" onAction="#GaussSeidel" text="Gauss-Seidel" />
                              </items>
                           </MenuButton>
-                       </children>
+
+                          <MenuButton fx:id="tiposFalla" mnemonicParsing="false" text="Cortocircuito">
+                            <graphic>
+                                <SVGPath content="M7 2 V13 H10 V22 L17 10 H13 L17 2 Z" fill="#FFAA00" stroke="#CC8800" strokeWidth="1" scaleX="0.7" scaleY="0.7"/>
+                            </graphic>
+                            <items>
+                              <MenuItem fx:id="fallattrifa" mnemonicParsing="false" onAction="#fallaTrifasica" text="Trifásica (3Φ)" />
+                              <MenuItem fx:id="fallaMono" mnemonicParsing="false" onAction="#fallaMono" text="Monofásica (L-G)" />
+                              <MenuItem fx:id="fallaLaL" mnemonicParsing="false" onAction="#fallaLaL" text="Línea a Línea (L-L)" />
+                              <MenuItem fx:id="fallaLLT" mnemonicParsing="false" onAction="#fallaLLTierra" text="L-L a Tierra (LL-G)" />
+                            </items>
+                          </MenuButton>
+                    </HBox>
+                    
+                    <Separator orientation="VERTICAL" />
+
+                    <HBox spacing="10" style="-fx-alignment: CENTER_LEFT;">
+                          
+                          <MenuButton fx:id="visualizacion" mnemonicParsing="false" text="Reportes">
+                             <graphic>
+                                 <SVGPath content="M14 2 H6 C4.9 2 4 2.9 4 4 V20 C4 21.1 4.9 22 6 22 H18 C19.1 22 20 21.1 20 20 V8 L14 2 Z M13 9 V3.5 L18.5 9 H13 Z M8 12 H15 V14 H8 V12 Z M8 16 H15 V18 H8 V16 Z" 
+                                          fill="#444444" scaleX="0.7" scaleY="0.7"/>
+                             </graphic>
+                             <items>
+                                <MenuItem fx:id="matrizSecuencia" mnemonicParsing="false" onAction="#fallaTrifasica" text="Matrices de Secuencia" />
+                                <MenuItem fx:id="fallaTabular" mnemonicParsing="false" onAction="#fallaMono" text="Reporte de Falla" />
+                                <MenuItem fx:id="flujoTabular" mnemonicParsing="false" onAction="#fallaLaL" text="Reporte de Flujo" />
+                             </items>
+                          </MenuButton>
                     </HBox>
                  </children>
               </HBox>
@@ -95,49 +135,136 @@
       </TabPane>
    </top>
 
-   <!-- LEFT: TOOLBOX SIDEBAR -->
    <left>
-      <VBox prefWidth="90.0" spacing="5.0" style="-fx-background-color: #f0f0f0; -fx-border-color: transparent #9e9e9e transparent transparent;" BorderPane.alignment="CENTER">
-         <children>
-            <Label text="Toolbox" style="-fx-font-weight: bold; -fx-padding: 5; -fx-alignment: CENTER;" maxWidth="Infinity" />
-            <Separator />
-            <VBox spacing="5.0" alignment="TOP_CENTER" style="-fx-padding: 5;">
-                 <ToggleButton fx:id="none" mnemonicParsing="false" onAction="#editionSelected" text="Select" prefWidth="70.0">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="group" />
-                     </toggleGroup>
-                     <tooltip><Tooltip text="Selection/Edit Mode" /></tooltip>
-                  </ToggleButton>
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                  style="-fx-background-color: #ececec; -fx-border-color: #bfbfbf; -fx-border-width: 0 1 0 0;">
+         <content>
+            <VBox spacing="8.0" style="-fx-padding: 8; -fx-background-color: #ececec;">
+               <children>
+
+                  <Label text="Edición" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 0 0 2 0;" />
+                  <FlowPane hgap="4" vgap="4" prefWrapLength="80">
+                      <ToggleButton fx:id="none" onAction="#editionSelected" prefWidth="32" prefHeight="32">
+                         <toggleGroup><ToggleGroup fx:id="group" /></toggleGroup>
+                         <tooltip><Tooltip text="Seleccionar / Mover" /></tooltip>
+                         <graphic>
+                            <SVGPath content="M7 4 L17 14 L12 14 L15 22 L12 23 L9 15 L4 15 Z" fill="#333" stroke="#111" strokeWidth="0.5"/>
+                         </graphic>
+                      </ToggleButton>
+                      
+                      </FlowPane>
+
                   <Separator />
-                  <ToggleButton fx:id="barra" mnemonicParsing="false" onAction="#barraSelected" text="Bus" toggleGroup="$group" prefWidth="70.0">
-                     <tooltip><Tooltip text="Add Bus" /></tooltip>
-                  </ToggleButton>
-                  <ToggleButton fx:id="linea" mnemonicParsing="false" onAction="#lineaSelected" text="Line" toggleGroup="$group" prefWidth="70.0">
-                     <tooltip><Tooltip text="Add Line" /></tooltip>
-                  </ToggleButton>
-                  <ToggleButton fx:id="trafo" mnemonicParsing="false" onAction="#trafoSelected" text="Trafo" toggleGroup="$group" prefWidth="70.0">
-                     <tooltip><Tooltip text="Add Transformer" /></tooltip>
-                  </ToggleButton>
-                  <ToggleButton fx:id="carga" mnemonicParsing="false" onAction="#cargaSelected" text="Load" toggleGroup="$group" prefWidth="70.0">
-                     <tooltip><Tooltip text="Add Load" /></tooltip>
-                  </ToggleButton>
-                  <ToggleButton fx:id="generador" mnemonicParsing="false" onAction="#genSelected" text="Gen" toggleGroup="$group" prefWidth="70.0">
-                     <tooltip><Tooltip text="Add Generator" /></tooltip>
-                  </ToggleButton>
-                  <ToggleButton fx:id="banco" mnemonicParsing="false" onAction="#bancoSelected" text="Cap" toggleGroup="$group" prefWidth="70.0">
-                     <tooltip><Tooltip text="Add Capacitor Bank" /></tooltip>
-                  </ToggleButton>
-                   <ToggleButton fx:id="Compensador" mnemonicParsing="false" onAction="#compensadorSelected" text="SVC" toggleGroup="$group" prefWidth="70.0">
-                     <tooltip><Tooltip text="Add Static Compensator" /></tooltip>
-                  </ToggleButton>
+
+                  <Label text="Red AC" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 2 0 2 0;" />
+                  <FlowPane hgap="4" vgap="4" prefWrapLength="80">
+                      
+                      <ToggleButton fx:id="barra" onAction="#barraSelected" toggleGroup="$group" prefWidth="32" prefHeight="32">
+                         <tooltip><Tooltip text="Barra / Nodo (Busbar)" /></tooltip>
+                         <graphic>
+                            <SVGPath content="M16 4 L16 28" stroke="#222" strokeWidth="4" strokeLineCap="BUTT" />
+                         </graphic>
+                      </ToggleButton>
+
+                      <ToggleButton fx:id="linea" onAction="#lineaSelected" toggleGroup="$group" prefWidth="32" prefHeight="32">
+                         <tooltip><Tooltip text="Línea Aérea / Cable" /></tooltip>
+                         <graphic>
+                            <SVGPath content="M4 26 L28 6 M4 26 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 M28 6 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0" 
+                                     stroke="#222" strokeWidth="1.5" fill="WHITE" />
+                         </graphic>
+                      </ToggleButton>
+
+                      <ToggleButton fx:id="trafo" onAction="#trafoSelected" toggleGroup="$group" prefWidth="32" prefHeight="32">
+                         <tooltip><Tooltip text="Transformador 2 Devanados (IEC)" /></tooltip>
+                         <graphic>
+                            <SVGPath content="M16 2 L16 6 M16 26 L16 30 M16 12 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 M16 20 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" 
+                                     fill="TRANSPARENT" stroke="#222" strokeWidth="1.2" />
+                         </graphic>
+                      </ToggleButton>
+                  </FlowPane>
+
+                  <Separator />
+
+                  <Label text="Equipos" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 2 0 2 0;" />
+                  <FlowPane hgap="4" vgap="4" prefWrapLength="80">
+
+                      <ToggleButton fx:id="generador" onAction="#genSelected" toggleGroup="$group" prefWidth="32" prefHeight="32">
+                         <tooltip><Tooltip text="Generador Síncrono" /></tooltip>
+                         <graphic>
+                             <SVGPath content="M16 6 A10 10 0 1 0 16 26 A10 10 0 1 0 16 6 M11 16 Q13.5 11 16 16 T21 16" 
+                                     fill="TRANSPARENT" stroke="#222" strokeWidth="1.2" />
+                         </graphic>
+                      </ToggleButton>
+
+                      <ToggleButton fx:id="carga" onAction="#cargaSelected" toggleGroup="$group" prefWidth="32" prefHeight="32">
+                         <tooltip><Tooltip text="Carga Agregada (Load)" /></tooltip>
+                         <graphic>
+                            <SVGPath content="M16 2 L16 24 M11 19 L16 24 L21 19 M12 28 L20 28" 
+                                     stroke="#222" strokeWidth="1.5" strokeLineCap="ROUND" />
+                         </graphic>
+                      </ToggleButton>
+                  </FlowPane>
+
+                  <Separator />
+
+                  <Label text="Shunt" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 2 0 2 0;" />
+                  <FlowPane hgap="4" vgap="4" prefWrapLength="80">
+                      
+                      <ToggleButton fx:id="banco" onAction="#bancoSelected" toggleGroup="$group" prefWidth="32" prefHeight="32">
+                         <tooltip><Tooltip text="Banco de Capacitores" /></tooltip>
+                         <graphic>
+                            <SVGPath content="M8 12 L11 12 M11 6 L11 26 M14 10 L26 10 M14 22 L26 22 M21 6 L21 26 M21 12 L24 12" 
+                                     stroke="#222" strokeWidth="1.2" />
+                            </graphic>
+                      </ToggleButton>
+
+                      <ToggleButton fx:id="Compensador" onAction="#compensadorSelected" toggleGroup="$group" prefWidth="32" prefHeight="32">
+                         <tooltip><Tooltip text="Compensador Estático (SVC)" /></tooltip>
+                         <graphic>
+                            <SVGPath content="M4 8 L28 8 L28 24 L4 24 Z M4 24 L28 8" 
+                                     fill="TRANSPARENT" stroke="#222" strokeWidth="1.2" />
+                         </graphic>
+                      </ToggleButton>
+                  </FlowPane>
+
+               </children>
             </VBox>
-         </children>
-      </VBox>
+         </content>
+      </ScrollPane>
    </left>
 
-   <!-- CENTER: CANVAS -->
-   <center>
-      <AnchorPane fx:id="areaDibujo" onMouseClicked="#mouseClicked" onMouseDragged="#dragEvent" onMouseMoved="#mouseEvent" BorderPane.alignment="CENTER" />
+  <center>
+      <AnchorPane styleClass="canvas-viewport" style="-fx-background-color: #cfcfcf; -fx-border-color: #999;">
+         <children>
+            <ScrollPane fx:id="scrollContainer" fitToHeight="true" fitToWidth="true" 
+                        pannable="true" 
+                        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" 
+                        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
+                        style="-fx-background: transparent; -fx-background-color: transparent;">
+               <content>
+                  <StackPane fx:id="zoomContainer" style="-fx-background-color: transparent;">
+                     <children>
+                         <AnchorPane fx:id="areaDibujo" 
+                                     prefHeight="6000.0" prefWidth="6000.0"
+                                     onMouseClicked="#mouseClicked" 
+                                     onMouseDragged="#dragEvent" 
+                                     onMouseMoved="#mouseEvent" />
+                     </children>
+                  </StackPane>
+               </content>
+            </ScrollPane>
+            
+            <VBox spacing="5" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0" 
+                  style="-fx-background-color: rgba(255,255,255,0.8); -fx-padding: 5; -fx-background-radius: 5; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 1);">
+               <children>
+                   <Button text="+" onAction="#zoomIn" style="-fx-font-weight: bold; -fx-min-width: 30px;"/>
+                   <Label fx:id="zoomLabel" text="100%" alignment="CENTER" maxWidth="Infinity" style="-fx-font-size: 10px;"/>
+                   <Button text="-" onAction="#zoomOut" style="-fx-font-weight: bold; -fx-min-width: 30px;"/>
+               </children>
+            </VBox>
+            
+         </children>
+      </AnchorPane>
    </center>
 
    <!-- BOTTOM: OUTPUT & STATUS -->

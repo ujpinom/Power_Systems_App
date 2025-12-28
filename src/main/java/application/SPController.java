@@ -37,6 +37,10 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.transform.Scale;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.control.Label;
 import proyectoSistemasDePotencia.Bancos;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Carga;
@@ -85,12 +89,21 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
 
 public class SPController implements Initializable {
 
 	 @FXML
-	  private ToggleButton Compensador;
+	private ToggleButton Compensador;
 	
+	// --- VARIABLES DE LA NUEVA INTERFAZ ---
+    @FXML private ScrollPane scrollContainer;
+    @FXML private StackPane zoomContainer;
+    @FXML private Label zoomLabel;
+    @FXML private TableView<?> tablaBarras; // El <?> evita errores si no tienes clase modelo aún
+    @FXML private TableView<?> tablaRamas;
+
 	
 	@FXML
 	private TextArea infoFlujo;
@@ -223,6 +236,7 @@ public class SPController implements Initializable {
 	private double angCorrientePuntoFallaFaseC;
 	private double largoBarra = 70;
 	private double ancho = 5;
+	private double currentScale = 1.0;
 	private static boolean borrarUltimoElemento = false;
 	private double FACTOR_ACELERACION = 1.6;
 	private int NUMERO_ITERACIONES = 50; // numero de iteraciones para el problema de flujo de potencia.
@@ -239,6 +253,8 @@ public class SPController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		scrollContainer.setHvalue(0.5);
+        scrollContainer.setVvalue(0.5);
 
 	}
 
@@ -788,6 +804,36 @@ public class SPController implements Initializable {
 		}
 
 	}
+
+	@FXML
+    private void zoomIn(ActionEvent event) {
+        updateZoom(1.2); // Aumentar 20%
+    }
+
+    @FXML
+    private void zoomOut(ActionEvent event) {
+        updateZoom(0.833); // Disminuir
+    }
+
+    private void updateZoom(double factor) {
+        // Limites de zoom (entre 10% y 500%)
+        double newScale = currentScale * factor;
+        if (newScale < 0.1 || newScale > 5.0) return;
+
+        currentScale = newScale;
+        
+        // Aplicar transformación al área de dibujo
+        Scale scaleTransform = new Scale(currentScale, currentScale, 0, 0);
+        areaDibujo.getTransforms().clear();
+        areaDibujo.getTransforms().add(scaleTransform);
+        
+        // Ajustar el tamaño del contenedor para que el ScrollPane sepa que el contenido cambió
+        // Esto es clave para que las barras de scroll funcionen bien al hacer zoom
+        zoomContainer.setPrefWidth(areaDibujo.getPrefWidth() * currentScale);
+        zoomContainer.setPrefHeight(areaDibujo.getPrefHeight() * currentScale);
+
+        zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
+    }
 
 	private void dibujarPOly() {
 

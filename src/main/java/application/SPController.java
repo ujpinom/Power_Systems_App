@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import application.enums.ToolType;
+
 import javax.swing.JOptionPane;
 
 import edu.princeton.cs.algs4.Stack;
@@ -182,14 +184,10 @@ public class SPController implements Initializable {
 	private Complejo [][] potenciaEntranteBarras;
 	
 	private List<Complejo>[] perdidasLineas;
-	private boolean lselected = false;
-	private boolean tselected = false;
-	private boolean gselected = false;
-	private boolean bselected = false;
-	private boolean noneselected = false;
-	private boolean compensadorSelected=false;
-	private boolean cSelected;
-	private boolean bancoSelected;
+
+    // --- State Management ---
+    private ToolType currentTool = ToolType.NONE;
+
 	private boolean trifasica;
 	private boolean monofasica;
 	private boolean lineaALinea;
@@ -412,106 +410,49 @@ public class SPController implements Initializable {
 
 	@FXML
 	private void lineaSelected(ActionEvent e) {
-		lselected = true;
-		tselected = false;
-		gselected = false;
-		bselected = false;
-		noneselected = false;
-		cSelected = false;
-		bancoSelected = false;
-		compensadorSelected=false;
+        currentTool = ToolType.LINEA;
 		infoElemento.setText("Elemento: LÃ­nea");
 	}
 
 	@FXML
 	private void barraSelected(ActionEvent e) {
-		lselected = false;
-		tselected = false;
-		gselected = false;
-		bselected = true;
-		noneselected = false;
-		cSelected = false;
-		bancoSelected = false;
-		compensadorSelected=false;
+        currentTool = ToolType.BARRA;
 		infoElemento.setText("Elemento: Barra");
-
 	}
 	
 	@FXML
 	private void compensadorSelected(ActionEvent e) {
-		lselected = false;
-		tselected = false;
-		gselected = false;
-		bselected = false;
-		noneselected = false;
-		cSelected = false;
-		bancoSelected = false;
-		compensadorSelected=true;
+        currentTool = ToolType.COMPENSADOR;
 		infoElemento.setText("Elemento: Compensador EstÃ¡tico");
-	
 	}
+
 	@FXML
 	private void trafoSelected(ActionEvent e) {
-		lselected = false;
-		tselected = true;
-		gselected = false;
-		bselected = false;
-		noneselected = false;
-		cSelected = false;
-		bancoSelected = false;
-		compensadorSelected=false;
+        currentTool = ToolType.TRANSFORMADOR;
 		infoElemento.setText("Elemento: Transformador");
 	}
 
 	@FXML
 	private void genSelected(ActionEvent e) {
-		lselected = false;
-		tselected = false;
-		gselected = true;
-		bselected = false;
-		noneselected = false;
-		cSelected = false;
-		bancoSelected = false;
-		compensadorSelected=false;
+        currentTool = ToolType.GENERADOR;
 		infoElemento.setText("Elemento: Generador");
 	}
 
 	@FXML
 	private void cargaSelected(ActionEvent e) {
-		lselected = false;
-		tselected = false;
-		gselected = false;
-		bselected = false;
-		noneselected = false;
-		cSelected = true;
-		bancoSelected = false;
-		compensadorSelected=false;
+        currentTool = ToolType.CARGA;
 		infoElemento.setText("Elemento: Carga");
 	}
 
 	@FXML
 	private void bancoSelected(ActionEvent e) {
-		lselected = false;
-		tselected = false;
-		gselected = false;
-		bselected = false;
-		noneselected = false;
-		cSelected = false;
-		bancoSelected = true;
-		compensadorSelected=false;
+        currentTool = ToolType.BANCO;
 		infoElemento.setText("Elemento: Banco");
 	}
 
 	@FXML
 	private void editionSelected(ActionEvent e) {
-		lselected = false;
-		tselected = false;
-		gselected = false;
-		bselected = false;
-		noneselected = true;
-		cSelected = false;
-		bancoSelected = false;
-		compensadorSelected=false;
+        currentTool = ToolType.NONE;
 		infoElemento.setText("Elemento: EdiciÃ³n");
 	}
 
@@ -848,7 +789,7 @@ public class SPController implements Initializable {
 
 	private void dibujarPOly() {
 
-		if (isLineOn && lselected) {
+		if (isLineOn && currentTool == ToolType.LINEA) {
 			Line perro = new Line();
 
 			perro.setStartX(ultimoPunto.getX());
@@ -1029,7 +970,7 @@ public class SPController implements Initializable {
         
         // Opcional: Mostrar info en consola
         Barras datos = (Barras) nodoSeleccionadoVisual.getUserData();
-        System.out.println("Seleccionado: " + datos.getNombreBarra() + " | V: " + datos.getVoltajePrefalla() + " p.u.");
+        System.out.println("Seleccionado: " + (datos.getNombrePersonalizado() != null ? datos.getNombrePersonalizado() : datos.getNombreBarra()) + " | V: " + datos.getVoltajePrefalla() + " p.u.");
     }
 
 	private void crearMenuContextualBarra(StackPane nodo, Rectangle r, Label lbl) {
@@ -1607,184 +1548,40 @@ public class SPController implements Initializable {
 
 		if (e.getButton() == MouseButton.PRIMARY) {
 
-			// 3. Máquina de Estados: ¿Qué herramienta tengo seleccionada?
-			if (barra.isSelected()) {
-				crearBarra(x, y);
-			} 
-			else if (none.isSelected()) {
-				// Aquí pondremos la lógica para seleccionar/ver propiedades luego
-				System.out.println("Modo Selección: Click en " + x + ", " + y);
-			}
-			return;
-
-
-			// if (!barraMuycerca(x, y)) {
-
-			// 	if (path != null) {
-			// 		path.getElements().add(new LineTo(x, y));
-			// 		ultimoPunto = new Point2D(x, y);
-
-			// 		repaint();
-			// 	}
-
-			// }
-
-			// if ((bselected) && !barraMuycerca(x, y)) {
-
-			// 	Barras barra = new Barras(x, y, nombreBarra);
-			// 	barras.add(barra);
-			// 	barra.setBarraPQ(true);
-			// 	barra.setNombreBarra(nombreBarra + (barras.size() - 1));
-			// 	objetosCreados.add(barra);
-
-			// 	repaint();
-			// 	return;
-			// }
-
-			// Barras b = getContainingVertex(x, y);
-
-			// if (!isLineOn && (lselected || tselected) && b != null) {
-
-			// 	path = new Path();
-			// 	path.getElements().add(new MoveTo(x, y));
-
-			// 	ultimoPunto = new Point2D(x, y);
-			// 	startB = b;
-			// 	endOfLineX = e.getX();
-			// 	isLineOn = true;
-			// }
-
-			// if ((lselected || tselected) && (isLineOn)) {
-
-			// 	if (b != null) {
-
-			// 		if (!sonIguales(b, startB)) {
-
-			// 			int one = barras.indexOf(startB);
-			// 			int other = barras.indexOf(b);
-
-			// 			if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one) && lselected) {
-			// 				path.getElements().add(new LineTo(x, y));
-
-			// 				Lineas l = new Lineas(startB, b, 1, 1, 1, path);
-
-			// 				conexiones.add(l);
-			// 				objetosCreados.add(l);
-			// 				listaBarras[one].add(other);
-			// 				listaBarras[other].add(one);
-
-			// 			}
-
-			// 			else if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one) && tselected) {
-
-			// 				Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
-			// 				conexiones1.add(t);
-			// 				objetosCreados.add(t);
-			// 				listaBarras[one].add(other);
-			// 				listaBarras[other].add(one);
-			// 			}
-
-			// 			isLineOn = false;
-			// 			repaint();
-			// 			poliactual = null;
-			// 			path = null;
-			// 			return;
-
-			// 		}
-			// 	}
-			// }
-
-			// if (gselected && b != null) {
-
-			// 	if (!corGenerador.contains(b.getXbarra())) {
-
-			// 		xCoorG = e.getX();
-			// 		yCoorG = e.getY();
-
-			// 		b.setxCoorG(xCoorG);
-			// 		b.setyCoorG(yCoorG);
-
-			// 		Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
-
-			// 		conexiongene.add(gene);
-			// 		b.setBarraPV(true);
-			// 		b.setBarraPQ(false);
-			// 		b.setGenerador(gene);
-			// 		objetosCreados.add(gene);
-
-			// 		corGenerador.add(b.getXbarra());
-			// 	}
-
-			// 	repaint();
-			// 	return;
-			// }
-
-			// if (cSelected && b != null) {
-
-			// 	if (!corCarga.contains(b.getXbarra())) {
-
-			// 		b.setCoordenadasCarga(new Point2D(e.getX(), e.getY()));
-			// 		Carga carga = new Carga(new Point2D(e.getX(), e.getY()), b, nombreCarga);
-			// 		cargas.add(carga);
-			// 		objetosCreados.add(carga);
-			// 		if (b.isBarraPV()) {
-			// 			b.setBarraPQ(false);
-			// 		} else {
-			// 			b.setBarraPQ(true);
-			// 		}
-
-			// 		b.setCarga(carga);
-			// 		corCarga.add(b.getXbarra());
-
-			// 		repaint();
-			// 		return;
-			// 	}
-
-			// }
-
-			// if (bancoSelected && b != null) {
-
-			// 	if (!corBanco.contains(b.getXbarra())) {
-
-			// 		b.setCoordenadasBanco(new Point2D(e.getX(), e.getY()));
-			// 		Bancos banco = new Bancos(new Point2D(e.getX(), e.getY()), b, nombreBanco);
-			// 		bancos.add(banco);
-			// 		objetosCreados.add(banco);
-			// 		b.setBanco(banco);
-
-			// 		corBanco.add(b.getXbarra());
-			// 		repaint();
-			// 		return;
-			// 	}
-
-			// }
-			
-			// if(compensadorSelected && b!=null) {
-	
-	
-			// 	if(!corCompensador.contains(b.getXbarra())) {
-				
-			// 		b.setCoordenadaCompensador(new Point2D(e.getX(), e.getY()));
-			// 		CompensadorEstatico cp= new CompensadorEstatico(new Point2D(e.getX(), e.getY()), b, nombreCompensador);
-			// 		b.setBarraPV(true);
-			// 		b.setBarraPQ(false);
-			// 		compensadores.add(cp);
-			// 		objetosCreados.add(cp);
-			// 		b.setCompensador(cp);
-			// 		corCompensador.add(b.getXbarra());
-			// 		repaint();
-			// 		return;
-					
-			
-			// 	}
-				
-				
-			// }
-
+            switch (currentTool) {
+                case BARRA:
+                    crearBarra(x, y);
+                    break;
+                case NONE:
+                    // Lógica para seleccionar/ver propiedades
+                    System.out.println("Modo Selección: Click en " + x + ", " + y);
+                    break;
+                case LINEA:
+                    handleLineaCreation(x, y);
+                    break;
+                case TRANSFORMADOR:
+                    handleTrafoCreation(x, y);
+                    break;
+                case GENERADOR:
+                    handleGeneradorCreation(x, y);
+                    break;
+                case CARGA:
+                    handleCargaCreation(x, y);
+                    break;
+                case BANCO:
+                    handleBancoCreation(x, y);
+                    break;
+                case COMPENSADOR:
+                    handleCompensadorCreation(x, y);
+                    break;
+                default:
+                    break;
+            }
+            return;
 		}
 
 		Barras b = getContainingVertex(x, y);
-		if (e.getButton() == MouseButton.SECONDARY && isLineOn && (lselected||tselected)) {
+		if (e.getButton() == MouseButton.SECONDARY && isLineOn && (currentTool == ToolType.LINEA || currentTool == ToolType.TRANSFORMADOR)) {
 
 			isLineOn = false;
 
@@ -1927,7 +1724,7 @@ public class SPController implements Initializable {
 
 	private void dragEvent(MouseEvent e) {
 		areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
-		if (noneselected) {
+		if (currentTool.equals(ToolType.NONE)) {
 
 			lista = areaDibujo.getChildren();
 
@@ -2092,7 +1889,7 @@ public class SPController implements Initializable {
 		infoPosiMouse.setText(String.format("X=%.3f   Y=%.3f", x, y));
 		Node tipoElemento = tipoElemento(x, y);
 
-		if (((tselected || lselected)) && isLineOn) {
+		if (((currentTool == ToolType.LINEA || currentTool == ToolType.TRANSFORMADOR)) && isLineOn) {
 
 			endOfLineX = e.getX();
 			endOfLineY = e.getY();
@@ -2793,7 +2590,7 @@ public class SPController implements Initializable {
 
 	public void dibujarLineas() {
 
-		if (isLineOn && tselected) {
+		if (isLineOn && currentTool == ToolType.TRANSFORMADOR) {
 
 			Line linea = new Line(startB.getXbarra() + startB.getAncho() / 2,
 					startB.getYbarra() + startB.getLargo() / 2, endOfLineX, endOfLineY);
@@ -3502,5 +3299,139 @@ public class SPController implements Initializable {
 		}
 
 	}
+
+    // --- HANDLERS FOR TOOLS ---
+
+    private void handleGeneradorCreation(double x, double y) {
+        Barras b = getContainingVertex(x, y);
+        if (b != null) {
+            if (!corGenerador.contains(b.getXbarra())) {
+                b.setxCoorG(x);
+                b.setyCoorG(y);
+
+                Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
+
+                conexiongene.add(gene);
+                b.setBarraPV(true);
+                b.setBarraPQ(false);
+                b.setGenerador(gene);
+                objetosCreados.add(gene);
+
+                corGenerador.add(b.getXbarra());
+                repaint();
+            }
+        }
+    }
+
+    private void handleCargaCreation(double x, double y) {
+        Barras b = getContainingVertex(x, y);
+        if (b != null) {
+            if (!corCarga.contains(b.getXbarra())) {
+                b.setCoordenadasCarga(new Point2D(x, y));
+                Carga carga = new Carga(new Point2D(x, y), b, nombreCarga);
+                cargas.add(carga);
+                objetosCreados.add(carga);
+                if (b.isBarraPV()) {
+                    b.setBarraPQ(false);
+                } else {
+                    b.setBarraPQ(true);
+                }
+                b.setCarga(carga);
+                corCarga.add(b.getXbarra());
+                repaint();
+            }
+        }
+    }
+
+    private void handleBancoCreation(double x, double y) {
+        Barras b = getContainingVertex(x, y);
+        if (b != null) {
+            if (!corBanco.contains(b.getXbarra())) {
+                b.setCoordenadasBanco(new Point2D(x, y));
+                Bancos banco = new Bancos(new Point2D(x, y), b, nombreBanco);
+                bancos.add(banco);
+                objetosCreados.add(banco);
+                b.setBanco(banco);
+                corBanco.add(b.getXbarra());
+                repaint();
+            }
+        }
+    }
+
+    private void handleCompensadorCreation(double x, double y) {
+        Barras b = getContainingVertex(x, y);
+        if (b != null) {
+            if (!corCompensador.contains(b.getXbarra())) {
+                b.setCoordenadaCompensador(new Point2D(x, y));
+                CompensadorEstatico cp = new CompensadorEstatico(new Point2D(x, y), b, nombreCompensador);
+                b.setBarraPV(true);
+                b.setBarraPQ(false);
+                compensadores.add(cp);
+                objetosCreados.add(cp);
+                b.setCompensador(cp);
+                corCompensador.add(b.getXbarra());
+                repaint();
+            }
+        }
+    }
+
+    private void handleLineaCreation(double x, double y) {
+        handleConnectionCreation(x, y, false);
+    }
+
+    private void handleTrafoCreation(double x, double y) {
+        handleConnectionCreation(x, y, true);
+    }
+
+    private void handleConnectionCreation(double x, double y, boolean isTrafo) {
+        Barras b = getContainingVertex(x, y);
+
+        if (!isLineOn) {
+            if (b != null) {
+                path = new Path();
+                path.getElements().add(new MoveTo(x, y));
+                ultimoPunto = new Point2D(x, y);
+                startB = b;
+                endOfLineX = x;
+                isLineOn = true;
+            }
+        } else {
+            if (b != null) {
+                if (!sonIguales(b, startB)) {
+                    int one = barras.indexOf(startB);
+                    int other = barras.indexOf(b);
+
+                    if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one)) {
+                        path.getElements().add(new LineTo(x, y));
+
+                        if (isTrafo) {
+                            Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
+                            conexiones1.add(t);
+                            objetosCreados.add(t);
+                        } else {
+                            Lineas l = new Lineas(startB, b, 1, 1, 1, path);
+                            conexiones.add(l);
+                            objetosCreados.add(l);
+                        }
+                        listaBarras[one].add(other);
+                        listaBarras[other].add(one);
+                    }
+
+                    isLineOn = false;
+                    repaint();
+                    poliactual = null;
+                    path = null;
+                }
+            } else {
+                if (!barraMuycerca(x, y)) {
+                    if (path != null) {
+                        path.getElements().add(new LineTo(x, y));
+                        ultimoPunto = new Point2D(x, y);
+                        repaint();
+                    }
+                }
+            }
+        }
+    }
 
 }

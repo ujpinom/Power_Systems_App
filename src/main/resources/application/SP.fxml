@@ -268,6 +268,23 @@
       </AnchorPane>
    </center>
 
+   <right>
+      <VBox fx:id="rightPanelContainer" 
+            prefWidth="280.0" 
+            spacing="10.0"
+            style="-fx-background-color: #f4f4f4; -fx-border-color: #cccccc; -fx-border-width: 0 0 0 1;">
+            
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <children>
+                <Label text="Inspector" style="-fx-font-weight: bold; -fx-text-fill: #666;"/>
+                <Label text="Seleccione un elemento" style="-fx-font-style: italic; -fx-text-fill: #999;"/>
+            </children>
+      </VBox>
+   </right>
+   
    <!-- BOTTOM: OUTPUT & STATUS -->
    <bottom>
       <VBox BorderPane.alignment="CENTER">

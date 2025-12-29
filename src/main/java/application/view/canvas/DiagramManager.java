@@ -62,12 +62,14 @@ public class DiagramManager {
         seleccionActual.setSeleccionado(true);
         
         System.out.println("Manager: Seleccionada barra -> " + ((Barras)shape.getUserData()).getNombreBarra());
+        model.setSeleccionActual(shape.getUserData());
     }
     
     public void deseleccionarTodo() {
         if (seleccionActual != null) {
             seleccionActual.setSeleccionado(false);
             seleccionActual = null;
+            model.setSeleccionActual(null);
         }
     }
     

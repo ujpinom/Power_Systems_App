@@ -44,7 +44,10 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
@@ -86,6 +89,7 @@ import proyectoSistemasDePotencia.Transformador;
 import proyectoSistemasDePotencia.Zbarra;
 import weightedGraphs.WeightEdeges;
 import weightedGraphs.WeightedGraph;
+import application.view.panels.PropertiesPanel;
 
 public class SPController implements Initializable {
 
@@ -247,6 +251,9 @@ public class SPController implements Initializable {
 	private Barras barraCompensacion = null;
 	private NetworkModel networkModel;
 	private DiagramManager diagramManager;
+	private PropertiesPanel propertiesPanel;
+	@FXML private VBox rightPanelContainer;;
+
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -254,7 +261,13 @@ public class SPController implements Initializable {
 		scrollContainer.setVvalue(0.5);
 		this.networkModel = NetworkModel.getInstance();
 		this.diagramManager = new DiagramManager(areaDibujo);
-
+		this.propertiesPanel = new PropertiesPanel();
+		rightPanelContainer.getChildren().clear();
+        rightPanelContainer.getChildren().add(propertiesPanel);
+		VBox.setVgrow(propertiesPanel, Priority.ALWAYS);
+		networkModel.seleccionActualProperty().addListener((obs, oldVal, newVal) -> {
+            propertiesPanel.mostrarPropiedades(newVal);
+        });
 	}
 
 	/**

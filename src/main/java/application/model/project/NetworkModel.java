@@ -1,5 +1,7 @@
 package application.model.project;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import proyectoSistemasDePotencia.Barras;
@@ -7,6 +9,7 @@ import proyectoSistemasDePotencia.Barras;
 public class NetworkModel {
     
     private static NetworkModel instance;
+    private final ObjectProperty<Object> seleccionActual = new SimpleObjectProperty<>();
     
     // ObservableList es clave: lanza eventos cuando se modifica la lista
     private final ObservableList<Barras> barras = FXCollections.observableArrayList();
@@ -45,5 +48,17 @@ public class NetworkModel {
     public void clearAll() {
         this.barras.clear();
         // Aquí limpiarías también líneas, generadores, etc.
+    }
+
+    public ObjectProperty<Object> seleccionActualProperty() {
+        return seleccionActual;
+    }
+
+    public void setSeleccionActual(Object obj) {
+        this.seleccionActual.set(obj);
+    }
+
+    public Object getSeleccionActual() {
+        return seleccionActual.get();
     }
 }

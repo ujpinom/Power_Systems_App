@@ -12,6 +12,7 @@ import proyectoSistemasDePotencia.Complejo;
 import proyectoSistemasDePotencia.ExcepcionDivideCero;
 import proyectoSistemasDePotencia.Generadores;
 import java.lang.Exception;
+import application.controller.main.SPController;
 
 public class EcuacionesVoltajeYPotencia {
 	

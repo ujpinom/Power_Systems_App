@@ -15,6 +15,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.linear.DecompositionSolver;
+import application.controller.main.SPController;
 
 public class NewtonRaphson implements Cloneable {
 

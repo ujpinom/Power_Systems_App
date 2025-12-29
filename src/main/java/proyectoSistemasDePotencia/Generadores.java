@@ -1,7 +1,5 @@
 package proyectoSistemasDePotencia;
 
-import application.SPController;
-
 public class Generadores {
 
 	private String nombreGenerador;

@@ -32,6 +32,18 @@ public class NetworkModel {
             System.out.println("Modelo: Barra agregada -> " + barra.getNombreBarra());
         }
     }
+
+    public void removeBarra(Barras barra) {
+        if (barras.contains(barra)) {
+            // Esto disparará el evento 'wasRemoved' en el DiagramManager
+            this.barras.remove(barra);
+            System.out.println("Modelo: Barra eliminada -> " + barra.getNombreBarra());
+        }
+    }
     
-    // Aquí irían métodos para eliminar, limpiar todo, etc.
+    // Método opcional útil: Limpiar todo el proyecto
+    public void clearAll() {
+        this.barras.clear();
+        // Aquí limpiarías también líneas, generadores, etc.
+    }
 }

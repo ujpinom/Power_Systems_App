@@ -1,27 +1,50 @@
-package application;
+package application.controller.main;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import application.enums.ToolType;
-
 import javax.swing.JOptionPane;
 
-import edu.princeton.cs.algs4.Stack;
+import application.DeterminacionPotenciasBarras;
+import application.EcuacionesVoltajeYPotencia;
+import application.NewtonRaphson;
+import application.enums.ToolType;
+import application.model.project.NetworkModel;
+import application.view.canvas.DiagramManager;
 import grafos.Edges;
 import grafos.MyGraph;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
@@ -37,12 +60,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.transform.Scale;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.scene.transform.Scale;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.control.Label;
 import proyectoSistemasDePotencia.Bancos;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Carga;
@@ -59,58 +79,31 @@ import proyectoSistemasDePotencia.FallaLineaALineaTierraEnLinea;
 import proyectoSistemasDePotencia.FallaTrifasica;
 import proyectoSistemasDePotencia.FallaTrifasicaLinea;
 import proyectoSistemasDePotencia.Generadores;
-import proyectoSistemasDePotencia.InfoBarras;
-import proyectoSistemasDePotencia.InfoCarga;
-import proyectoSistemasDePotencia.InfoGeneradores;
 import proyectoSistemasDePotencia.InfoImpedanciaFalla;
 import proyectoSistemasDePotencia.InfoImpedanciaFallaLinea;
-import proyectoSistemasDePotencia.InfoLineas;
-import proyectoSistemasDePotencia.InfoTrafo;
 import proyectoSistemasDePotencia.Lineas;
-import proyectoSistemasDePotencia.TapsTrafoController;
 import proyectoSistemasDePotencia.Transformador;
 import proyectoSistemasDePotencia.Zbarra;
-import proyectoSistemasDePotencia.infoBanco;
 import weightedGraphs.WeightEdeges;
 import weightedGraphs.WeightedGraph;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
-import javafx.scene.Cursor;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
 
 public class SPController implements Initializable {
 
-	 @FXML
+	@FXML
 	private ToggleButton Compensador;
-	
-	// --- VARIABLES DE LA NUEVA INTERFAZ ---
-    @FXML private ScrollPane scrollContainer;
-    @FXML private StackPane zoomContainer;
-    @FXML private Label zoomLabel;
-    @FXML private TableView<?> tablaBarras; // El <?> evita errores si no tienes clase modelo aún
-    @FXML private TableView<?> tablaRamas;
 
-	
+	// --- VARIABLES DE LA NUEVA INTERFAZ ---
+	@FXML
+	private ScrollPane scrollContainer;
+	@FXML
+	private StackPane zoomContainer;
+	@FXML
+	private Label zoomLabel;
+	@FXML
+	private TableView<?> tablaBarras; // El <?> evita errores si no tienes clase modelo aún
+	@FXML
+	private TableView<?> tablaRamas;
+
 	@FXML
 	private TextArea infoFlujo;
 
@@ -181,12 +174,12 @@ public class SPController implements Initializable {
 
 	public static double BASE_SISTEMA = 100;
 	private Complejo[][] perdidadsPotencia;
-	private Complejo [][] potenciaEntranteBarras;
-	
+	private Complejo[][] potenciaEntranteBarras;
+
 	private List<Complejo>[] perdidasLineas;
 
-    // --- State Management ---
-    private ToolType currentTool = ToolType.NONE;
+	// --- State Management ---
+	private ToolType currentTool = ToolType.NONE;
 
 	private boolean trifasica;
 	private boolean monofasica;
@@ -210,13 +203,13 @@ public class SPController implements Initializable {
 	private String nombreGenerador = "G";
 	private String nombreCarga = "C";
 	private String nombreBanco = "BA";
-	private String nombreCompensador="E";
-	
+	private String nombreCompensador = "E";
+
 	private ArrayList<Double> distanciasLineas = new ArrayList<>();
 	private ArrayList<Double> corGenerador = new ArrayList<>();
 	private ArrayList<Double> corCarga = new ArrayList<>();
 	private ArrayList<Double> corBanco = new ArrayList<>();
-	private ArrayList<Double> corCompensador= new ArrayList<>();
+	private ArrayList<Double> corCompensador = new ArrayList<>();
 	private ObservableList<Node> lista;
 	private ArrayList<Double> posBarra = new ArrayList<>();
 	private WeightedGraph<Barras> grafo1;
@@ -252,11 +245,15 @@ public class SPController implements Initializable {
 	private double epsilon = 0.01;
 
 	private Barras barraCompensacion = null;
+	private NetworkModel networkModel;
+	private DiagramManager diagramManager;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		scrollContainer.setHvalue(0.5);
-        scrollContainer.setVvalue(0.5);
+		scrollContainer.setVvalue(0.5);
+		this.networkModel = NetworkModel.getInstance();
+		this.diagramManager = new DiagramManager(areaDibujo);
 
 	}
 
@@ -276,7 +273,7 @@ public class SPController implements Initializable {
 		metodoFlujoPotencia = "Raphson";
 		infoTare.setText("Tarea: Flujo de Potencia: Newton-Raphson");
 
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MatricesSeq.fxml"));
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/application/MatricesSeq.fxml"));
 		Parent root = fxmlLoader.load();
 
 		Scene scene = new Scene(root);
@@ -306,7 +303,7 @@ public class SPController implements Initializable {
 		metodoFlujoPotencia = "Seidel";
 		infoTare.setText("Tarea: Flujo de Potencia: Gauss-Seidel");
 
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MatricesSeq.fxml"));
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/application/MatricesSeq.fxml"));
 		Parent root = fxmlLoader.load();
 
 		Scene scene = new Scene(root);
@@ -329,8 +326,9 @@ public class SPController implements Initializable {
 	}
 
 	public void setTextInfoPotencia() {
-		infoFlujo.setText("MÃ©todo: " + metodoFlujoPotencia + "\nAceleraciÃ³n: " + FACTOR_ACELERACION + "\nIteraciones: "
-				+ String.format("%d", NUMERO_ITERACIONES) + "\nEpsilon: " + epsilon + "\nConvergencia: " + 0);
+		infoFlujo
+				.setText("MÃ©todo: " + metodoFlujoPotencia + "\nAceleraciÃ³n: " + FACTOR_ACELERACION + "\nIteraciones: "
+						+ String.format("%d", NUMERO_ITERACIONES) + "\nEpsilon: " + epsilon + "\nConvergencia: " + 0);
 	}
 
 	@FXML
@@ -410,49 +408,49 @@ public class SPController implements Initializable {
 
 	@FXML
 	private void lineaSelected(ActionEvent e) {
-        currentTool = ToolType.LINEA;
+		currentTool = ToolType.LINEA;
 		infoElemento.setText("Elemento: LÃ­nea");
 	}
 
 	@FXML
 	private void barraSelected(ActionEvent e) {
-        currentTool = ToolType.BARRA;
+		currentTool = ToolType.BARRA;
 		infoElemento.setText("Elemento: Barra");
 	}
-	
+
 	@FXML
 	private void compensadorSelected(ActionEvent e) {
-        currentTool = ToolType.COMPENSADOR;
+		currentTool = ToolType.COMPENSADOR;
 		infoElemento.setText("Elemento: Compensador EstÃ¡tico");
 	}
 
 	@FXML
 	private void trafoSelected(ActionEvent e) {
-        currentTool = ToolType.TRANSFORMADOR;
+		currentTool = ToolType.TRANSFORMADOR;
 		infoElemento.setText("Elemento: Transformador");
 	}
 
 	@FXML
 	private void genSelected(ActionEvent e) {
-        currentTool = ToolType.GENERADOR;
+		currentTool = ToolType.GENERADOR;
 		infoElemento.setText("Elemento: Generador");
 	}
 
 	@FXML
 	private void cargaSelected(ActionEvent e) {
-        currentTool = ToolType.CARGA;
+		currentTool = ToolType.CARGA;
 		infoElemento.setText("Elemento: Carga");
 	}
 
 	@FXML
 	private void bancoSelected(ActionEvent e) {
-        currentTool = ToolType.BANCO;
+		currentTool = ToolType.BANCO;
 		infoElemento.setText("Elemento: Banco");
 	}
 
 	@FXML
 	private void editionSelected(ActionEvent e) {
-        currentTool = ToolType.NONE;
+		currentTool = ToolType.NONE;
 		infoElemento.setText("Elemento: EdiciÃ³n");
 	}
 
@@ -479,19 +477,20 @@ public class SPController implements Initializable {
 			if (fPotencia) {
 
 				Complejo[][] m3 = calculoMatrizAdyacenciaFlujo();
-		
+
 				perdidadsPotencia = new Complejo[barras.size()][barras.size()];
-				potenciaEntranteBarras= new Complejo[barras.size()][barras.size()];
-				
-				for(int i=0;i<perdidadsPotencia.length;i++) {
-					for(int j=0;j<perdidadsPotencia.length;j++) {
-						
-						perdidadsPotencia[i][j]= new Complejo(); // No se tiene en cuenta la admitancia de carga de la lÃ­nea
-						potenciaEntranteBarras[i][j]= new Complejo();  // Se tiene en cuenta la admitancia de carga de la linea.
-					
+				potenciaEntranteBarras = new Complejo[barras.size()][barras.size()];
+
+				for (int i = 0; i < perdidadsPotencia.length; i++) {
+					for (int j = 0; j < perdidadsPotencia.length; j++) {
+
+						perdidadsPotencia[i][j] = new Complejo(); // No se tiene en cuenta la admitancia de carga de la
+																	// lÃ­nea
+						potenciaEntranteBarras[i][j] = new Complejo(); // Se tiene en cuenta la admitancia de carga de
+																		// la linea.
+
 					}
 				}
-				
 
 				if (metodoFlujoPotencia.equals("Seidel")) {
 
@@ -499,17 +498,12 @@ public class SPController implements Initializable {
 							FACTOR_ACELERACION, epsilon);
 
 					List<Complejo>[] solucion = gaussS.calcularFlujoPotencia(conexiongene, bancos, cargas, m3);
-					
+
 					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
-					
-			
-					
-		
-					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones, conexiones1,m3,perdidadsPotencia,potenciaEntranteBarras);
-					
-					
-					
-			
+
+					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras, solucion, conexiones,
+							conexiones1, m3, perdidadsPotencia, potenciaEntranteBarras);
+
 					System.out.println("RESULTADOS Angulos Y voltajes:");
 
 					for (int i = 1; i < solucion.length; i++) {
@@ -525,68 +519,63 @@ public class SPController implements Initializable {
 						System.out.println();
 
 					}
-					
+
 					System.out.println();
 
-					for(int i=1;i<barras.size();i++) {
-						
-						Barras b= barras.get(i);
-						
-						if(b.isBarraCompensacion()) {
-							
+					for (int i = 1; i < barras.size(); i++) {
+
+						Barras b = barras.get(i);
+
+						if (b.isBarraCompensacion()) {
+
 							System.out.println("Generacion: ");
-							
-							System.out.println("Real: "+b.getFlowPowerRealCalculada()+" Imag: "+b.getFlowPowerImagCalculada());
-							
-							
+
+							System.out.println("Real: " + b.getFlowPowerRealCalculada() + " Imag: "
+									+ b.getFlowPowerImagCalculada());
+
 						}
-						
-						if(b.isBarraPV()) {
-							
-							
+
+						if (b.isBarraPV()) {
+
 							System.out.println("Generacion: ");
-							
-							System.out.println("Real: "+b.getGenerador().getMWSalida()+" Imag: "+b.getFlowPowerImagCalculada());
-							
-							
+
+							System.out.println("Real: " + b.getGenerador().getMWSalida() + " Imag: "
+									+ b.getFlowPowerImagCalculada());
+
 						}
-						
-						
-						if(b.isBarraFromPV2PQ()) {
-							
+
+						if (b.isBarraFromPV2PQ()) {
+
 							System.out.println("Generacion: ");
-							
-							System.out.println("Real: "+b.getGenerador().getMWSalida()+" Imag: "+b.getGenerador().getMVarSalida());
-							
+
+							System.out.println("Real: " + b.getGenerador().getMWSalida() + " Imag: "
+									+ b.getGenerador().getMVarSalida());
+
 						}
-				
-						
-						if(b.containsCarga()) {
-							
+
+						if (b.containsCarga()) {
+
 							System.out.println("Carga: ");
-							
-							System.out.println("Real: "+b.getCarga().getPotenciaActiva()+" Imag: "+b.getCarga().getPotenciaReactiva());
-							
+
+							System.out.println("Real: " + b.getCarga().getPotenciaActiva() + " Imag: "
+									+ b.getCarga().getPotenciaReactiva());
+
 						}
-					
+
 					}
-					
-					
-					
+
 					System.out.println("Potencia en barras");
-					
-					for(int i=0;i<perdidadsPotencia.length;i++) {
-						for(int j=0;j<perdidadsPotencia.length;j++) {
-							
-							System.out.print(potenciaEntranteBarras[i][j]+" ");
-							
-							
+
+					for (int i = 0; i < perdidadsPotencia.length; i++) {
+						for (int j = 0; j < perdidadsPotencia.length; j++) {
+
+							System.out.print(potenciaEntranteBarras[i][j] + " ");
+
 						}
-						
+
 						System.out.println();
 					}
-					
-					
+
 					////
 
 				}
@@ -600,15 +589,13 @@ public class SPController implements Initializable {
 					List<Double>[] solucionVoltajes = raphson.solucionVoltajes();
 
 					List<Double>[] solucionAngulos = raphson.solucionAngulos();
-					
-					List<Complejo>[] solucion=raphson.solucionFormaCompleja();
-					
+
+					List<Complejo>[] solucion = raphson.solucionFormaCompleja();
+
 					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
-		
-	
-					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras,solucion, conexiones,conexiones1 ,m3,perdidadsPotencia,potenciaEntranteBarras); 
-					
-		
+
+					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras, solucion, conexiones,
+							conexiones1, m3, perdidadsPotencia, potenciaEntranteBarras);
 
 					System.out.println("\n\nSoluciones: ");
 
@@ -632,63 +619,60 @@ public class SPController implements Initializable {
 
 						for (Double d : solucionAngulos[i]) {
 
-							System.out.print(d*180/Math.PI + " ");
+							System.out.print(d * 180 / Math.PI + " ");
 
 						}
 
 						System.out.println();
 
 					}
-					
+
 					System.out.println();
 
-					for(int i=1;i<barras.size();i++) {
-						
-						Barras b= barras.get(i);
-						
-						if(b.isBarraCompensacion()) {
-							
+					for (int i = 1; i < barras.size(); i++) {
+
+						Barras b = barras.get(i);
+
+						if (b.isBarraCompensacion()) {
+
 							System.out.println("Generacion: ");
-							
-							System.out.println("Real: "+b.getFlowPowerRealCalculada()+" Imag: "+b.getFlowPowerImagCalculada());
-							
-							
+
+							System.out.println("Real: " + b.getFlowPowerRealCalculada() + " Imag: "
+									+ b.getFlowPowerImagCalculada());
+
 						}
-						
-						else if(b.isBarraPV()) {
-							
-							
+
+						else if (b.isBarraPV()) {
+
 							System.out.println("Generacion: ");
-							
-							System.out.println("Real: "+b.getGenerador().getMWSalida()+" Imag: "+b.getFlowPowerImagCalculada());
-							
-							
+
+							System.out.println("Real: " + b.getGenerador().getMWSalida() + " Imag: "
+									+ b.getFlowPowerImagCalculada());
+
 						}
-						
-					if(b.containsCarga()) {
-							
+
+						if (b.containsCarga()) {
+
 							System.out.println("Carga: ");
-							
-							System.out.println("Real: "+b.getCarga().getPotenciaActiva()+" Imag: "+b.getCarga().getPotenciaReactiva());
-							
+
+							System.out.println("Real: " + b.getCarga().getPotenciaActiva() + " Imag: "
+									+ b.getCarga().getPotenciaReactiva());
+
 						}
-				
-					}
-					
-					
-					System.out.println("Potencia en barras");
-					
-					for(int i=0;i<perdidadsPotencia.length;i++) {
-						for(int j=0;j<perdidadsPotencia.length;j++) {
-							
-							System.out.print(potenciaEntranteBarras[i][j]+" ");
-							
-							
-						}
-						
-						System.out.println();
+
 					}
 
+					System.out.println("Potencia en barras");
+
+					for (int i = 0; i < perdidadsPotencia.length; i++) {
+						for (int j = 0; j < perdidadsPotencia.length; j++) {
+
+							System.out.print(potenciaEntranteBarras[i][j] + " ");
+
+						}
+
+						System.out.println();
+					}
 
 				}
 
@@ -751,39 +735,41 @@ public class SPController implements Initializable {
 	}
 
 	private double snap(double value) {
-		double gridSize = 20.0; 
+		double gridSize = 20.0;
 		return Math.round(value / gridSize) * gridSize;
 	}
 
 	@FXML
-    private void zoomIn(ActionEvent event) {
-        updateZoom(1.2); // Aumentar 20%
-    }
+	private void zoomIn(ActionEvent event) {
+		updateZoom(1.2); // Aumentar 20%
+	}
 
-    @FXML
-    private void zoomOut(ActionEvent event) {
-        updateZoom(0.833); // Disminuir
-    }
+	@FXML
+	private void zoomOut(ActionEvent event) {
+		updateZoom(0.833); // Disminuir
+	}
 
-    private void updateZoom(double factor) {
-        // Limites de zoom (entre 10% y 500%)
-        double newScale = currentScale * factor;
-        if (newScale < 0.1 || newScale > 5.0) return;
+	private void updateZoom(double factor) {
+		// Limites de zoom (entre 10% y 500%)
+		double newScale = currentScale * factor;
+		if (newScale < 0.1 || newScale > 5.0)
+			return;
 
-        currentScale = newScale;
-        
-        // Aplicar transformación al área de dibujo
-        Scale scaleTransform = new Scale(currentScale, currentScale, 0, 0);
-        areaDibujo.getTransforms().clear();
-        areaDibujo.getTransforms().add(scaleTransform);
-        
-        // Ajustar el tamaño del contenedor para que el ScrollPane sepa que el contenido cambió
-        // Esto es clave para que las barras de scroll funcionen bien al hacer zoom
-        zoomContainer.setPrefWidth(areaDibujo.getPrefWidth() * currentScale);
-        zoomContainer.setPrefHeight(areaDibujo.getPrefHeight() * currentScale);
+		currentScale = newScale;
 
-        zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
-    }
+		// Aplicar transformación al área de dibujo
+		Scale scaleTransform = new Scale(currentScale, currentScale, 0, 0);
+		areaDibujo.getTransforms().clear();
+		areaDibujo.getTransforms().add(scaleTransform);
+
+		// Ajustar el tamaño del contenedor para que el ScrollPane sepa que el contenido
+		// cambió
+		// Esto es clave para que las barras de scroll funcionen bien al hacer zoom
+		zoomContainer.setPrefWidth(areaDibujo.getPrefWidth() * currentScale);
+		zoomContainer.setPrefHeight(areaDibujo.getPrefHeight() * currentScale);
+
+		zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
+	}
 
 	private StackPane nodoSeleccionadoVisual = null;
 
@@ -895,827 +881,53 @@ public class SPController implements Initializable {
 	}
 
 	// --- LÓGICA DE CREACIÓN DE OBJETOS ---
-    private void crearBarra(double x, double y) {
-        // --- 1. VISTA (Visual) ---
-        StackPane nodoVisual = new StackPane();
-        
-        // Rectángulo (Cuerpo de la barra)
-        // Empezamos con un tamaño estándar: 6px ancho x 60px alto
-        Rectangle cuerpoBarra = new Rectangle(6, 60, Color.BLACK);
-        cuerpoBarra.setStroke(Color.TRANSPARENT); // Sin borde por defecto
-        
-        // Etiqueta de Texto (Nombre de la barra)
-        Label etiquetaNombre = new Label("Bus ?");
-        etiquetaNombre.setFont(new Font("Arial", 10));
-        // Movemos el texto un poco a la derecha y arriba
-        etiquetaNombre.setTranslateX(15); 
-        etiquetaNombre.setTranslateY(-35);
-        
-       
-        
-        // Posicionamiento en el Grid
-        nodoVisual.setLayoutX(x - 3); 
-        nodoVisual.setLayoutY(y - 30); // Centrado verticalmente (mitad de 60)
+	private void crearBarra(double x, double y) {
 
 		String nombreDefault = "Bus-" + (areaDibujo.getChildren().size() + 1);
-        Barras logicaBarra = new Barras(nombreDefault);
+		Barras logicaBarra = new Barras(nombreDefault);
+		logicaBarra.setXbarra(x - 3);
+		logicaBarra.setYbarra(y - 30);
 		barras.add(logicaBarra);
-        
-        // Actualizamos la etiqueta visual
-        etiquetaNombre.setText(nombreDefault);
-
-        // --- 3. VINCULACIÓN (El Pegamento) ---
-        // Guardamos el objeto LÓGICO dentro del objeto VISUAL
-        nodoVisual.setUserData(logicaBarra);
-
-        // --- 4. INTERACCIÓN (Eventos) ---
-        nodoVisual.setCursor(Cursor.HAND);
-		nodoVisual.getChildren().addAll(cuerpoBarra, etiquetaNombre);
-
-        // Evento: Click para Seleccionar
-        nodoVisual.setOnMouseClicked(e -> {
-            // Evitar propagación para que no se ejecute el click del lienzo
-            e.consume(); 
-            
-            if (e.getButton() == MouseButton.PRIMARY) {
-                seleccionarNodo(nodoVisual);
-            }
-        });
-
-
-        // Evento: Menú Contextual (Click Derecho)
-        crearMenuContextualBarra(nodoVisual, cuerpoBarra, etiquetaNombre);
-
-        // Añadir al lienzo
-        areaDibujo.getChildren().add(nodoVisual);
-        
-        // Auto-seleccionar la nueva barra
-        seleccionarNodo(nodoVisual);
-    }
-
-	private void seleccionarNodo(StackPane nuevoNodo) {
-        // 1. Des-seleccionar el anterior (si existe)
-        if (nodoSeleccionadoVisual != null) {
-            Rectangle rAnterior = (Rectangle) nodoSeleccionadoVisual.getChildren().get(0);
-            rAnterior.setFill(Color.BLACK); // Vuelve a color normal
-            rAnterior.setEffect(null); // Quitar brillo
-        }
-
-        // 2. Seleccionar el nuevo
-        nodoSeleccionadoVisual = nuevoNodo;
-        
-        // Obtener el rectángulo interno para cambiarle el color
-        Rectangle rNuevo = (Rectangle) nodoSeleccionadoVisual.getChildren().get(0);
-        rNuevo.setFill(Color.BLUE); // Color de selección (Azul ingeniería)
-        
-        // Opcional: Mostrar info en consola
-        Barras datos = (Barras) nodoSeleccionadoVisual.getUserData();
-        System.out.println("Seleccionado: " + (datos.getNombrePersonalizado() != null ? datos.getNombrePersonalizado() : datos.getNombreBarra()) + " | V: " + datos.getVoltajePrefalla() + " p.u.");
-    }
-
-	private void crearMenuContextualBarra(StackPane nodo, Rectangle r, Label lbl) {
-        ContextMenu contextMenu = new ContextMenu();
-
-        // OPCIÓN 1: ROTAR
-        MenuItem itemRotar = new MenuItem("Rotar 90°");
-        itemRotar.setOnAction(e -> {
-            // Simplemente sumamos 90 grados a la rotación actual
-            nodo.setRotate(nodo.getRotate() + 90);
-            // Ajustar etiqueta para que no quede de cabeza (opcional, lógica compleja)
-        });
-
-        // OPCIÓN 2: CAMBIAR NOMBRE
-        MenuItem itemRenombrar = new MenuItem("Cambiar Nombre");
-        itemRenombrar.setOnAction(e -> {
-            // Recuperamos el objeto lógico
-            Barras datos = (Barras) nodo.getUserData();
-            
-            TextInputDialog dialog = new TextInputDialog(datos.getNombrePersonalizado());
-            dialog.setTitle("Renombrar Barra");
-            dialog.setHeaderText("Ingrese el nuevo ID de la barra:");
-            dialog.setContentText("Nombre:");
-
-            dialog.showAndWait().ifPresent(nuevoNombre -> {
-                // Actualizamos LÓGICA
-                datos.setNombrePersonalizado(nuevoNombre);
-                // Actualizamos VISUAL
-                lbl.setText(nuevoNombre);
-            });
-        });
-
-        // OPCIÓN 3: REDIMENSIONAR (Resize)
-        // Hacemos submenú para hacerlo simple
-        MenuItem itemMasGrande = new MenuItem("Agrandar Barra (+)");
-        itemMasGrande.setOnAction(e -> {
-            r.setHeight(r.getHeight() + 20); // Crece 20px
-            // Re-centrar el nodo visualmente si es necesario
-            nodo.setLayoutY(nodo.getLayoutY() - 10); 
-        });
-
-        MenuItem itemMasPequena = new MenuItem("Achicar Barra (-)");
-        itemMasPequena.setOnAction(e -> {
-            if (r.getHeight() > 20) {
-                r.setHeight(r.getHeight() - 20);
-                nodo.setLayoutY(nodo.getLayoutY() + 10);
-            }
-        });
-        
-        // OPCIÓN 4: ELIMINAR
-        MenuItem itemEliminar = new MenuItem("Eliminar");
-        itemEliminar.setOnAction(e -> {
-            areaDibujo.getChildren().remove(nodo);
-            if (nodoSeleccionadoVisual == nodo) nodoSeleccionadoVisual = null;
-            // Aquí deberías también borrarla de tu lista lógica de barras si tienes una ArrayList<Barras>
-        });
-
-        contextMenu.getItems().addAll(itemRenombrar, itemRotar, itemMasGrande, itemMasPequena, itemEliminar);
-        
-        // Vincular el menú al click derecho sobre el nodo
-        nodo.setOnContextMenuRequested(e -> {
-            contextMenu.show(nodo, e.getScreenX(), e.getScreenY());
-        });
-    }
-
+		NetworkModel.getInstance().addBarra(logicaBarra);
+	}
+	
 	@FXML
 	private void mouseClicked(MouseEvent e) throws IOException {
-		
+
 		areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
 		double x = snap(e.getX());
-        double y = snap(e.getY());
-		Node tipoElemento = tipoElemento(x, y);
-
-		if (e.getButton() == MouseButton.SECONDARY) {
-
-			Barras b = getContainingVertex(x, y);
-			tipoElemento = tipoElemento(x, y);
-
-			if ((tipoElemento instanceof Rectangle) && ((Rectangle) tipoElemento).getWidth() != 30) {
-
-				String nombreBarra;
-
-				if (b.getNombrePersonalizado() == null) {
-					nombreBarra = b.getNombreBarra();
-				} else {
-					nombreBarra = b.getNombrePersonalizado();
-				}
-
-				if (fPotencia) {
-					display.setText("Elemento:   " + nombreBarra + "    Voltaje: " + b.getVoltajePrefalla() + " [p,u]"
-							+ "    Ãngulo: " + b.getAnguloVoltajeBarra() + "    Barra de CompensaciÃ³n: "
-							+ b.isBarraCompensacion() + "\n" + b.isBarraCompensacion() + "  " + b.isBarraPQ() + "  "
-							+ b.isBarraPV());
-				} else {
-					display.setText("Elemento:   " + nombreBarra + "    Voltaje: " + b.getVoltajePrefalla() + " [p,u]"
-							+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":" + "\nFase A: "
-							+ String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-							+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° " + "[p,u]         Fase B: "
-							+ String.format("%.4f", magCorrientePuntoFallaFaseB) + " Ang. "
-							+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° " + "[p,u]         Fase C: "
-							+ String.format("%.4f", magCorrientePuntoFallaFaseC) + " Ang. "
-							+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
-							+ "\nVoltaje/Fase Post-Falla:  " + "\nFase A: "
-							+ String.format("%.4f", b.getVoltajePosFallaFaseA()) + " Ang. "
-							+ String.format("%.4f", b.getAnguloVoltajeFaseA()) + "Â° " + "[p,u]         Fase B: "
-							+ String.format("%.4f", b.getVoltajePosFallaFaseB()) + " Ang. "
-							+ String.format("%.4f", b.getAnguloVoltajeFaseB()) + "Â° " + "[p,u]         " + "Fase C: "
-							+ String.format("%.4f", b.getVoltajePosFallaFaseC()) + " Ang. "
-							+ String.format("%.4f", b.getAnguloVoltajeFaseC()) + "Â° " + "[p,u]");
-				}
-
-				if (e.isShiftDown()) {
-
-					InfoBarras infoBarra = new InfoBarras(b);
-					Scene dad = new Scene(infoBarra);
-					Stage sta = new Stage();
-
-					sta.setScene(dad);
-					sta.setTitle("INFORMACIÃN DE BARRAS");
-					sta.setResizable(false);
-					sta.initModality(Modality.APPLICATION_MODAL);
-					sta.showAndWait();
-					b.setVoltajePrefalla(infoBarra.getvoltajePrefalla());
-
-					if (b.isBarraCompensacion()) {
-						b.setBarraPQ(false);
-						b.setBarraPV(false);
-						if (barraCompensacion == null)
-							barraCompensacion = b;
-						else if (barraCompensacion != null && barraCompensacion != b) {
-
-							if ((barraCompensacion.containsBanco()
-									|| barraCompensacion.containsCarga()) && (!barraCompensacion.containsGenerador() && !barraCompensacion.containsCompensador())) {
-								int index = barras.indexOf(barraCompensacion);
-
-								barras.get(index).setBarraPQ(true);
-								barras.get(index).setBarraPV(false);
-								barras.get(index).setBarraCompensacion(false);
-								barraCompensacion = b;
-
-							}
-
-							else if (barraCompensacion.containsGenerador() || barraCompensacion.containsCompensador()) {
-								int index = barras.indexOf(barraCompensacion);
-
-								barras.get(index).setBarraPQ(false);
-								barras.get(index).setBarraPV(true);
-								barras.get(index).setBarraCompensacion(false);
-								barraCompensacion = b;
-
-							}
-							
-							else if (!barraCompensacion.containsBanco()
-									&&! barraCompensacion.containsCarga() && !barraCompensacion.containsGenerador()) {
-								int index = barras.indexOf(barraCompensacion);
-
-								barras.get(index).setBarraPQ(true);
-								barras.get(index).setBarraPV(false);
-								barras.get(index).setBarraCompensacion(false);
-								barraCompensacion = b;
-
-							}
-
-						}
-
-					}
-
-					if (!b.getOrientacion().equals(b.getOrientacionPrimaria())) {
-
-						if (b.getOrientacion().equals("H")) {
-
-							double xCoor = b.getXbarra() - b.getLargo() / 2;
-							double yCoor = b.getYbarra() + b.getLargo() / 2 - b.getAncho() / 2;
-							b.setXbarra(xCoor);
-							b.setYbarra(yCoor);
-							b.setAncho(largoBarra);
-							b.setLargo(ancho);
-							b.setOrientacionPrimaria(b.getOrientacion());
-
-						} else if (b.getOrientacion().equals("V")) {
-
-							double xCoor = b.getXbarra() + b.getAncho() / 2 - ancho / 2;
-							double yCoor = b.getYbarra() - largoBarra / 2 + ancho / 2;
-							b.setXbarra(xCoor);
-							b.setYbarra(yCoor);
-							b.setAncho(ancho);
-							b.setLargo(largoBarra);
-							b.setOrientacionPrimaria(b.getOrientacion());
-
-						}
-
-					}
-
-					repaint();
-					return;
-
-				}
-			}
-
-			else if (tipoElemento instanceof Line) {
-
-				boolean bandera = false;
-				boolean bandera1 = false;
-				boolean bandera2 = false;
-
-				if (!bandera) {
-
-					for (int i = 0; i < conexiones1.size(); i++) {
-
-						Point2D pntmedio = conexiones1.get(i).getPuntoMedio();
-
-						if (((Line) tipoElemento).contains(pntmedio)) {
-							System.out.println("ENTRO AQUI EN TRAFO");
-							display.setText("Elemento:   " + conexiones1.get(i).getNombreLinea() + "   ConexiÃ³n( "
-									+ conexiones1.get(i).getConexionPrimaria() + ","
-									+ conexiones1.get(i).getConexionSecundaria() + " )"
-									+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
-									+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° "
-									+ "[p,u]         Fase B: " + String.format("%.4f", magCorrientePuntoFallaFaseB)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° "
-									+ "[p,u]         Fase C: " + String.format("%.4f", magCorrientePuntoFallaFaseC)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
-									+ "\nCorriente/Fase Post-Falla:  " + "\nFase A: "
-									+ String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseA()) + "[p,u]"
-									+ "         Fase B: "
-									+ String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseB())
-									+ "[p,u]         " + "Fase C: "
-									+ String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseC()) + "[p,u]");
-
-							bandera1 = true;
-
-							
-							if (e.isShiftDown()) {
-								System.out.println("ENTRO AQUIIII");
-								InfoTrafo infotrafo = new InfoTrafo(conexiones1.get(i));
-								Scene dad = new Scene(infotrafo);
-								Stage sta = new Stage();
-
-								sta.setScene(dad);
-								sta.setTitle("INFORMACIÃN DE TRANSFORMADORES");
-								sta.setResizable(false);
-								sta.initModality(Modality.APPLICATION_MODAL);
-								sta.showAndWait();
-
-								conexiones1.get(i).setImpedanciaAterrizamientoPrimaria(
-										infotrafo.getImpedanciaAterrizamientoPrimaria());
-								conexiones1.get(i).setImpedanciaAterrizamientoSecundaria(
-										infotrafo.getImpedanciaAterrizamientoSecundaria());
-							
-								
-								repaint();
-							}
-							break;
-
-						}
-
-					}
-				}
-
-				if (!bandera && !bandera1) {
-
-					for (int i = 0; i < cargas.size(); i++) {
-
-						Point2D pntMedio = cargas.get(i).getPuntoMedio();
-
-						if (((Line) tipoElemento).contains(pntMedio)) {
-
-							display.setText("Elemento:   " + cargas.get(i).getNombreCarga() + "\nPotencia Activa [MW]: "
-									+ cargas.get(i).getPotenciaActiva()+ "\nPotencia Reactiva [MVars]: "
-									+ cargas.get(i).getPotenciaReactiva());
-
-							bandera2 = true;
-
-							if (e.isShiftDown()) {
-
-								InfoCarga infoCarga = new InfoCarga(cargas.get(i));
-								Scene dad = new Scene(infoCarga);
-								Stage sta = new Stage();
-								sta.setScene(dad);
-								sta.setTitle("INFORMACIÃN DE CARGAS");
-								sta.setResizable(false);
-								sta.initModality(Modality.APPLICATION_MODAL);
-								sta.showAndWait();
-								repaint();
-							}
-						}
-
-					}
-
-				}
-
-				if (!bandera && !bandera1 && !bandera2) {
-
-					for (int i = 0; i < bancos.size(); i++) {
-
-						Point2D pntmedio = bancos.get(i).getPuntoMedio();
-
-						if (((Line) tipoElemento).contains(pntmedio)) {
-
-							display.setText("Elemento:   " + bancos.get(i).getNombreCarga()
-									+ "\nPotencia Reactiva [MVars]: " + bancos.get(i).getPotenciaReactiva());
-
-							if (e.isShiftDown()) {
-
-								infoBanco infoBanco = new infoBanco(bancos.get(i));
-								Scene dad = new Scene(infoBanco);
-								Stage sta = new Stage();
-
-								sta.setScene(dad);
-								sta.setTitle("INFORMACIÃN DEl BANCO");
-								sta.setResizable(false);
-								sta.initModality(Modality.APPLICATION_MODAL);
-								sta.showAndWait();
-								repaint();
-
-							}
-						}
-					}
-
-				}
-			}
-
-			if (tipoElemento instanceof Circle && ((Circle) tipoElemento).getRadius() == 15) {
-
-				for (int i = 0; i < conexiones1.size(); i++) {
-
-					Point2D pntMedio = conexiones1.get(i).getPuntoMedio();
-
-					if (((Circle) tipoElemento).contains(pntMedio)) {
-
-						display.setText("Elemento:   " + conexiones1.get(i).getNombreLinea() + "   ConexiÃ³n( "
-								+ conexiones1.get(i).getConexionPrimaria() + ","
-								+ conexiones1.get(i).getConexionSecundaria() + " )"
-								+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
-								+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° " + "[p,u]         Fase B: "
-								+ String.format("%.4f", magCorrientePuntoFallaFaseB) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° " + "[p,u]         Fase C: "
-								+ String.format("%.4f", magCorrientePuntoFallaFaseC) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
-								+ "\nCorriente/Fase Post-Falla:  " + "\nFase A: "
-								+ String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseA()) + "[p,u]"
-								+ "         Fase B: "
-								+ String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseB()) + "[p,u]         "
-								+ "Fase C: " + String.format("%.4f", conexiones1.get(i).getCorrienteFallaFaseC())
-								+ "[p,u]");
-
-						if (e.isShiftDown()) {
-
-							InfoTrafo infotrafo = new InfoTrafo(conexiones1.get(i));
-							Scene dad = new Scene(infotrafo);
-							Stage sta = new Stage();
-
-							sta.setScene(dad);
-							sta.setTitle("INFORMACIÃN DE TRANSFORMADORES");
-							sta.setResizable(false);
-							sta.initModality(Modality.APPLICATION_MODAL);
-							sta.showAndWait();
-
-							conexiones1.get(i).setImpedanciaAterrizamientoPrimaria(
-									infotrafo.getImpedanciaAterrizamientoPrimaria());
-							conexiones1.get(i).setImpedanciaAterrizamientoSecundaria(
-									infotrafo.getImpedanciaAterrizamientoSecundaria());
-						
-							repaint();
-							
-						}
-						break;
-
-					}
-
-				}
-				return;
-
-			}
-
-			else if (tipoElemento instanceof Rectangle && ((Rectangle) tipoElemento).getWidth() == 30) {
-
-				for (int i = 0; i < conexiones.size(); i++) {
-
-					Point2D pntMedio = conexiones.get(i).getPuntomedio();
-
-					if (((Rectangle) tipoElemento).contains(pntMedio)) {
-
-						if (e.isShiftDown()) {
-
-							InfoLineas infolinea = new InfoLineas(conexiones.get(i));
-							Scene dad = new Scene(infolinea);
-							Stage sta = new Stage();
-							sta.setScene(dad);
-							sta.setTitle("INFORMACIÃN DE LÃNEAS");
-							sta.setResizable(false);
-							sta.initModality(Modality.APPLICATION_MODAL);
-							sta.showAndWait();
-
-						}
-
-						if (!fallaEnLinea || conexiones.get(i) != lineaFallada) {
-
-							display.setText("Elemento:   " + conexiones.get(i).getNombreLinea()
-									+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
-									+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° "
-									+ "[p,u]         Fase B: " + String.format("%.4f", magCorrientePuntoFallaFaseB)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° "
-									+ "[p,u]         Fase C: " + String.format("%.4f", magCorrientePuntoFallaFaseC)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
-									+ "\nCorriente/Fase Post-Falla:  " + "\nFase A: "
-									+ String.format("%.4f", conexiones.get(i).getCorrienteFallaFaseA()) + "[p,u]"
-									+ "         Fase B: "
-									+ String.format("%.4f", conexiones.get(i).getCorrienteFallaFaseB())
-									+ "[p,u]         " + "Fase C: "
-									+ String.format("%.4f", conexiones.get(i).getCorrienteFallaFaseC()) + "[p,u]");
-
-						} else {
-
-							display.setText("Elemento:   " + conexiones.get(i).getNombreLinea()
-									+ "\nCorriente punto de falla (Elemento 50%-" + tipoElementoFallado + ")" + ":"
-									+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-									+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° "
-									+ "[p,u]         Fase B: " + String.format("%.4f", magCorrientePuntoFallaFaseB)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° "
-									+ "[p,u]         Fase C: " + String.format("%.4f", magCorrientePuntoFallaFaseC)
-									+ " Ang. " + String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
-									+ "\nContribucciÃ³n Barra-" + conexiones.get(i).getBarra1().getNombreBarra() + " : "
-									+ "\nFase A: "
-									+ String.format("%.4f", conexiones.get(i).getBarra1().getContribuccionFallaFaseA())
-									+ " Ang. "
-									+ String.format("%.4f", conexiones.get(i).getBarra1().getAnguloContribucionFaseA())
-									+ "Â° " + "[p,u]" + "         Fase B: "
-									+ String.format("%.4f", conexiones.get(i).getBarra1().getContribuccionFallaFaseB())
-									+ " Ang. "
-									+ String.format("%.4f", conexiones.get(i).getBarra1().getAnguloContribucionFaseB())
-									+ "Â° " + "[p,u]" + "         Fase C: "
-									+ String.format("%.4f", conexiones.get(i).getBarra1().getContribuccionFallaFaseC())
-									+ " Ang. "
-									+ String.format("%.4f", conexiones.get(i).getBarra1().getAnguloContribucionFaseC())
-									+ "Â° " + "[p,u]" + "\nContribucciÃ³n Barra-"
-									+ conexiones.get(i).getBarra2().getNombreBarra() + " : " + "\nFase A: "
-									+ String.format("%.4f", conexiones.get(i).getBarra2().getContribuccionFallaFaseA())
-									+ " Ang. "
-									+ String.format("%.4f", conexiones.get(i).getBarra2().getAnguloContribucionFaseA())
-									+ "Â° " + "[p,u]" + "         Fase B: "
-									+ String.format("%.4f", conexiones.get(i).getBarra2().getContribuccionFallaFaseB())
-									+ " Ang. "
-									+ String.format("%.4f", conexiones.get(i).getBarra2().getAnguloContribucionFaseB())
-									+ "Â° " + "[p,u]" + "         Fase C: "
-									+ String.format("%.4f", conexiones.get(i).getBarra2().getContribuccionFallaFaseC())
-									+ " Ang. "
-									+ String.format("%.4f", conexiones.get(i).getBarra2().getAnguloContribucionFaseC())
-									+ "Â° " + "[p,u]");
-
-						}
-
-						break;
-
-					}
-
-				}
-
-			}
-
-			else if (tipoElemento instanceof Circle && ((Circle) tipoElemento).getRadius() == 20) {
-
-				double xcenter = ((Circle) tipoElemento).getCenterX();
-				for (int i = 0; i < conexiongene.size(); i++) {
-
-					if (conexiongene.get(i).getBarra().getxCoorG() - 30 == xcenter
-							|| conexiongene.get(i).getBarra().getxCoorG() + 40 == xcenter || ((Circle) tipoElemento)
-							.contains(conexiongene.get(i).getXCenter(), conexiongene.get(i).getYCenter())) {
-
-						Generadores g = conexiongene.get(i);
-
-						display.setText("Elemento:   " + conexiongene.get(i).getNombreGenerador() + " MW.Out: "
-								+ g.getMWSalida()  + "  MW.OutMin: " + g.getMWSalidaMin() + "  MW.OutMax: "
-								+ g.getMWSalidaMax() + "\n" + "MVar.Out: " + g.getMVarSalida() + "  MVar.OutMin: "
-								+ g.getMVarSalidaMin() + "  MVar.OutMax: " + g.getMVarSalidaMax()
-								+ "\nCorriente punto de falla (Elemento " + tipoElementoFallado + ")" + ":"
-								+ "\nFase A: " + String.format("%.4f", magCorrientePuntoFallaFaseA) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseA) + "Â° " + "[p,u]         Fase B: "
-								+ String.format("%.4f", magCorrientePuntoFallaFaseB) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseB) + "Â° " + "[p,u]         Fase C: "
-								+ String.format("%.4f", magCorrientePuntoFallaFaseC) + " Ang. "
-								+ String.format("%.4f", angCorrientePuntoFallaFaseC) + "Â° " + "[p,u]"
-								+ "\nContribucciÃ³n de la mÃ¡quina a la falla: " + "\nFase A: "
-								+ String.format("%.2f", conexiongene.get(i).getCorrienteFaseA()) + " Ang. "
-								+ String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseA()) + "Â° " + "[p,u]"
-								+ "         Fase B: " + String.format("%.2f", conexiongene.get(i).getCorrienteFaseB())
-								+ " Ang. " + String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseB()) + "Â° "
-								+ "[p,u]         " + "Fase C: "
-								+ String.format("%.2f", conexiongene.get(i).getCorrienteFaseC()) + " Ang. "
-								+ String.format("%.2f", conexiongene.get(i).getAnguloCorrienteFaseC()) + "Â° "
-								+ "[p,u]");
-
-						if (e.isShiftDown()) {
-
-							InfoGeneradores infog = new InfoGeneradores(conexiongene.get(i));
-							Scene dad = new Scene(infog);
-							Stage sta = new Stage();
-
-							sta.setScene(dad);
-							sta.setTitle("INFORMACIÃN DE GENERADORES");
-							sta.setResizable(false);
-							sta.initModality(Modality.APPLICATION_MODAL);
-							sta.showAndWait();
-
-							conexiongene.get(i).setImpedanciaAterrizamiento(infog.getImpedanciaAterrizamiento());
-							repaint();
-						}
-
-						break;
-					}
-
-				}
-
-			}
-			
-			else if (tipoElemento instanceof Circle && ((Circle) tipoElemento).getRadius() == 15.5) {
-				
-				double xcenter = ((Circle) tipoElemento).getCenterX();
-				double ycenter = ((Circle) tipoElemento).getCenterY();
-				
-				for(int i=0;i<compensadores.size();i++) {
-					
-					Circle circle= compensadores.get(i).getCiculoCompensador();
-					
-					if(circle.contains(xcenter,ycenter)) {
-						
-						CompensadorEstatico compensador= compensadores.get(i);
-						
-						display.setText("Elemento: Compensador EstÃ¡tico " + compensadores.get(i).getNombreCompensador() + " Mvar.Min: "
-								+ compensador.getPotenciaReactivaMin() +" [p,u] "+ " Mvar.Max: " + compensador.getPotenciaReactivaMax()+ " [p,u] "
-							);
-						
-						if(e.isShiftDown()) {
-							
-							
-							FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("CompensadorEstaticoFXML.fxml"));
-							Parent root = fxmlLoader.load();
-
-							Scene scene = new Scene(root);
-
-							Stage s = new Stage();
-
-							CompensadorController p = fxmlLoader.getController();
-						
-							p.initialize(compensador,this);
-							p.setTitle(compensador.getNombreCompensador());
-							p.setTextMax(""+compensador.getPotenciaReactivaMax());
-							p.setTextMin(""+compensador.getPotenciaReactivaMin());
-
-							s.setTitle("Especificaciones Flujo de Potencia");
-							s.setScene(scene);
-							s.show();
-							s.setResizable(false);
-					
-						}
-						
-						
-						break;
-						
-					}
-					
-				}
-				
-				repaint();
-				
-				
-				
-			}
-			
-	
-		}
-
+		double y = snap(e.getY());
 		if (e.getButton() == MouseButton.PRIMARY) {
-
-            switch (currentTool) {
-                case BARRA:
-                    crearBarra(x, y);
-                    break;
-                case NONE:
-                    // Lógica para seleccionar/ver propiedades
-                    System.out.println("Modo Selección: Click en " + x + ", " + y);
-                    break;
-                case LINEA:
-                    handleLineaCreation(x, y);
-                    break;
-                case TRANSFORMADOR:
-                    handleTrafoCreation(x, y);
-                    break;
-                case GENERADOR:
-                    handleGeneradorCreation(x, y);
-                    break;
-                case CARGA:
-                    handleCargaCreation(x, y);
-                    break;
-                case BANCO:
-                    handleBancoCreation(x, y);
-                    break;
-                case COMPENSADOR:
-                    handleCompensadorCreation(x, y);
-                    break;
-                default:
-                    break;
-            }
-            return;
-		}
-
-		Barras b = getContainingVertex(x, y);
-		if (e.getButton() == MouseButton.SECONDARY && isLineOn && (currentTool == ToolType.LINEA || currentTool == ToolType.TRANSFORMADOR)) {
-
-			isLineOn = false;
-
-			repaint();
-
+			switch (currentTool) {
+				case BARRA:
+					crearBarra(x, y);
+					break;
+				case NONE:
+					// Lógica para seleccionar/ver propiedades
+					System.out.println("Modo Selección: Click en " + x + ", " + y);
+					break;
+				case LINEA:
+					handleLineaCreation(x, y);
+					break;
+				case TRANSFORMADOR:
+					handleTrafoCreation(x, y);
+					break;
+				case GENERADOR:
+					handleGeneradorCreation(x, y);
+					break;
+				case CARGA:
+					handleCargaCreation(x, y);
+					break;
+				case BANCO:
+					handleBancoCreation(x, y);
+					break;
+				case COMPENSADOR:
+					handleCompensadorCreation(x, y);
+					break;
+				default:
+					break;
+			}
 			return;
-		}
-
-		if (e.getButton() == MouseButton.MIDDLE) {
-
-			tipoElemento = tipoElemento(x, y);
-
-			if ((tipoElemento instanceof Rectangle) && ((Rectangle) tipoElemento).getWidth() != 30) {
-
-				InfoImpedanciaFalla infolinea = new InfoImpedanciaFalla(b.getNombreBarra());
-				Scene dad = new Scene(infolinea);
-				Stage sta = new Stage();
-
-				sta.setScene(dad);
-				sta.setTitle("INFORMACIÃN IMPEDANCIA FALLA");
-				sta.setResizable(false);
-				sta.initModality(Modality.APPLICATION_MODAL);
-				sta.showAndWait();
-
-				impedanciaDeFalla = infolinea.getImpedanciaFalla();
-				barraFallada = b;
-				b.setImpedanciaFalla(impedanciaDeFalla);
-
-				tipoElementoFallado = b.getNombreBarra();
-
-				double xFalla = b.getXbarra() - 5;
-				double yFalla = b.getYbarra() + b.getLargo() / 2;
-
-				coorFalla.add(xFalla);
-				coorFalla.add(yFalla);
-				fallaEnLinea = false;
-
-				repaint();
-
-			}
-
-			else if (tipoElemento instanceof Line) {
-
-				boolean bandera = false;
-
-				for (int i = 0; i < conexiones.size(); i++) {
-
-					Point2D puntmedio = conexiones.get(i).getPuntomedio();
-
-					if (((Line) tipoElemento).contains(puntmedio)) {
-
-						InfoImpedanciaFallaLinea infolinea = new InfoImpedanciaFallaLinea(
-								conexiones.get(i).getNombreLinea(), conexiones.get(i));
-						Scene dad = new Scene(infolinea);
-						Stage sta = new Stage();
-
-						sta.setScene(dad);
-						sta.setTitle("INFORMACIÃN IMPEDANCIA FALLA");
-						sta.setResizable(false);
-						sta.initModality(Modality.APPLICATION_MODAL);
-						sta.showAndWait();
-
-						impedanciaDeFalla = infolinea.getImpedanciaFalla();
-						conexiones.get(i).setImpedanciafalla(impedanciaDeFalla);
-						tipoElementoFallado = conexiones.get(i).getNombreLinea();
-						lineaFallada = conexiones.get(i);
-
-						double xFalla = e.getX() - 6;
-						double yFalla = e.getY() + 8;
-
-						bandera = true;
-
-						coorFalla.add(xFalla);
-						coorFalla.add(yFalla);
-						fallaEnLinea = true;
-
-						repaint();
-						break;
-					}
-
-				}
-
-				if (!bandera) {
-
-					JOptionPane.showMessageDialog(null, "La falla no se puede ubicar dentro del transformador");
-				}
-
-			}
-
-			else if (tipoElemento instanceof Rectangle && ((Rectangle) tipoElemento).getWidth() == 30) {
-
-				for (int i = 0; i < conexiones.size(); i++) {
-
-					Point2D pntmedio = conexiones.get(i).getPuntomedio();
-
-					if (((Rectangle) tipoElemento).contains(pntmedio)) {
-
-						InfoImpedanciaFallaLinea infolinea = new InfoImpedanciaFallaLinea(
-								conexiones.get(i).getNombreLinea(), conexiones.get(i));
-						Scene dad = new Scene(infolinea);
-						Stage sta = new Stage();
-
-						sta.setScene(dad);
-						sta.setTitle("INFORMACIÃN IMPEDANCIA FALLA");
-						sta.setResizable(false);
-						sta.initModality(Modality.APPLICATION_MODAL);
-						sta.showAndWait();
-
-						impedanciaDeFalla = infolinea.getImpedanciaFalla();
-						conexiones.get(i).setImpedanciafalla(impedanciaDeFalla);
-						tipoElementoFallado = conexiones.get(i).getNombreLinea();
-						lineaFallada = conexiones.get(i);
-
-						double xFalla = e.getX() - 6;
-						double yFalla = e.getY() + 8;
-
-						coorFalla.add(xFalla);
-						coorFalla.add(yFalla);
-						fallaEnLinea = true;
-
-						repaint();
-						break;
-
-					}
-
-				}
-
-			}
-
-			else if (tipoElemento instanceof Circle && ((Circle) tipoElemento).getRadius() == 15) {
-
-				JOptionPane.showMessageDialog(null, "La falla no se puede ubicar dentro del transformador");
-			}
-
 		}
 
 	}
@@ -1803,7 +1015,7 @@ public class SPController implements Initializable {
 					double xcarga = cargas.get(i).getBarra().getCoordenadasCarga().getX();
 					double ycarga = cargas.get(i).getBarra().getCoordenadasCarga().getY();
 
-					if (((Circle) tipoElemento).contains(xcarga,ycarga)) {
+					if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
 
 						((Circle) tipoElemento).setCenterX(x);
 						((Circle) tipoElemento).setCenterY(y);
@@ -1827,7 +1039,7 @@ public class SPController implements Initializable {
 					double xcarga = bancos.get(i).getBarra().getCoordenadasBanco().getX();
 					double ycarga = bancos.get(i).getBarra().getCoordenadasBanco().getY();
 
-					if (((Circle) tipoElemento).contains(xcarga,ycarga)) {
+					if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
 
 						((Circle) tipoElemento).setCenterX(x);
 						((Circle) tipoElemento).setCenterY(y);
@@ -1845,14 +1057,13 @@ public class SPController implements Initializable {
 					}
 
 				}
-				
-				for(int i=0;i<compensadores.size();i++) {
-					
+
+				for (int i = 0; i < compensadores.size(); i++) {
+
 					double xcarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getX();
 					double ycarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getY();
 
-					
-					if (((Circle) tipoElemento).contains(xcarga,ycarga)) {
+					if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
 
 						((Circle) tipoElemento).setCenterX(x);
 						((Circle) tipoElemento).setCenterY(y);
@@ -1868,9 +1079,7 @@ public class SPController implements Initializable {
 						return;
 
 					}
-					
-					
-					
+
 				}
 
 			}
@@ -2057,7 +1266,7 @@ public class SPController implements Initializable {
 		for (int i = 1; i < barras.size(); i++) {
 
 			if (obtenerDistancia(x, y, barras.get(i).getPuntoMedioBarra().getX(),
-					barras.get(i).getPuntoMedioBarra().getY()) && barras.get(i).getOrientacion().equals("V") ) {
+					barras.get(i).getPuntoMedioBarra().getY()) && barras.get(i).getOrientacion().equals("V")) {
 				return true;
 			}
 
@@ -2118,10 +1327,10 @@ public class SPController implements Initializable {
 
 			Barras b = ((Barras) elemento);
 
-			if(b.isBarraCompensacion()) {
-					barraCompensacion=null;
+			if (b.isBarraCompensacion()) {
+				barraCompensacion = null;
 			}
-			
+
 			int indexBarrab = barras.indexOf(b);
 
 			for (int i : listaBarras[indexBarrab]) {
@@ -2150,34 +1359,33 @@ public class SPController implements Initializable {
 			repaint();
 
 		} else if (elemento instanceof Generadores && elemento != null && conexiongene.size() > 0) {
-			
-			Barras b= conexiongene.get(conexiongene.size() - 1).getBarra();
-			if(!b.containsCompensador()) {
+
+			Barras b = conexiongene.get(conexiongene.size() - 1).getBarra();
+			if (!b.containsCompensador()) {
 				b.setBarraPQ(true);
 				b.setBarraPV(false);
 			}
-			
+
 			b.setGenerador(null);
 			conexiongene.remove(conexiongene.size() - 1);
 			corGenerador.clear();
-			
+
 			repaint();
 		}
-		
+
 		else if (elemento instanceof CompensadorEstatico && elemento != null && compensadores.size() > 0) {
-			
-			Barras b= compensadores.get(compensadores.size() - 1).getBarra();
-			if(!b.containsGenerador()) {
-			b.setBarraPQ(true);
-			b.setBarraPV(false);}
+
+			Barras b = compensadores.get(compensadores.size() - 1).getBarra();
+			if (!b.containsGenerador()) {
+				b.setBarraPQ(true);
+				b.setBarraPV(false);
+			}
 			b.setCompensador(null);
 			compensadores.remove(compensadores.size() - 1);
 			corCompensador.clear();
-			
+
 			repaint();
 		}
-		
-		
 
 		else if ((elemento instanceof Transformador) && (elemento instanceof Lineas) && elemento != null
 				&& conexiones1.size() > 0) {
@@ -2194,7 +1402,7 @@ public class SPController implements Initializable {
 		}
 
 		else if (elemento instanceof Carga && elemento != null && cargas.size() > 0) {
-			Barras b= cargas.get(cargas.size() - 1).getBarra();
+			Barras b = cargas.get(cargas.size() - 1).getBarra();
 			b.setCarga(null);
 			cargas.remove(cargas.size() - 1);
 			corCarga.clear();
@@ -2202,7 +1410,7 @@ public class SPController implements Initializable {
 		}
 
 		else if (elemento instanceof Bancos && elemento != null && bancos.size() > 0) {
-			Barras b= bancos.get(bancos.size() - 1).getBarra();
+			Barras b = bancos.get(bancos.size() - 1).getBarra();
 			b.setBanco(null);
 			bancos.remove(bancos.size() - 1);
 			corBanco.clear();
@@ -2424,20 +1632,18 @@ public class SPController implements Initializable {
 		}
 
 	}
-	
+
 	public void dibujarCompensador() {
-		
-		for(int i=0;i<compensadores.size();i++) {
-			
+
+		for (int i = 0; i < compensadores.size(); i++) {
+
 			corCompensador.add(compensadores.get(i).getBarra().getXbarra());
-			compensadores.get(i).setNombreCompensador(nombreCompensador+(i+1));
-			
+			compensadores.get(i).setNombreCompensador(nombreCompensador + (i + 1));
+
 			areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(compensadores.get(i), "E"));
-	
+
 		}
-		
-		
-		
+
 	}
 
 	public void dibujarGenerador() {
@@ -2514,7 +1720,7 @@ public class SPController implements Initializable {
 						conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2,
 						conexiongene.get(i).getBarra().getXbarra() + conexiongene.get(i).getBarra().getAncho() / 2,
 						(conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2)
-						- 10);
+								- 10);
 
 				lineg.setStrokeWidth(4);
 
@@ -2552,7 +1758,7 @@ public class SPController implements Initializable {
 						conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2,
 						conexiongene.get(i).getBarra().getXbarra() + conexiongene.get(i).getBarra().getAncho() / 2,
 						(conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2)
-						+ 10);
+								+ 10);
 
 				lineg.setStrokeWidth(4);
 				Circle cirg = new Circle();
@@ -2600,9 +1806,6 @@ public class SPController implements Initializable {
 		}
 
 		for (int i = 0; i < conexiones1.size(); i++) {
-			
-			
-			
 
 			Line linea = new Line(conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX(),
 					conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY(),
@@ -2635,27 +1838,22 @@ public class SPController implements Initializable {
 			cc2.setFill(Color.WHITE);
 
 			;
-			
-			
 
 			linea.setStroke(Color.BLACK);
 			linea.setStrokeWidth(2);
 
 			areaDibujo.getChildren().add(linea);
 			areaDibujo.getChildren().addAll(cc1, cc2);
-			
-			
 
 			Text textLinea = new Text(conexiones1.get(i).getNombreLinea());
 			textLinea.setStroke(Color.BLACK);
 			textLinea.setStrokeWidth(1);
-			
-			if(conexiones1.get(i).isHasTap()) {
+
+			if (conexiones1.get(i).isHasTap()) {
 				textLinea.setStroke(Color.BLUE);
 			}
-			
 
-			if(conexiones1.get(i).isHasTap() && conexiones1.get(i).getAngtab()!=0) {
+			if (conexiones1.get(i).isHasTap() && conexiones1.get(i).getAngtab() != 0) {
 				textLinea.setStroke(Color.GREEN);
 			}
 
@@ -3177,82 +2375,81 @@ public class SPController implements Initializable {
 
 			resultado[y][y] = new Complejo(real, complejo);
 		}
-		
+
 		for (int i = 0; i < conexiones1.size(); i++) {
-			
-			Transformador trafo= conexiones1.get(i);
-			
+
+			Transformador trafo = conexiones1.get(i);
 
 			int x = barras.indexOf(conexiones1.get(i).getBarra1());
 			int y = barras.indexOf(conexiones1.get(i).getBarra2());
-			
-			if(trafo.isHasTap()) {
-				
-				Complejo a= Complejo.polar2Cartesiano(trafo.getMagTab(), trafo.getAngtab());
-				Complejo a_conj= Complejo.conjugado(a);
-				
-				double reactancia= -1/ trafo.getimpedanciaLineaZ1();
-				
-				Complejo Y_trafo= new Complejo(0.0,reactancia);
-				
-				resultado[y][y]= Complejo.suma(resultado[y][y], Complejo.cociente(Y_trafo, a));
-				
-				double magnitud_a_squared=1/a.getReal()*a.getReal()+a.getImag()*a.getImag(); 
-				
-				resultado[x][x]= Complejo.suma(resultado[x][x], Complejo.producto(new Complejo(magnitud_a_squared,0), Y_trafo));
-				
-				
-				resultado[y][x]=Complejo.producto(new Complejo(-1,0), Complejo.cociente(Y_trafo, a));
 
-				resultado[x][y]= Complejo.producto(new Complejo(-1,0), Complejo.cociente(Y_trafo, a_conj));
-				
+			if (trafo.isHasTap()) {
+
+				Complejo a = Complejo.polar2Cartesiano(trafo.getMagTab(), trafo.getAngtab());
+				Complejo a_conj = Complejo.conjugado(a);
+
+				double reactancia = -1 / trafo.getimpedanciaLineaZ1();
+
+				Complejo Y_trafo = new Complejo(0.0, reactancia);
+
+				resultado[y][y] = Complejo.suma(resultado[y][y], Complejo.cociente(Y_trafo, a));
+
+				double magnitud_a_squared = 1 / a.getReal() * a.getReal() + a.getImag() * a.getImag();
+
+				resultado[x][x] = Complejo.suma(resultado[x][x],
+						Complejo.producto(new Complejo(magnitud_a_squared, 0), Y_trafo));
+
+				resultado[y][x] = Complejo.producto(new Complejo(-1, 0), Complejo.cociente(Y_trafo, a));
+
+				resultado[x][y] = Complejo.producto(new Complejo(-1, 0), Complejo.cociente(Y_trafo, a_conj));
+
 				continue;
-				
-			}
-			else {
-			
 
-			double B = -conexiones1.get(i).getimpedanciaLineaZ1()
-					/ (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
-							+ conexiones1.get(i).getimpedanciaLineaZ1() * conexiones1.get(i).getimpedanciaLineaZ1());
-			double G = conexiones1.get(i).getResitencia()
-					/ (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
-							+ conexiones1.get(i).getimpedanciaLineaZ1() * conexiones1.get(i).getimpedanciaLineaZ1());
+			} else {
 
-			Complejo fueraDi = new Complejo(G, B);
+				double B = -conexiones1.get(i).getimpedanciaLineaZ1()
+						/ (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
+								+ conexiones1.get(i).getimpedanciaLineaZ1()
+										* conexiones1.get(i).getimpedanciaLineaZ1());
+				double G = conexiones1.get(i).getResitencia()
+						/ (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
+								+ conexiones1.get(i).getimpedanciaLineaZ1()
+										* conexiones1.get(i).getimpedanciaLineaZ1());
 
-			resultado[x][y] = Complejo.producto(new Complejo(-1, 0), fueraDi);
+				Complejo fueraDi = new Complejo(G, B);
 
-			resultado[y][x] = Complejo.producto(new Complejo(-1, 0), fueraDi);
+				resultado[x][y] = Complejo.producto(new Complejo(-1, 0), fueraDi);
 
-			Complejo diagonal = resultado[x][x];
-			double real = diagonal.getReal();
-			double complejo = diagonal.getImag();
-			real += G;
-			complejo += B ;
+				resultado[y][x] = Complejo.producto(new Complejo(-1, 0), fueraDi);
 
-			resultado[x][x] = new Complejo(real, complejo);
+				Complejo diagonal = resultado[x][x];
+				double real = diagonal.getReal();
+				double complejo = diagonal.getImag();
+				real += G;
+				complejo += B;
 
-			diagonal = resultado[y][y];
-			real = diagonal.getReal();
-			complejo = diagonal.getImag();
-			real += G;
-			complejo += B ;
+				resultado[x][x] = new Complejo(real, complejo);
 
-			resultado[y][y] = new Complejo(real, complejo);
-			
+				diagonal = resultado[y][y];
+				real = diagonal.getReal();
+				complejo = diagonal.getImag();
+				real += G;
+				complejo += B;
+
+				resultado[y][y] = new Complejo(real, complejo);
+
 			}
 		}
-		
-		for(int i=0;i<bancos.size();i++) {
-			
-			int b= barras.indexOf(bancos.get(i).getBarra());
-			
-			resultado[b][b]= Complejo.suma(resultado[b][b], new Complejo(0,bancos.get(i).getPotenciaReactiva()/SPController.BASE_SISTEMA));
-			
+
+		for (int i = 0; i < bancos.size(); i++) {
+
+			int b = barras.indexOf(bancos.get(i).getBarra());
+
+			resultado[b][b] = Complejo.suma(resultado[b][b],
+					new Complejo(0, bancos.get(i).getPotenciaReactiva() / SPController.BASE_SISTEMA));
+
 		}
-		
-	
+
 		return resultado;
 
 	}
@@ -3279,8 +2476,8 @@ public class SPController implements Initializable {
 			for (int j = 0; j < bordes.get(i).size(); j++) {
 
 				System.out
-				.print("(Barra " + bordes.get(i).get(j).getU() + " , " + " Barra " + bordes.get(i).get(j).getV()
-						+ " , " + ((WeightEdeges) bordes.get(i).get(j)).getWeight() + " )");
+						.print("(Barra " + bordes.get(i).get(j).getU() + " , " + " Barra " + bordes.get(i).get(j).getV()
+								+ " , " + ((WeightEdeges) bordes.get(i).get(j)).getWeight() + " )");
 
 			}
 			System.out.println();
@@ -3300,138 +2497,138 @@ public class SPController implements Initializable {
 
 	}
 
-    // --- HANDLERS FOR TOOLS ---
+	// --- HANDLERS FOR TOOLS ---
 
-    private void handleGeneradorCreation(double x, double y) {
-        Barras b = getContainingVertex(x, y);
-        if (b != null) {
-            if (!corGenerador.contains(b.getXbarra())) {
-                b.setxCoorG(x);
-                b.setyCoorG(y);
+	private void handleGeneradorCreation(double x, double y) {
+		Barras b = getContainingVertex(x, y);
+		if (b != null) {
+			if (!corGenerador.contains(b.getXbarra())) {
+				b.setxCoorG(x);
+				b.setyCoorG(y);
 
-                Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
+				Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
 
-                conexiongene.add(gene);
-                b.setBarraPV(true);
-                b.setBarraPQ(false);
-                b.setGenerador(gene);
-                objetosCreados.add(gene);
+				conexiongene.add(gene);
+				b.setBarraPV(true);
+				b.setBarraPQ(false);
+				b.setGenerador(gene);
+				objetosCreados.add(gene);
 
-                corGenerador.add(b.getXbarra());
-                repaint();
-            }
-        }
-    }
+				corGenerador.add(b.getXbarra());
+				repaint();
+			}
+		}
+	}
 
-    private void handleCargaCreation(double x, double y) {
-        Barras b = getContainingVertex(x, y);
-        if (b != null) {
-            if (!corCarga.contains(b.getXbarra())) {
-                b.setCoordenadasCarga(new Point2D(x, y));
-                Carga carga = new Carga(new Point2D(x, y), b, nombreCarga);
-                cargas.add(carga);
-                objetosCreados.add(carga);
-                if (b.isBarraPV()) {
-                    b.setBarraPQ(false);
-                } else {
-                    b.setBarraPQ(true);
-                }
-                b.setCarga(carga);
-                corCarga.add(b.getXbarra());
-                repaint();
-            }
-        }
-    }
+	private void handleCargaCreation(double x, double y) {
+		Barras b = getContainingVertex(x, y);
+		if (b != null) {
+			if (!corCarga.contains(b.getXbarra())) {
+				b.setCoordenadasCarga(new Point2D(x, y));
+				Carga carga = new Carga(new Point2D(x, y), b, nombreCarga);
+				cargas.add(carga);
+				objetosCreados.add(carga);
+				if (b.isBarraPV()) {
+					b.setBarraPQ(false);
+				} else {
+					b.setBarraPQ(true);
+				}
+				b.setCarga(carga);
+				corCarga.add(b.getXbarra());
+				repaint();
+			}
+		}
+	}
 
-    private void handleBancoCreation(double x, double y) {
-        Barras b = getContainingVertex(x, y);
-        if (b != null) {
-            if (!corBanco.contains(b.getXbarra())) {
-                b.setCoordenadasBanco(new Point2D(x, y));
-                Bancos banco = new Bancos(new Point2D(x, y), b, nombreBanco);
-                bancos.add(banco);
-                objetosCreados.add(banco);
-                b.setBanco(banco);
-                corBanco.add(b.getXbarra());
-                repaint();
-            }
-        }
-    }
+	private void handleBancoCreation(double x, double y) {
+		Barras b = getContainingVertex(x, y);
+		if (b != null) {
+			if (!corBanco.contains(b.getXbarra())) {
+				b.setCoordenadasBanco(new Point2D(x, y));
+				Bancos banco = new Bancos(new Point2D(x, y), b, nombreBanco);
+				bancos.add(banco);
+				objetosCreados.add(banco);
+				b.setBanco(banco);
+				corBanco.add(b.getXbarra());
+				repaint();
+			}
+		}
+	}
 
-    private void handleCompensadorCreation(double x, double y) {
-        Barras b = getContainingVertex(x, y);
-        if (b != null) {
-            if (!corCompensador.contains(b.getXbarra())) {
-                b.setCoordenadaCompensador(new Point2D(x, y));
-                CompensadorEstatico cp = new CompensadorEstatico(new Point2D(x, y), b, nombreCompensador);
-                b.setBarraPV(true);
-                b.setBarraPQ(false);
-                compensadores.add(cp);
-                objetosCreados.add(cp);
-                b.setCompensador(cp);
-                corCompensador.add(b.getXbarra());
-                repaint();
-            }
-        }
-    }
+	private void handleCompensadorCreation(double x, double y) {
+		Barras b = getContainingVertex(x, y);
+		if (b != null) {
+			if (!corCompensador.contains(b.getXbarra())) {
+				b.setCoordenadaCompensador(new Point2D(x, y));
+				CompensadorEstatico cp = new CompensadorEstatico(new Point2D(x, y), b, nombreCompensador);
+				b.setBarraPV(true);
+				b.setBarraPQ(false);
+				compensadores.add(cp);
+				objetosCreados.add(cp);
+				b.setCompensador(cp);
+				corCompensador.add(b.getXbarra());
+				repaint();
+			}
+		}
+	}
 
-    private void handleLineaCreation(double x, double y) {
-        handleConnectionCreation(x, y, false);
-    }
+	private void handleLineaCreation(double x, double y) {
+		handleConnectionCreation(x, y, false);
+	}
 
-    private void handleTrafoCreation(double x, double y) {
-        handleConnectionCreation(x, y, true);
-    }
+	private void handleTrafoCreation(double x, double y) {
+		handleConnectionCreation(x, y, true);
+	}
 
-    private void handleConnectionCreation(double x, double y, boolean isTrafo) {
-        Barras b = getContainingVertex(x, y);
+	private void handleConnectionCreation(double x, double y, boolean isTrafo) {
+		Barras b = getContainingVertex(x, y);
 
-        if (!isLineOn) {
-            if (b != null) {
-                path = new Path();
-                path.getElements().add(new MoveTo(x, y));
-                ultimoPunto = new Point2D(x, y);
-                startB = b;
-                endOfLineX = x;
-                isLineOn = true;
-            }
-        } else {
-            if (b != null) {
-                if (!sonIguales(b, startB)) {
-                    int one = barras.indexOf(startB);
-                    int other = barras.indexOf(b);
+		if (!isLineOn) {
+			if (b != null) {
+				path = new Path();
+				path.getElements().add(new MoveTo(x, y));
+				ultimoPunto = new Point2D(x, y);
+				startB = b;
+				endOfLineX = x;
+				isLineOn = true;
+			}
+		} else {
+			if (b != null) {
+				if (!sonIguales(b, startB)) {
+					int one = barras.indexOf(startB);
+					int other = barras.indexOf(b);
 
-                    if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one)) {
-                        path.getElements().add(new LineTo(x, y));
+					if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one)) {
+						path.getElements().add(new LineTo(x, y));
 
-                        if (isTrafo) {
-                            Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
-                            conexiones1.add(t);
-                            objetosCreados.add(t);
-                        } else {
-                            Lineas l = new Lineas(startB, b, 1, 1, 1, path);
-                            conexiones.add(l);
-                            objetosCreados.add(l);
-                        }
-                        listaBarras[one].add(other);
-                        listaBarras[other].add(one);
-                    }
+						if (isTrafo) {
+							Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
+							conexiones1.add(t);
+							objetosCreados.add(t);
+						} else {
+							Lineas l = new Lineas(startB, b, 1, 1, 1, path);
+							conexiones.add(l);
+							objetosCreados.add(l);
+						}
+						listaBarras[one].add(other);
+						listaBarras[other].add(one);
+					}
 
-                    isLineOn = false;
-                    repaint();
-                    poliactual = null;
-                    path = null;
-                }
-            } else {
-                if (!barraMuycerca(x, y)) {
-                    if (path != null) {
-                        path.getElements().add(new LineTo(x, y));
-                        ultimoPunto = new Point2D(x, y);
-                        repaint();
-                    }
-                }
-            }
-        }
-    }
+					isLineOn = false;
+					repaint();
+					poliactual = null;
+					path = null;
+				}
+			} else {
+				if (!barraMuycerca(x, y)) {
+					if (path != null) {
+						path.getElements().add(new LineTo(x, y));
+						ultimoPunto = new Point2D(x, y);
+						repaint();
+					}
+				}
+			}
+		}
+	}
 
 }

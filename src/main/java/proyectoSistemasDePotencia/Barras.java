@@ -2,7 +2,6 @@ package proyectoSistemasDePotencia;
 
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.Rectangle;
 
 public class Barras {
 	
@@ -553,7 +552,7 @@ public class Barras {
 	}
 	
 	public String getNombreBarra() {
-		return nombreBarra;
+		return nombrePersonalizado != null ? nombrePersonalizado : nombreBarra;
 	}
 	
 	public void setNombreBarra(String nombreBarra) {

@@ -1,6 +1,5 @@
 package proyectoSistemasDePotencia;
 
-import application.SPController;
 import javafx.geometry.Point2D;
 
 public class Bancos {

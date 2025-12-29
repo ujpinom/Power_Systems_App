@@ -2,6 +2,7 @@ package application;
 
 import java.util.List;
 
+import application.controller.main.SPController;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Complejo;
 import proyectoSistemasDePotencia.Lineas;

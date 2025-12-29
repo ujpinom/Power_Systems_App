@@ -74,17 +74,21 @@ import weightedGraphs.WeightedGraph;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseButton;
@@ -805,6 +809,11 @@ public class SPController implements Initializable {
 
 	}
 
+	private double snap(double value) {
+		double gridSize = 20.0; 
+		return Math.round(value / gridSize) * gridSize;
+	}
+
 	@FXML
     private void zoomIn(ActionEvent event) {
         updateZoom(1.2); // Aumentar 20%
@@ -834,6 +843,8 @@ public class SPController implements Initializable {
 
         zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
     }
+
+	private StackPane nodoSeleccionadoVisual = null;
 
 	private void dibujarPOly() {
 
@@ -942,12 +953,154 @@ public class SPController implements Initializable {
 
 	}
 
+	// --- LÓGICA DE CREACIÓN DE OBJETOS ---
+    private void crearBarra(double x, double y) {
+        // --- 1. VISTA (Visual) ---
+        StackPane nodoVisual = new StackPane();
+        
+        // Rectángulo (Cuerpo de la barra)
+        // Empezamos con un tamaño estándar: 6px ancho x 60px alto
+        Rectangle cuerpoBarra = new Rectangle(6, 60, Color.BLACK);
+        cuerpoBarra.setStroke(Color.TRANSPARENT); // Sin borde por defecto
+        
+        // Etiqueta de Texto (Nombre de la barra)
+        Label etiquetaNombre = new Label("Bus ?");
+        etiquetaNombre.setFont(new Font("Arial", 10));
+        // Movemos el texto un poco a la derecha y arriba
+        etiquetaNombre.setTranslateX(15); 
+        etiquetaNombre.setTranslateY(-35);
+        
+       
+        
+        // Posicionamiento en el Grid
+        nodoVisual.setLayoutX(x - 3); 
+        nodoVisual.setLayoutY(y - 30); // Centrado verticalmente (mitad de 60)
+
+		String nombreDefault = "Bus-" + (areaDibujo.getChildren().size() + 1);
+        Barras logicaBarra = new Barras(nombreDefault);
+		barras.add(logicaBarra);
+        
+        // Actualizamos la etiqueta visual
+        etiquetaNombre.setText(nombreDefault);
+
+        // --- 3. VINCULACIÓN (El Pegamento) ---
+        // Guardamos el objeto LÓGICO dentro del objeto VISUAL
+        nodoVisual.setUserData(logicaBarra);
+
+        // --- 4. INTERACCIÓN (Eventos) ---
+        nodoVisual.setCursor(Cursor.HAND);
+		nodoVisual.getChildren().addAll(cuerpoBarra, etiquetaNombre);
+
+        // Evento: Click para Seleccionar
+        nodoVisual.setOnMouseClicked(e -> {
+            // Evitar propagación para que no se ejecute el click del lienzo
+            e.consume(); 
+            
+            if (e.getButton() == MouseButton.PRIMARY) {
+                seleccionarNodo(nodoVisual);
+            }
+        });
+
+
+        // Evento: Menú Contextual (Click Derecho)
+        crearMenuContextualBarra(nodoVisual, cuerpoBarra, etiquetaNombre);
+
+        // Añadir al lienzo
+        areaDibujo.getChildren().add(nodoVisual);
+        
+        // Auto-seleccionar la nueva barra
+        seleccionarNodo(nodoVisual);
+    }
+
+	private void seleccionarNodo(StackPane nuevoNodo) {
+        // 1. Des-seleccionar el anterior (si existe)
+        if (nodoSeleccionadoVisual != null) {
+            Rectangle rAnterior = (Rectangle) nodoSeleccionadoVisual.getChildren().get(0);
+            rAnterior.setFill(Color.BLACK); // Vuelve a color normal
+            rAnterior.setEffect(null); // Quitar brillo
+        }
+
+        // 2. Seleccionar el nuevo
+        nodoSeleccionadoVisual = nuevoNodo;
+        
+        // Obtener el rectángulo interno para cambiarle el color
+        Rectangle rNuevo = (Rectangle) nodoSeleccionadoVisual.getChildren().get(0);
+        rNuevo.setFill(Color.BLUE); // Color de selección (Azul ingeniería)
+        
+        // Opcional: Mostrar info en consola
+        Barras datos = (Barras) nodoSeleccionadoVisual.getUserData();
+        System.out.println("Seleccionado: " + datos.getNombreBarra() + " | V: " + datos.getVoltajePrefalla() + " p.u.");
+    }
+
+	private void crearMenuContextualBarra(StackPane nodo, Rectangle r, Label lbl) {
+        ContextMenu contextMenu = new ContextMenu();
+
+        // OPCIÓN 1: ROTAR
+        MenuItem itemRotar = new MenuItem("Rotar 90°");
+        itemRotar.setOnAction(e -> {
+            // Simplemente sumamos 90 grados a la rotación actual
+            nodo.setRotate(nodo.getRotate() + 90);
+            // Ajustar etiqueta para que no quede de cabeza (opcional, lógica compleja)
+        });
+
+        // OPCIÓN 2: CAMBIAR NOMBRE
+        MenuItem itemRenombrar = new MenuItem("Cambiar Nombre");
+        itemRenombrar.setOnAction(e -> {
+            // Recuperamos el objeto lógico
+            Barras datos = (Barras) nodo.getUserData();
+            
+            TextInputDialog dialog = new TextInputDialog(datos.getNombrePersonalizado());
+            dialog.setTitle("Renombrar Barra");
+            dialog.setHeaderText("Ingrese el nuevo ID de la barra:");
+            dialog.setContentText("Nombre:");
+
+            dialog.showAndWait().ifPresent(nuevoNombre -> {
+                // Actualizamos LÓGICA
+                datos.setNombrePersonalizado(nuevoNombre);
+                // Actualizamos VISUAL
+                lbl.setText(nuevoNombre);
+            });
+        });
+
+        // OPCIÓN 3: REDIMENSIONAR (Resize)
+        // Hacemos submenú para hacerlo simple
+        MenuItem itemMasGrande = new MenuItem("Agrandar Barra (+)");
+        itemMasGrande.setOnAction(e -> {
+            r.setHeight(r.getHeight() + 20); // Crece 20px
+            // Re-centrar el nodo visualmente si es necesario
+            nodo.setLayoutY(nodo.getLayoutY() - 10); 
+        });
+
+        MenuItem itemMasPequena = new MenuItem("Achicar Barra (-)");
+        itemMasPequena.setOnAction(e -> {
+            if (r.getHeight() > 20) {
+                r.setHeight(r.getHeight() - 20);
+                nodo.setLayoutY(nodo.getLayoutY() + 10);
+            }
+        });
+        
+        // OPCIÓN 4: ELIMINAR
+        MenuItem itemEliminar = new MenuItem("Eliminar");
+        itemEliminar.setOnAction(e -> {
+            areaDibujo.getChildren().remove(nodo);
+            if (nodoSeleccionadoVisual == nodo) nodoSeleccionadoVisual = null;
+            // Aquí deberías también borrarla de tu lista lógica de barras si tienes una ArrayList<Barras>
+        });
+
+        contextMenu.getItems().addAll(itemRenombrar, itemRotar, itemMasGrande, itemMasPequena, itemEliminar);
+        
+        // Vincular el menú al click derecho sobre el nodo
+        nodo.setOnContextMenuRequested(e -> {
+            contextMenu.show(nodo, e.getScreenX(), e.getScreenY());
+        });
+    }
+
 	@FXML
 	private void mouseClicked(MouseEvent e) throws IOException {
-		lista = areaDibujo.getChildren();
+		
 		areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
-		double x = e.getX();
-		double y = e.getY();
+		double x = snap(e.getX());
+        double y = snap(e.getY());
 		Node tipoElemento = tipoElemento(x, y);
 
 		if (e.getButton() == MouseButton.SECONDARY) {
@@ -1454,168 +1607,179 @@ public class SPController implements Initializable {
 
 		if (e.getButton() == MouseButton.PRIMARY) {
 
-			if (!barraMuycerca(x, y)) {
-
-				if (path != null) {
-					path.getElements().add(new LineTo(x, y));
-					ultimoPunto = new Point2D(x, y);
-
-					repaint();
-				}
-
+			// 3. Máquina de Estados: ¿Qué herramienta tengo seleccionada?
+			if (barra.isSelected()) {
+				crearBarra(x, y);
+			} 
+			else if (none.isSelected()) {
+				// Aquí pondremos la lógica para seleccionar/ver propiedades luego
+				System.out.println("Modo Selección: Click en " + x + ", " + y);
 			}
+			return;
 
-			if ((bselected) && !barraMuycerca(x, y)) {
 
-				Barras barra = new Barras(x, y, nombreBarra);
-				barras.add(barra);
-				barra.setBarraPQ(true);
-				barra.setNombreBarra(nombreBarra + (barras.size() - 1));
-				objetosCreados.add(barra);
+			// if (!barraMuycerca(x, y)) {
 
-				repaint();
-				return;
-			}
+			// 	if (path != null) {
+			// 		path.getElements().add(new LineTo(x, y));
+			// 		ultimoPunto = new Point2D(x, y);
 
-			Barras b = getContainingVertex(x, y);
+			// 		repaint();
+			// 	}
 
-			if (!isLineOn && (lselected || tselected) && b != null) {
+			// }
 
-				path = new Path();
-				path.getElements().add(new MoveTo(x, y));
+			// if ((bselected) && !barraMuycerca(x, y)) {
 
-				ultimoPunto = new Point2D(x, y);
-				startB = b;
-				endOfLineX = e.getX();
-				isLineOn = true;
-			}
+			// 	Barras barra = new Barras(x, y, nombreBarra);
+			// 	barras.add(barra);
+			// 	barra.setBarraPQ(true);
+			// 	barra.setNombreBarra(nombreBarra + (barras.size() - 1));
+			// 	objetosCreados.add(barra);
 
-			if ((lselected || tselected) && (isLineOn)) {
+			// 	repaint();
+			// 	return;
+			// }
 
-				if (b != null) {
+			// Barras b = getContainingVertex(x, y);
 
-					if (!sonIguales(b, startB)) {
+			// if (!isLineOn && (lselected || tselected) && b != null) {
 
-						int one = barras.indexOf(startB);
-						int other = barras.indexOf(b);
+			// 	path = new Path();
+			// 	path.getElements().add(new MoveTo(x, y));
 
-						if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one) && lselected) {
-							path.getElements().add(new LineTo(x, y));
+			// 	ultimoPunto = new Point2D(x, y);
+			// 	startB = b;
+			// 	endOfLineX = e.getX();
+			// 	isLineOn = true;
+			// }
 
-							Lineas l = new Lineas(startB, b, 1, 1, 1, path);
+			// if ((lselected || tselected) && (isLineOn)) {
 
-							conexiones.add(l);
-							objetosCreados.add(l);
-							listaBarras[one].add(other);
-							listaBarras[other].add(one);
+			// 	if (b != null) {
 
-						}
+			// 		if (!sonIguales(b, startB)) {
 
-						else if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one) && tselected) {
+			// 			int one = barras.indexOf(startB);
+			// 			int other = barras.indexOf(b);
 
-							Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
-							conexiones1.add(t);
-							objetosCreados.add(t);
-							listaBarras[one].add(other);
-							listaBarras[other].add(one);
-						}
+			// 			if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one) && lselected) {
+			// 				path.getElements().add(new LineTo(x, y));
 
-						isLineOn = false;
-						repaint();
-						poliactual = null;
-						path = null;
-						return;
+			// 				Lineas l = new Lineas(startB, b, 1, 1, 1, path);
 
-					}
-				}
-			}
+			// 				conexiones.add(l);
+			// 				objetosCreados.add(l);
+			// 				listaBarras[one].add(other);
+			// 				listaBarras[other].add(one);
 
-			if (gselected && b != null) {
+			// 			}
 
-				if (!corGenerador.contains(b.getXbarra())) {
+			// 			else if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one) && tselected) {
 
-					xCoorG = e.getX();
-					yCoorG = e.getY();
+			// 				Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
+			// 				conexiones1.add(t);
+			// 				objetosCreados.add(t);
+			// 				listaBarras[one].add(other);
+			// 				listaBarras[other].add(one);
+			// 			}
 
-					b.setxCoorG(xCoorG);
-					b.setyCoorG(yCoorG);
+			// 			isLineOn = false;
+			// 			repaint();
+			// 			poliactual = null;
+			// 			path = null;
+			// 			return;
 
-					Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
+			// 		}
+			// 	}
+			// }
 
-					conexiongene.add(gene);
-					b.setBarraPV(true);
-					b.setBarraPQ(false);
-					b.setGenerador(gene);
-					objetosCreados.add(gene);
+			// if (gselected && b != null) {
 
-					corGenerador.add(b.getXbarra());
-				}
+			// 	if (!corGenerador.contains(b.getXbarra())) {
 
-				repaint();
-				return;
-			}
+			// 		xCoorG = e.getX();
+			// 		yCoorG = e.getY();
 
-			if (cSelected && b != null) {
+			// 		b.setxCoorG(xCoorG);
+			// 		b.setyCoorG(yCoorG);
 
-				if (!corCarga.contains(b.getXbarra())) {
+			// 		Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
 
-					b.setCoordenadasCarga(new Point2D(e.getX(), e.getY()));
-					Carga carga = new Carga(new Point2D(e.getX(), e.getY()), b, nombreCarga);
-					cargas.add(carga);
-					objetosCreados.add(carga);
-					if (b.isBarraPV()) {
-						b.setBarraPQ(false);
-					} else {
-						b.setBarraPQ(true);
-					}
+			// 		conexiongene.add(gene);
+			// 		b.setBarraPV(true);
+			// 		b.setBarraPQ(false);
+			// 		b.setGenerador(gene);
+			// 		objetosCreados.add(gene);
 
-					b.setCarga(carga);
-					corCarga.add(b.getXbarra());
+			// 		corGenerador.add(b.getXbarra());
+			// 	}
 
-					repaint();
-					return;
-				}
+			// 	repaint();
+			// 	return;
+			// }
 
-			}
+			// if (cSelected && b != null) {
 
-			if (bancoSelected && b != null) {
+			// 	if (!corCarga.contains(b.getXbarra())) {
 
-				if (!corBanco.contains(b.getXbarra())) {
+			// 		b.setCoordenadasCarga(new Point2D(e.getX(), e.getY()));
+			// 		Carga carga = new Carga(new Point2D(e.getX(), e.getY()), b, nombreCarga);
+			// 		cargas.add(carga);
+			// 		objetosCreados.add(carga);
+			// 		if (b.isBarraPV()) {
+			// 			b.setBarraPQ(false);
+			// 		} else {
+			// 			b.setBarraPQ(true);
+			// 		}
 
-					b.setCoordenadasBanco(new Point2D(e.getX(), e.getY()));
-					Bancos banco = new Bancos(new Point2D(e.getX(), e.getY()), b, nombreBanco);
-					bancos.add(banco);
-					objetosCreados.add(banco);
-					b.setBanco(banco);
+			// 		b.setCarga(carga);
+			// 		corCarga.add(b.getXbarra());
 
-					corBanco.add(b.getXbarra());
-					repaint();
-					return;
-				}
+			// 		repaint();
+			// 		return;
+			// 	}
 
-			}
+			// }
+
+			// if (bancoSelected && b != null) {
+
+			// 	if (!corBanco.contains(b.getXbarra())) {
+
+			// 		b.setCoordenadasBanco(new Point2D(e.getX(), e.getY()));
+			// 		Bancos banco = new Bancos(new Point2D(e.getX(), e.getY()), b, nombreBanco);
+			// 		bancos.add(banco);
+			// 		objetosCreados.add(banco);
+			// 		b.setBanco(banco);
+
+			// 		corBanco.add(b.getXbarra());
+			// 		repaint();
+			// 		return;
+			// 	}
+
+			// }
 			
-			if(compensadorSelected && b!=null) {
+			// if(compensadorSelected && b!=null) {
 	
 	
-				if(!corCompensador.contains(b.getXbarra())) {
+			// 	if(!corCompensador.contains(b.getXbarra())) {
 				
-					b.setCoordenadaCompensador(new Point2D(e.getX(), e.getY()));
-					CompensadorEstatico cp= new CompensadorEstatico(new Point2D(e.getX(), e.getY()), b, nombreCompensador);
-					b.setBarraPV(true);
-					b.setBarraPQ(false);
-					compensadores.add(cp);
-					objetosCreados.add(cp);
-					b.setCompensador(cp);
-					corCompensador.add(b.getXbarra());
-					repaint();
-					return;
+			// 		b.setCoordenadaCompensador(new Point2D(e.getX(), e.getY()));
+			// 		CompensadorEstatico cp= new CompensadorEstatico(new Point2D(e.getX(), e.getY()), b, nombreCompensador);
+			// 		b.setBarraPV(true);
+			// 		b.setBarraPQ(false);
+			// 		compensadores.add(cp);
+			// 		objetosCreados.add(cp);
+			// 		b.setCompensador(cp);
+			// 		corCompensador.add(b.getXbarra());
+			// 		repaint();
+			// 		return;
 					
 			
-				}
+			// 	}
 				
 				
-			}
+			// }
 
 		}
 
@@ -1937,34 +2101,6 @@ public class SPController implements Initializable {
 		}
 
 	}
-
-	// public void grid() {
-	// double w = 1044;
-	// double h =areaDibujo.getHeight();
-	// Canvas grid = new Canvas(w,h);
-	//
-	// // don't catch mouse events
-	// grid.setMouseTransparent(true);
-	//
-	// GraphicsContext gc = grid.getGraphicsContext2D();
-	//
-	// gc.setStroke(Color.GRAY);
-	// gc.setLineWidth(0.3);
-	//
-	// // draw grid lines
-	// double offset = 15;
-	// for( double i=offset; i < w; i+=offset) {
-	// gc.strokeLine( i, 0, i, h);
-	// gc.strokeLine( 0, i, w, i);
-	// }
-	//
-	// areaDibujo.getChildren().add( grid);
-	// lista=areaDibujo.getChildren();
-	//
-	// grid.toBack();
-	//
-	//
-	// }
 
 	@FXML
 	private TextField MVAbase;

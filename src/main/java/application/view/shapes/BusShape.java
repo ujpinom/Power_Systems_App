@@ -1,27 +1,23 @@
 package application.view.shapes;
 
 import application.model.project.NetworkModel;
-import javafx.scene.Cursor;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.layout.StackPane;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import proyectoSistemasDePotencia.Barras;
 
-public class BusShape extends StackPane {
+public class BusShape extends NetworkShape<Barras> {
 
-    private final Barras barraLogica;
     private final Rectangle cuerpoBarra;
-    private final Label etiquetaNombre;
     private final Paint colorBase;
+    private boolean isSelected = false;
 
     public BusShape(Barras barra) {
-        this.barraLogica = barra;
+        super(barra); // Pasa el modelo al padre
 
         // Determinar el color base según el tipo de barra
         if (barra.isBarraCompensacion()) {
@@ -30,24 +26,37 @@ public class BusShape extends StackPane {
             this.colorBase = Color.BLACK;
         }
 
-        this.cuerpoBarra = new Rectangle(6, 60, Color.BLACK);
+        // Cuerpo de la barra (6x60)
+        this.cuerpoBarra = new Rectangle(0, 0, 6, 60);
+        this.cuerpoBarra.setFill(colorBase);
         this.cuerpoBarra.setStroke(Color.TRANSPARENT);
 
-        this.etiquetaNombre = new Label(barra.getNombreBarra());
-        this.etiquetaNombre.setFont(new Font("Arial", 10));
-        this.etiquetaNombre.setTranslateX(15);
-        this.etiquetaNombre.setTranslateY(-35);
+        // Añadir forma principal
+        this.getChildren().add(cuerpoBarra);
 
+        // Crear etiqueta usando el método del padre
+        // Posición: X=10, Y=-15
+        createLabel(barra.getNombreBarra(), 10, -15);
+
+        // Posicionar el Grupo en el Canvas
         this.setLayoutX(barra.getXbarra());
         this.setLayoutY(barra.getYbarra());
-        this.setCursor(Cursor.HAND);
-        this.getChildren().addAll(cuerpoBarra, etiquetaNombre);
+        
         this.setUserData(barra);
+        
+        // --- Suscripción a cambios del Modelo (Observer Pattern) ---
+        model.addPropertyChangeListener(evt -> {
+            if ("nombrePersonalizado".equals(evt.getPropertyName())) {
+                javafx.application.Platform.runLater(() -> 
+                    updateLabelText((String) evt.getNewValue())
+                );
+            }
+        });
+        
         configurarEventos();
     }
 
     private void configurarEventos() {
-
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem itemRotar = new MenuItem("Rotar 90°");
@@ -55,18 +64,18 @@ public class BusShape extends StackPane {
 
         MenuItem itemRenombrar = new MenuItem("Cambiar Nombre");
         itemRenombrar.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog(barraLogica.getNombreBarra());
+            TextInputDialog dialog = new TextInputDialog(model.getNombreBarra());
             dialog.setTitle("Renombrar Barra");
             dialog.setHeaderText("Ingrese el nuevo ID:");
             dialog.showAndWait().ifPresent(nuevoNombre -> {
-                barraLogica.setNombrePersonalizado(nuevoNombre); // Actualiza lógica
-                etiquetaNombre.setText(nuevoNombre); // Actualiza visual
+                model.setNombrePersonalizado(nuevoNombre);
+                updateLabelText(nuevoNombre); // Método del padre
             });
         });
 
         MenuItem itemEliminar = new MenuItem("Eliminar");
         itemEliminar.setOnAction(e -> {
-            NetworkModel.getInstance().removeBarra(barraLogica);
+            NetworkModel.getInstance().removeBarra(model);
         });
 
         contextMenu.getItems().addAll(itemRenombrar, itemRotar, itemEliminar);
@@ -76,16 +85,39 @@ public class BusShape extends StackPane {
         });
     }
 
-    // Métodos para cambiar apariencia desde fuera si es necesario
+    @Override
     public void setSeleccionado(boolean seleccionado) {
+        this.isSelected = seleccionado;
         if (seleccionado) {
-            this.cuerpoBarra.setFill(Color.RED);
-            this.cuerpoBarra.setEffect(new javafx.scene.effect.DropShadow(10, Color.CYAN)); // Brillo extra
+            applySelectionEffect();
         } else {
-            // Restaurar color original
+            // Restaurar estado normal
             this.cuerpoBarra.setFill(colorBase);
-            this.cuerpoBarra.setEffect(null);
+            this.setEffect(null);
         }
     }
 
+    @Override
+    protected boolean isSelected() {
+        return isSelected;
+    }
+
+    @Override
+    protected void applySelectionEffect() {
+        this.cuerpoBarra.setFill(Color.RED);
+        // Sombra cyan brillante para indicar selección
+        this.setEffect(new DropShadow(15, Color.CYAN)); 
+    }
+
+    @Override
+    protected void updateModelCoordinates(double x, double y) {
+        model.setXbarra(x);
+        model.setYbarra(y);
+        
+        // Actualizar coordenadas gráficas secundarias si es necesario
+        // (Por ejemplo, puntos de conexión para líneas)
+        model.setPuntoMedioBarra(new javafx.geometry.Point2D(x + 3, y + 30));
+        model.setxCoorG(x + 3);
+        model.setyCoorG(y + 30);
+    }
 }

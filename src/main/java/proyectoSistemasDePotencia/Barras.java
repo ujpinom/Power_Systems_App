@@ -2,8 +2,20 @@ package proyectoSistemasDePotencia;
 
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Ellipse;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 public class Barras {
+	
+	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.removePropertyChangeListener(listener);
+    }
 	
 	private boolean barraFromPV2PQ=false; // Indica si la barra fue cambiada de barra PV a PQ debido a violaciones de limites de potencia reactiva del
 	                                                     // generador.
@@ -219,7 +231,9 @@ public class Barras {
 	 */
 	
 	public void setNombrePersonalizado(String nombre) {
+		String old = this.nombrePersonalizado;
 		this.nombrePersonalizado=nombre;
+		this.pcs.firePropertyChange("nombrePersonalizado", old, nombre);
 	}
 	
 	/**
@@ -293,7 +307,9 @@ public class Barras {
 
 
 	public void setAnguloVoltajeBarra(double anguloVoltajeBarra) {
+		double old = this.anguloVoltajeBarra;
 		this.anguloVoltajeBarra = anguloVoltajeBarra;
+		this.pcs.firePropertyChange("anguloVoltajeBarra", old, anguloVoltajeBarra);
 	}
 
 
@@ -498,7 +514,9 @@ public class Barras {
 
 
 	public void setVoltajePrefalla(double voltajePrefalla) {
+		double old = this.voltajePrefalla;
 		this.voltajePrefalla = voltajePrefalla;
+		this.pcs.firePropertyChange("voltajePrefalla", old, voltajePrefalla);
 	}
 
 

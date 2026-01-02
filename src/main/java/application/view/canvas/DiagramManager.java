@@ -2,6 +2,7 @@ package application.view.canvas;
 
 import application.model.project.NetworkModel;
 import application.view.shapes.BusShape;
+import application.view.shapes.NetworkShape;
 import javafx.collections.ListChangeListener;
 import javafx.scene.layout.AnchorPane;
 import proyectoSistemasDePotencia.Barras;
@@ -10,8 +11,8 @@ public class DiagramManager {
     private final AnchorPane canvas;
     private final NetworkModel model;
     
-    // Variable para recordar quién está seleccionado
-    private BusShape seleccionActual = null;
+    // Variable para recordar quién está seleccionado (Genérico)
+    private NetworkShape<?> seleccionActual = null;
 
     public DiagramManager(AnchorPane canvas) {
         this.canvas = canvas;
@@ -53,7 +54,8 @@ public class DiagramManager {
         canvas.getChildren().add(shape);
     }
     
-    private void seleccionarShape(BusShape shape) {
+    // Método genérico para seleccionar cualquier NetworkShape
+    private void seleccionarShape(NetworkShape<?> shape) {
         // 1. Si había algo seleccionado antes, lo apagamos
         if (seleccionActual != null) {
             seleccionActual.setSeleccionado(false);
@@ -61,8 +63,13 @@ public class DiagramManager {
         seleccionActual = shape;
         seleccionActual.setSeleccionado(true);
         
-        System.out.println("Manager: Seleccionada barra -> " + ((Barras)shape.getUserData()).getNombreBarra());
-        model.setSeleccionActual(shape.getUserData());
+        // Debug
+        Object modelData = shape.getModel();
+        if (modelData instanceof Barras) {
+             System.out.println("Manager: Seleccionada barra -> " + ((Barras)modelData).getNombreBarra());
+        }
+        
+        model.setSeleccionActual(modelData);
     }
     
     public void deseleccionarTodo() {

@@ -422,13 +422,15 @@ public class SPController implements Initializable {
 	@FXML
 	private void lineaSelected(ActionEvent e) {
 		currentTool = ToolType.LINEA;
-		infoElemento.setText("Elemento: LÃ­nea");
+		infoElemento.setText("Elemento: Lí­nea");
+		diagramManager.setConnectionMode(true);
 	}
 
 	@FXML
 	private void barraSelected(ActionEvent e) {
 		currentTool = ToolType.BARRA;
 		infoElemento.setText("Elemento: Barra");
+		diagramManager.setConnectionMode(false);
 	}
 
 	@FXML
@@ -465,6 +467,7 @@ public class SPController implements Initializable {
 	private void editionSelected(ActionEvent e) {
 		currentTool = ToolType.NONE;
 		infoElemento.setText("Elemento: EdiciÃ³n");
+		diagramManager.setConnectionMode(false);
 	}
 
 	@FXML
@@ -942,9 +945,6 @@ public class SPController implements Initializable {
 				case NONE:
 					// Lógica para seleccionar/ver propiedades
 					System.out.println("Modo Selección: Click en " + x + ", " + y);
-					break;
-				case LINEA:
-					handleLineaCreation(x, y);
 					break;
 				case TRANSFORMADOR:
 					handleTrafoCreation(x, y);

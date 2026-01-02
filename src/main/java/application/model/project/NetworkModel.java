@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import proyectoSistemasDePotencia.Barras;
+import proyectoSistemasDePotencia.Lineas;
 
 public class NetworkModel {
     
@@ -13,6 +14,7 @@ public class NetworkModel {
     
     // ObservableList es clave: lanza eventos cuando se modifica la lista
     private final ObservableList<Barras> barras = FXCollections.observableArrayList();
+    private final ObservableList<Lineas> lineas = FXCollections.observableArrayList();
 
     private NetworkModel() {
         // Inicialización privada (Singleton)
@@ -28,11 +30,22 @@ public class NetworkModel {
     public ObservableList<Barras> getBarras() {
         return barras;
     }
+    
+    public ObservableList<Lineas> getLineas() {
+        return lineas;
+    }
 
     public void addBarra(Barras barra) {
         if (!barras.contains(barra)) {
             this.barras.add(barra);
             System.out.println("Modelo: Barra agregada -> " + barra.getNombreBarra());
+        }
+    }
+    
+    public void addLinea(Lineas linea) {
+        if (!lineas.contains(linea)) {
+            this.lineas.add(linea);
+            System.out.println("Modelo: Línea agregada -> " + linea.getNombreLinea());
         }
     }
 

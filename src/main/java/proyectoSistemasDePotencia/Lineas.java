@@ -216,6 +216,18 @@ public class Lineas {
 		
 	}
 	
+	/**
+	 * Constructor simplificado para creación visual.
+	 * Inicializa con impedancias por defecto (1.0).
+	 */
+	public Lineas(Barras barra1, Barras barra2) {
+		this.barra1 = barra1;
+		this.barra2 = barra2;
+		this.z1 = 1.0;
+		this.z2 = 1.0;
+		this.z0 = 1.0;
+	}
+	
 	public String getNombreLinea() {
 		return nombreLinea;
 	}

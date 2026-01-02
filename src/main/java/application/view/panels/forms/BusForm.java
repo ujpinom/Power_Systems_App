@@ -1,7 +1,6 @@
 package application.view.panels.forms;
 
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import proyectoSistemasDePotencia.Barras;
@@ -38,10 +37,22 @@ public class BusForm extends AbstractForm<Barras> {
         chkSwing.setSelected(barra.isBarraCompensacion());
         chkSwing.setOnAction(e -> {
             boolean esSwing = chkSwing.isSelected();
-            barra.setBarraCompensacion(esSwing);
+            
             if (esSwing) {
-                barra.setBarraPV(true); 
+                // Desmarcar cualquier otra barra que fuera Slack
+                for (Barras b : application.model.project.NetworkModel.getInstance().getBarras()) {
+                    if (b != barra && b.isBarraCompensacion()) {
+                        b.setBarraCompensacion(false);
+                    }
+                }
+                
+                // Configurar la actual como Slack
+                barra.setBarraCompensacion(true);
+                // Una barra Slack define V y Theta, no P y Q ni P y V
+                barra.setBarraPV(false); 
                 barra.setBarraPQ(false);
+            } else {
+                barra.setBarraCompensacion(false);
             }
         });
         addFullRow(chkSwing, 3);

@@ -894,14 +894,38 @@ public class SPController implements Initializable {
 	}
 
 	// --- LÓGICA DE CREACIÓN DE OBJETOS ---
+	
+	private boolean validarProximidad(double x, double y) {
+		double radioMinimo = 70.0; // Distancia mínima en píxeles
+		for (Barras b : barras) {
+			// Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene coordenadas reales aún
+			if (b.getNombreBarra().equals("Tierra")) continue; 
+			
+			// Calcular distancia Euclideana entre el punto de click y las barras existentes
+			double dist = Math.sqrt(Math.pow(x - b.getXbarra(), 2) + Math.pow(y - b.getYbarra(), 2));
+			
+			if (dist < radioMinimo) {
+				return false; // Conflicto espacial detectado
+			}
+		}
+		return true; // Espacio libre
+	}
+
 	private void crearBarra(double x, double y) {
+		
+		if (!validarProximidad(x, y)) {
+			infoTare.setText("Error: Espacio ocupado, seleccione otra ubicación.");
+			return;
+		}
 
 		String nombreDefault = "Bus-" + (areaDibujo.getChildren().size() + 1);
 		Barras logicaBarra = new Barras(nombreDefault);
 		logicaBarra.setXbarra(x - 3);
 		logicaBarra.setYbarra(y - 30);
 		barras.add(logicaBarra);
+		System.out.println("Barra creada en: " + x + ", " + y);
 		NetworkModel.getInstance().addBarra(logicaBarra);
+		infoTare.setText("Barra creada exitosamente.");
 	}
 	
 	@FXML

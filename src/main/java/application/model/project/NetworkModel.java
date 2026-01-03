@@ -18,6 +18,7 @@ public class NetworkModel {
 
     private NetworkModel() {
         // Inicialización privada (Singleton)
+        barras.add(new Barras("Tierra"));
     }
 
     public static NetworkModel getInstance() {

@@ -266,9 +266,7 @@ public class SPController implements Initializable {
 			propertiesPanel.mostrarPropiedades(newVal);
 		});
 
-		// Sincronizar listas locales con el modelo centralizado
-		this.barras = networkModel.getBarras();
-		this.conexiones = networkModel.getLineas();
+		// ... existing initializations ...
 
 		// Manejo de tecla ESC para cancelar conexión/herramienta
 		areaDibujo.sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -756,8 +754,8 @@ public class SPController implements Initializable {
 	private LinkedList<Integer>[] listaBarras = (LinkedList<Integer>[]) new LinkedList[100];
 
 	public SPController() {
-
-		barras.add(new Barras("Tierra"));
+		this.barras = NetworkModel.getInstance().getBarras();
+		this.conexiones = NetworkModel.getInstance().getLineas();
 
 		for (int i = 0; i < listaBarras.length; i++) {
 

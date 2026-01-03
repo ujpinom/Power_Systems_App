@@ -78,7 +78,27 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 
 ---
 
-## 6. Próximos Pasos Sugeridos
-1.  **Líneas Dinámicas:** Actualizar visualmente las líneas conectadas cuando se arrastra una barra (Binding de coordenadas).
-2.  **Formularios Faltantes:** Crear formularios (`LineForm`, `TrafoForm`, `GenForm`) usando la nueva arquitectura `AbstractForm`.
-3.  **Conexión de Datos:** Vincular los resultados del cálculo (Newton-Raphson) a las nuevas `TableView`.
+## 6. Fase 3: Sincronización de Estado y Estabilidad (Refactorización de Datos)
+
+### A. Sincronización con el Modelo (`Single Source of Truth`)
+- [x] **Eliminación de Listas Redundantes:** Se eliminaron las listas `ArrayList` locales en `SPController` que causaban desincronización.
+- [x] **Referencia Directa al Modelo:** `SPController` ahora utiliza directamente las `ObservableList` de `NetworkModel`, garantizando que cualquier cambio (borrar, renombrar) se refleje en toda la lógica de validación instantáneamente.
+- [x] **Corrección del "Ghost Bus" Bug:** Resolución del problema donde barras eliminadas seguían "bloqueando" espacio físico debido a coordenadas obsoletas en listas locales desincronizadas.
+
+### B. Refactorización del Motor de Cálculo (`List Interface`)
+- [x] **Uso de Interfaces:** Actualización de todas las clases de falla (`FallaTrifasica`, `FallaAsimetricas`, `FallaLineaALinea`, etc.) y `CreacionZBarra` para usar la interfaz `List` en lugar de `ArrayList` concreta.
+- [x] **Interoperatividad:** Esta mejora permite que el motor de cálculo trabaje de forma nativa con las `ObservableList` sincronizadas del modelo UI.
+
+### C. Ciclo de Vida y Robustez
+- [x] **Inicialización en Constructor:** Migración de la lógica de asignación de listas al constructor de `SPController` para evitar `NullPointerException` durante la carga del FXML.
+- [x] **Nodo Tierra en el Modelo:** Integración del nodo "Tierra" (Bus 0) directamente en el constructor de `NetworkModel`, asegurando su disponibilidad constante para los cálculos.
+
+---
+
+## 7. Próximos Pasos Sugeridos
+
+1.  **Líneas Inteligentes (Dynamic Binding):** Implementar el redibujado automático de las líneas al arrastrar las barras conectadas. Aprovechar el `PropertyChangeSupport` del modelo para actualizar las coordenadas de inicio/fin (`startX`, `startY`, `endX`, `endY`) mediante bindings reactivos.
+2.  **Suite de Formularios Modernos:** Completar la migración de los formularios de edición (`LineForm`, `TrafoForm`, `GenForm`) utilizando el nuevo sistema de formularios reactivos que se sincronizan en tiempo real con el modelo.
+3.  **Visualización Pro de Resultados:** Vincular el motor de Newton-Raphson y cálculos de fallas con las `TableView` del panel inferior. Incluir anotaciones gráficas sobre el lienzo (etiquetas flotantes con voltajes p.u. y ángulos de fase).
+4.  **Persistencia y Exportación:** Implementar la carga/guardado en formato JSON o XML para persistencia de proyectos complejos, y exportación de reportes de resultados en formato PDF/Excel.
+5.  **Sistema de Deshacer/Rehacer (Undo/Redo):** Implementar un gestor de comandos para permitir revertir acciones de edición (moverse, borrar, crear), aprovechando que el `NetworkModel` es ahora el único punto de control.

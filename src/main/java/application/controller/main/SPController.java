@@ -41,6 +41,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -252,8 +254,8 @@ public class SPController implements Initializable {
 	private NetworkModel networkModel;
 	private DiagramManager diagramManager;
 	private PropertiesPanel propertiesPanel;
-	@FXML private VBox rightPanelContainer;;
-
+	@FXML
+	private VBox rightPanelContainer;;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -263,11 +265,26 @@ public class SPController implements Initializable {
 		this.diagramManager = new DiagramManager(areaDibujo);
 		this.propertiesPanel = new PropertiesPanel();
 		rightPanelContainer.getChildren().clear();
-        rightPanelContainer.getChildren().add(propertiesPanel);
+		rightPanelContainer.getChildren().add(propertiesPanel);
 		VBox.setVgrow(propertiesPanel, Priority.ALWAYS);
 		networkModel.seleccionActualProperty().addListener((obs, oldVal, newVal) -> {
-            propertiesPanel.mostrarPropiedades(newVal);
-        });
+			propertiesPanel.mostrarPropiedades(newVal);
+		});
+
+		// Manejo de tecla ESC para cancelar conexión/herramienta
+		areaDibujo.sceneProperty().addListener((obs, oldScene, newScene) -> {
+			if (newScene != null) {
+				newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+					if (event.getCode() == KeyCode.ESCAPE) {
+						diagramManager.cancelConnection();
+						none.setSelected(true);
+						currentTool = ToolType.NONE;
+						infoElemento.setText("Elemento: Edición");
+						diagramManager.setConnectionMode(false);
+					}
+				});
+			}
+		});
 	}
 
 	/**
@@ -897,16 +914,18 @@ public class SPController implements Initializable {
 	}
 
 	// --- LÓGICA DE CREACIÓN DE OBJETOS ---
-	
+
 	private boolean validarProximidad(double x, double y) {
 		double radioMinimo = 70.0; // Distancia mínima en píxeles
 		for (Barras b : barras) {
-			// Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene coordenadas reales aún
-			if (b.getNombreBarra().equals("Tierra")) continue; 
-			
+			// Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene
+			// coordenadas reales aún
+			if (b.getNombreBarra().equals("Tierra"))
+				continue;
+
 			// Calcular distancia Euclideana entre el punto de click y las barras existentes
 			double dist = Math.sqrt(Math.pow(x - b.getXbarra(), 2) + Math.pow(y - b.getYbarra(), 2));
-			
+
 			if (dist < radioMinimo) {
 				return false; // Conflicto espacial detectado
 			}
@@ -915,7 +934,7 @@ public class SPController implements Initializable {
 	}
 
 	private void crearBarra(double x, double y) {
-		
+
 		if (!validarProximidad(x, y)) {
 			infoTare.setText("Error: Espacio ocupado, seleccione otra ubicación.");
 			return;
@@ -930,7 +949,7 @@ public class SPController implements Initializable {
 		NetworkModel.getInstance().addBarra(logicaBarra);
 		infoTare.setText("Barra creada exitosamente.");
 	}
-	
+
 	@FXML
 	private void mouseClicked(MouseEvent e) throws IOException {
 

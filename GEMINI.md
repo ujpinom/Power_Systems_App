@@ -48,10 +48,37 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 - [x] **Motor de Zoom:** Implementación del método `updateZoom()` utilizando transformaciones `Scale` de JavaFX.
 - [x] **Gestión de Vistas:** Inyección `@FXML` de los nuevos contenedores (`scrollContainer`, `zoomContainer`) y tablas (`tablaBarras`, `tablaRamas`).
 - [x] **Coordenadas:** Ajuste de lógica para mantener la funcionalidad de dibujo mouse-click dentro del nuevo sistema de coordenadas escalado.
+- [x] **Validación de Proximidad:** Implementación de `validarProximidad(x, y)` para evitar la creación de barras superpuestas (distancia mínima de 50px).
 
 ---
 
-## 5. Próximos Pasos Sugeridos
-1.  **Conexión de Datos:** Vincular los resultados del cálculo (Newton-Raphson) a las nuevas `TableView` usando `ObservableList`.
-2.  **Drag & Drop:** Mejorar la creación de elementos permitiendo arrastrar desde la paleta al lienzo (en lugar de clic-clic).
-3.  **Edición de Propiedades:** Crear un panel lateral derecho (Inspector) para editar valores (MW, MVar, kV) al seleccionar un elemento.
+## 5. Modernización de Objetos Gráficos (Fase 2)
+
+### A. Arquitectura de Figuras (`NetworkShape`)
+- [x] **Clase Base `NetworkShape<T>`:** Creación de una superclase genérica que hereda de `Group`.
+    - **Zoom on Hover:** Efecto automático de escalado (1.2x) y elevación (Z-Index) al pasar el mouse.
+    - **Gestión de Etiquetas:** Lógica centralizada para crear y posicionar etiquetas de texto.
+    - **Estados de Selección:** Métodos abstractos para estandarizar la apariencia de selección.
+- [x] **Refactorización de `BusShape`:** Actualización para heredar de `NetworkShape`.
+    - Uso de posicionamiento absoluto (eliminación de `StackPane`).
+    - Etiqueta de texto forzada a color negro y posición fija para garantizar visibilidad.
+    - Efecto de selección con sombra `CYAN`.
+
+### B. Interacción Avanzada
+- [x] **Drag & Drop (Arrastrar y Soltar):** Implementación nativa en `NetworkShape`.
+    - **Snap-to-Grid:** Ajuste automático a cuadrícula de 10px para alineación perfecta.
+    - **Sincronización Bidireccional:** El movimiento gráfico actualiza automáticamente las coordenadas del modelo lógico (`Barras`).
+- [x] **Gestor de Diagrama Genérico (`DiagramManager`):** Actualización para manejar `NetworkShape<?>` en lugar de clases concretas, permitiendo escalabilidad futura.
+
+### C. Sistema de Propiedades (Observer Pattern)
+- [x] **Panel de Propiedades Reactivo:** Implementación de `PropertyChangeSupport` en el modelo (`Barras.java`).
+- [x] **Sincronización Automática:** `BusShape` se suscribe a cambios en el modelo.
+    - Si se cambia el nombre en el panel derecho, la etiqueta en el diagrama se actualiza al instante.
+- [x] **Lógica de Barra Slack:** Implementación de exclusión mutua en `BusForm`. Solo una barra puede ser marcada como Slack a la vez; las demás se desmarcan automáticamente.
+
+---
+
+## 6. Próximos Pasos Sugeridos
+1.  **Líneas Dinámicas:** Actualizar visualmente las líneas conectadas cuando se arrastra una barra (Binding de coordenadas).
+2.  **Formularios Faltantes:** Crear formularios (`LineForm`, `TrafoForm`, `GenForm`) usando la nueva arquitectura `AbstractForm`.
+3.  **Conexión de Datos:** Vincular los resultados del cálculo (Newton-Raphson) a las nuevas `TableView`.

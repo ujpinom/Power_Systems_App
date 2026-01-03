@@ -3,6 +3,9 @@ package application.view.shapes;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
+import application.model.project.NetworkModel;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polyline;
@@ -168,6 +171,27 @@ public class LineShape extends NetworkShape<Lineas> {
     protected void applySelectionEffect() {
         visualLine.setStroke(Color.RED);
         visualLine.setEffect(new DropShadow(10, Color.CYAN));
+    }
+
+    @Override
+    protected void fillContextMenu(javafx.scene.control.ContextMenu menu) {
+        MenuItem itemRenombrar = new MenuItem("Cambiar Nombre");
+        itemRenombrar.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog(model.getNombreLinea());
+            dialog.setTitle("Renombrar Línea");
+            dialog.setHeaderText("Ingrese el nuevo ID:");
+            dialog.showAndWait().ifPresent(nuevoNombre -> {
+                model.setNombreLinea(nuevoNombre);
+                updateLabelText(nuevoNombre);
+            });
+        });
+
+        MenuItem itemEliminar = new MenuItem("Eliminar");
+        itemEliminar.setOnAction(e -> {
+            NetworkModel.getInstance().removeLinea(model);
+        });
+
+        menu.getItems().addAll(itemRenombrar, itemEliminar);
     }
 
     @Override

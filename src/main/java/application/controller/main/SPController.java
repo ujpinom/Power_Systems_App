@@ -26,19 +26,16 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
@@ -46,7 +43,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -66,7 +62,6 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import proyectoSistemasDePotencia.Bancos;
 import proyectoSistemasDePotencia.Barras;
@@ -192,8 +187,8 @@ public class SPController implements Initializable {
 	private boolean lineaALinea;
 	private boolean bifasicaATierra;
 	private boolean fPotencia;
-	private ArrayList<Barras> barras = new ArrayList<>();
-	private ArrayList<Lineas> conexiones = new ArrayList<>();
+	private List<Barras> barras;
+	private List<Lineas> conexiones;
 	private ArrayList<Transformador> conexiones1 = new ArrayList<>();
 	private ArrayList<Generadores> conexiongene = new ArrayList<>();
 	private ArrayList<Carga> cargas = new ArrayList<>();
@@ -270,6 +265,10 @@ public class SPController implements Initializable {
 		networkModel.seleccionActualProperty().addListener((obs, oldVal, newVal) -> {
 			propertiesPanel.mostrarPropiedades(newVal);
 		});
+
+		// Sincronizar listas locales con el modelo centralizado
+		this.barras = networkModel.getBarras();
+		this.conexiones = networkModel.getLineas();
 
 		// Manejo de tecla ESC para cancelar conexión/herramienta
 		areaDibujo.sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -916,7 +915,7 @@ public class SPController implements Initializable {
 	// --- LÓGICA DE CREACIÓN DE OBJETOS ---
 
 	private boolean validarProximidad(double x, double y) {
-		double radioMinimo = 70.0; // Distancia mínima en píxeles
+		double radioMinimo = 50.0; // Distancia mínima en píxeles
 		for (Barras b : barras) {
 			// Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene
 			// coordenadas reales aún
@@ -944,7 +943,8 @@ public class SPController implements Initializable {
 		Barras logicaBarra = new Barras(nombreDefault);
 		logicaBarra.setXbarra(x - 3);
 		logicaBarra.setYbarra(y - 30);
-		barras.add(logicaBarra);
+		// barras.add(logicaBarra); // Ya no es necesario, addBarra lo añade al modelo
+		// centralizado
 		System.out.println("Barra creada en: " + x + ", " + y);
 		NetworkModel.getInstance().addBarra(logicaBarra);
 		infoTare.setText("Barra creada exitosamente.");

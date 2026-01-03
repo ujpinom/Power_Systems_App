@@ -1,7 +1,6 @@
 package application.view.shapes;
 
 import application.model.project.NetworkModel;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.DropShadow;
@@ -51,13 +50,10 @@ public class BusShape extends NetworkShape<Barras> {
                 javafx.application.Platform.runLater(() -> updateLabelText((String) evt.getNewValue()));
             }
         });
-
-        configurarEventos();
     }
 
-    private void configurarEventos() {
-        ContextMenu contextMenu = new ContextMenu();
-
+    @Override
+    protected void fillContextMenu(javafx.scene.control.ContextMenu menu) {
         MenuItem itemRotar = new MenuItem("Rotar 90°");
         itemRotar.setOnAction(e -> this.setRotate(this.getRotate() + 90));
 
@@ -68,7 +64,7 @@ public class BusShape extends NetworkShape<Barras> {
             dialog.setHeaderText("Ingrese el nuevo ID:");
             dialog.showAndWait().ifPresent(nuevoNombre -> {
                 model.setNombrePersonalizado(nuevoNombre);
-                updateLabelText(nuevoNombre); // Método del padre
+                updateLabelText(nuevoNombre);
             });
         });
 
@@ -77,11 +73,7 @@ public class BusShape extends NetworkShape<Barras> {
             NetworkModel.getInstance().removeBarra(model);
         });
 
-        contextMenu.getItems().addAll(itemRenombrar, itemRotar, itemEliminar);
-
-        this.setOnContextMenuRequested(e -> {
-            contextMenu.show(this, e.getScreenX(), e.getScreenY());
-        });
+        menu.getItems().addAll(itemRenombrar, itemRotar, itemEliminar);
     }
 
     @Override

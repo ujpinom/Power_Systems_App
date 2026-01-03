@@ -3,6 +3,7 @@ package application.view.shapes;
 import javafx.animation.ScaleTransition;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
@@ -31,6 +32,8 @@ public abstract class NetworkShape<T> extends Group {
         hoverAnimation = new ScaleTransition(Duration.millis(200), this);
         initHoverEffects();
 
+        // Inicializar el Menú Contextual
+        initContextMenu();
     }
 
     /**
@@ -163,6 +166,29 @@ public abstract class NetworkShape<T> extends Group {
      * Sincroniza las coordenadas visuales con el objeto lógico (Barra, Linea, etc).
      */
     protected abstract void updateModelCoordinates(double x, double y);
+
+    /**
+     * Inicializa y configura el menú contextual genérico.
+     */
+    protected void initContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+
+        // Delegar en las subclases para llenar el menú
+        fillContextMenu(contextMenu);
+
+        // Si el menú tiene items, configurar el evento para mostrarlo
+        this.setOnContextMenuRequested(e -> {
+            if (!contextMenu.getItems().isEmpty()) {
+                contextMenu.show(this, e.getScreenX(), e.getScreenY());
+            }
+        });
+    }
+
+    /**
+     * Las subclases sobrescriben este método para añadir sus opciones locales al
+     * menú.
+     */
+    protected abstract void fillContextMenu(ContextMenu menu);
 
     /**
      * Método abstracto para establecer el estado de selección.

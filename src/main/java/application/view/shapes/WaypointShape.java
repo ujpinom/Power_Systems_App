@@ -59,4 +59,9 @@ public class WaypointShape extends NetworkShape<Lineas> {
     public void setSeleccionado(boolean seleccionado) {
         // No tiene estado de selección individual
     }
+
+    @Override
+    protected void fillContextMenu(javafx.scene.control.ContextMenu menu) {
+        // Los waypoints no tienen menú contextual por ahora
+    }
 }

@@ -15,10 +15,10 @@ public class FallaTrifasica {
 	private List<Lineas> linea;
 	private List<Transformador> trafo;
 	private ArrayList<Double> vectorVoltajesFalla = new ArrayList<>();
-	private ArrayList<Generadores> generador;
+	private List<Generadores> generador;
 
 	public FallaTrifasica(double[][] zBarra, String elementoFallado, List<Barras> barras,
-			List<Lineas> lineas, List<Transformador> trafo, ArrayList<Generadores> generador) {
+			List<Lineas> lineas, List<Transformador> trafo, List<Generadores> generador) {
 
 		super();
 		this.zBarra = zBarra;

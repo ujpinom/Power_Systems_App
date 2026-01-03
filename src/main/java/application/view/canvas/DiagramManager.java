@@ -70,10 +70,19 @@ public class DiagramManager {
             }
         });
 
-        // Listener para LÍNEAS (Necesario para que el modelo actualice la vista)
-        // Nota: Asumimos que NetworkModel tiene una lista observable de líneas, si no,
-        // habría que añadirla.
-        // Por ahora, manejaremos la creación visual directa al completar la conexión.
+        // Listener para LÍNEAS
+        model.getLineas().addListener((ListChangeListener<Lineas>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    for (Lineas l : c.getAddedSubList())
+                        agregarLineaVisual(l);
+                }
+                if (c.wasRemoved()) {
+                    for (Lineas l : c.getRemoved())
+                        removerLineaVisual(l);
+                }
+            }
+        });
     }
 
     // --- Control de Modo ---
@@ -179,23 +188,30 @@ public class DiagramManager {
         // Transferir waypoints al modelo
         nuevaLinea.getListPuntosPolyLine().addAll(currentWaypoints);
 
-        // Agregar al NetworkModel
+        // Agregar al NetworkModel (El listener se encargará de crear la visual)
         model.addLinea(nuevaLinea);
 
-        // 2. Crear Vista
-        LineShape lineShape = new LineShape(nuevaLinea, shape1, shape2);
-
-        // Evento de selección para la línea
-        lineShape.setOnMouseClicked(e -> {
-            e.consume();
-            if (!isConnecting)
-                seleccionarShape(lineShape);
-        });
-
-        // Añadir al canvas (Al fondo, index 0, para que quede detrás de las barras)
-        canvas.getChildren().add(0, lineShape);
-
         System.out.println("Manager: Conexión creada entre " + b1.getNombreBarra() + " y " + b2.getNombreBarra());
+    }
+
+    private void agregarLineaVisual(Lineas linea) {
+        // Buscar las figuras de las barras correspondientes
+        NetworkShape<?> shape1 = buscarShapePorModelo(linea.getBarra1());
+        NetworkShape<?> shape2 = buscarShapePorModelo(linea.getBarra2());
+
+        if (shape1 != null && shape2 != null) {
+            LineShape lineShape = new LineShape(linea, shape1, shape2);
+
+            // Evento de selección para la línea
+            lineShape.setOnMouseClicked(e -> {
+                e.consume();
+                if (!isConnecting)
+                    seleccionarShape(lineShape);
+            });
+
+            // Añadir al canvas (Al fondo, index 0, para que quede detrás de las barras)
+            canvas.getChildren().add(0, lineShape);
+        }
     }
 
     public void cancelConnection() {
@@ -246,5 +262,37 @@ public class DiagramManager {
             }
             return false;
         });
+    }
+
+    private void removerLineaVisual(Lineas linea) {
+        canvas.getChildren().removeIf(node -> {
+            boolean isTarget = false;
+            if (node instanceof LineShape) {
+                if (((LineShape) node).getModel() == linea) {
+                    isTarget = true;
+                }
+            }
+
+            if (isTarget) {
+                if (node == seleccionActual) {
+                    seleccionActual = null;
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private NetworkShape<?> buscarShapePorModelo(Object modelo) {
+        for (javafx.scene.Node node : canvas.getChildren()) {
+            if (node instanceof NetworkShape) {
+                Object m = ((NetworkShape<?>) node).getModel();
+                // Importante: comparar referencias o equals
+                if (m == modelo) {
+                    return (NetworkShape<?>) node;
+                }
+            }
+        }
+        return null;
     }
 }

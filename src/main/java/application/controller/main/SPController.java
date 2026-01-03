@@ -189,11 +189,11 @@ public class SPController implements Initializable {
 	private boolean fPotencia;
 	private List<Barras> barras;
 	private List<Lineas> conexiones;
-	private ArrayList<Transformador> conexiones1 = new ArrayList<>();
-	private ArrayList<Generadores> conexiongene = new ArrayList<>();
-	private ArrayList<Carga> cargas = new ArrayList<>();
-	private ArrayList<Bancos> bancos = new ArrayList<>();
-	private ArrayList<CompensadorEstatico> compensadores = new ArrayList<>();
+	private List<Transformador> conexiones1;
+	private List<Generadores> conexiongene;
+	private List<Carga> cargas;
+	private List<Bancos> bancos;
+	private List<CompensadorEstatico> compensadores;
 	private double endOfLineX, endOfLineY;
 	private Barras startB = null;
 	private boolean isLineOn = false;
@@ -756,6 +756,11 @@ public class SPController implements Initializable {
 	public SPController() {
 		this.barras = NetworkModel.getInstance().getBarras();
 		this.conexiones = NetworkModel.getInstance().getLineas();
+		this.conexiones1 = NetworkModel.getInstance().getTransformadores();
+		this.conexiongene = NetworkModel.getInstance().getGeneradores();
+		this.cargas = NetworkModel.getInstance().getCargas();
+		this.bancos = NetworkModel.getInstance().getBancos();
+		this.compensadores = NetworkModel.getInstance().getCompensadores();
 
 		for (int i = 0; i < listaBarras.length; i++) {
 
@@ -937,7 +942,7 @@ public class SPController implements Initializable {
 			return;
 		}
 
-		String nombreDefault = "Bus-" + (areaDibujo.getChildren().size() + 1);
+		String nombreDefault = "Bus-" + (barras.size());
 		Barras logicaBarra = new Barras(nombreDefault);
 		logicaBarra.setXbarra(x - 3);
 		logicaBarra.setYbarra(y - 30);

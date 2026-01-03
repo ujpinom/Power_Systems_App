@@ -18,6 +18,7 @@ public class BusShape extends NetworkShape<Barras> {
 
     public BusShape(Barras barra) {
         super(barra); // Pasa el modelo al padre
+        enableDrag();
 
         // Determinar el color base según el tipo de barra
         if (barra.isBarraCompensacion()) {
@@ -41,18 +42,16 @@ public class BusShape extends NetworkShape<Barras> {
         // Posicionar el Grupo en el Canvas
         this.setLayoutX(barra.getXbarra());
         this.setLayoutY(barra.getYbarra());
-        
+
         this.setUserData(barra);
-        
+
         // --- Suscripción a cambios del Modelo (Observer Pattern) ---
         model.addPropertyChangeListener(evt -> {
             if ("nombrePersonalizado".equals(evt.getPropertyName())) {
-                javafx.application.Platform.runLater(() -> 
-                    updateLabelText((String) evt.getNewValue())
-                );
+                javafx.application.Platform.runLater(() -> updateLabelText((String) evt.getNewValue()));
             }
         });
-        
+
         configurarEventos();
     }
 
@@ -106,14 +105,14 @@ public class BusShape extends NetworkShape<Barras> {
     protected void applySelectionEffect() {
         this.cuerpoBarra.setFill(Color.RED);
         // Sombra cyan brillante para indicar selección
-        this.setEffect(new DropShadow(15, Color.CYAN)); 
+        this.setEffect(new DropShadow(15, Color.CYAN));
     }
 
     @Override
     protected void updateModelCoordinates(double x, double y) {
         model.setXbarra(x);
         model.setYbarra(y);
-        
+
         // Actualizar coordenadas gráficas secundarias si es necesario
         // (Por ejemplo, puntos de conexión para líneas)
         model.setPuntoMedioBarra(new javafx.geometry.Point2D(x + 3, y + 30));

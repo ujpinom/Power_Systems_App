@@ -3,7 +3,6 @@ package application.view.shapes;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
-import javafx.scene.Cursor;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polyline;
@@ -112,26 +111,47 @@ public class LineShape extends NetworkShape<Lineas> {
     }
 
     private void refreshWaypointHandles() {
-        waypointHandles.getChildren().clear();
         ObservableList<Double> points = model.getListPuntosPolyLine();
+        int waypointCount = points.size() / 2;
 
-        for (int i = 0; i < points.size(); i += 2) {
-            final int index = i;
-            javafx.scene.shape.Circle handle = new javafx.scene.shape.Circle(points.get(i), points.get(i + 1), 5,
-                    Color.WHITE);
-            handle.setStroke(Color.RED);
-            handle.setCursor(Cursor.MOVE);
-
-            // Lógica de arrastre para el waypoint
-            handle.setOnMouseDragged(e -> {
-                double newX = Math.round(e.getX() / 10) * 10;
-                double newY = Math.round(e.getY() / 10) * 10;
-                points.set(index, newX);
-                points.set(index + 1, newY);
-            });
-
-            waypointHandles.getChildren().add(handle);
+        // Si el número de handles no coincide, recrear todo (Ej: nuevo waypoint
+        // añadido)
+        if (waypointHandles.getChildren().size() != waypointCount) {
+            waypointHandles.getChildren().clear();
+            for (int i = 0; i < points.size(); i += 2) {
+                WaypointShape handle = new WaypointShape(model, i, i + 1, points.get(i), points.get(i + 1));
+                waypointHandles.getChildren().add(handle);
+            }
+            return;
         }
+
+        // Si el número coincide, solo actualizar posiciones (Evita romper el Drag &
+        // Drop)
+        for (int i = 0; i < waypointCount; i++) {
+            WaypointShape handle = (WaypointShape) waypointHandles.getChildren().get(i);
+
+            // Solo actualizar si NO es el que se está arrastrando actualmente para evitar
+            // saltos
+            if (!handle.isDragging()) {
+                handle.setLayoutX(points.get(i * 2));
+                handle.setLayoutY(points.get(i * 2 + 1));
+            }
+        }
+    }
+
+    @Override
+    protected boolean isZoomOnHoverEnabled() {
+        return false; // Desactivar escalado geométrico para evitar que se desconecte de las barras
+    }
+
+    @Override
+    protected void onHoverEntered() {
+        visualLine.setStrokeWidth(4);
+    }
+
+    @Override
+    protected void onHoverExited() {
+        visualLine.setStrokeWidth(2);
     }
 
     private void setPoints(Double... coords) {

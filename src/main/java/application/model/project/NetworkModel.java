@@ -29,6 +29,38 @@ public class NetworkModel {
     private NetworkModel() {
         // Inicialización privada (Singleton)
         barras.add(new Barras("Tierra"));
+
+        // Listeners para recomputar nombres
+        barras.addListener(
+                (javafx.collections.ListChangeListener.Change<? extends Barras> c) -> recomputeLogicalNames());
+        lineas.addListener(
+                (javafx.collections.ListChangeListener.Change<? extends Lineas> c) -> recomputeLogicalNames());
+        transformadores.addListener(
+                (javafx.collections.ListChangeListener.Change<? extends Transformador> c) -> recomputeLogicalNames());
+        generadores.addListener(
+                (javafx.collections.ListChangeListener.Change<? extends Generadores> c) -> recomputeLogicalNames());
+    }
+
+    private void recomputeLogicalNames() {
+        // 1. Barras (Skip index 0 which is "Tierra")
+        for (int i = 1; i < barras.size(); i++) {
+            barras.get(i).setNombreBarra("Bus " + i);
+        }
+
+        // 2. Lineas
+        for (int i = 0; i < lineas.size(); i++) {
+            lineas.get(i).setNombreLinea("Line " + (i + 1));
+        }
+
+        // 3. Transformadores
+        for (int i = 0; i < transformadores.size(); i++) {
+            transformadores.get(i).setNombreLinea("Trafo " + (i + 1));
+        }
+
+        // 4. Generadores
+        for (int i = 0; i < generadores.size(); i++) {
+            generadores.get(i).setNombreGenerador("Gen " + (i + 1));
+        }
     }
 
     public static NetworkModel getInstance() {

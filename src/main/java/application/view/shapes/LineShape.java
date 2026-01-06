@@ -57,6 +57,14 @@ public class LineShape extends NetworkShape<Lineas> {
 
         // Calcular posición inicial
         updateConnectionPoints();
+
+        // --- Suscripción a cambios del Modelo (Observer Pattern) ---
+        model.addPropertyChangeListener(evt -> {
+            String prop = evt.getPropertyName();
+            if ("nombreLinea".equals(prop) || "nombrePersonalizado".equals(prop)) {
+                javafx.application.Platform.runLater(() -> updateLabelText(model.getNombreLinea()));
+            }
+        });
     }
 
     private void initConnectionListeners() {

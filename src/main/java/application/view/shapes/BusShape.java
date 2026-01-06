@@ -46,8 +46,9 @@ public class BusShape extends NetworkShape<Barras> {
 
         // --- Suscripción a cambios del Modelo (Observer Pattern) ---
         model.addPropertyChangeListener(evt -> {
-            if ("nombrePersonalizado".equals(evt.getPropertyName())) {
-                javafx.application.Platform.runLater(() -> updateLabelText((String) evt.getNewValue()));
+            String prop = evt.getPropertyName();
+            if ("nombrePersonalizado".equals(prop) || "nombreBarra".equals(prop)) {
+                javafx.application.Platform.runLater(() -> updateLabelText(model.getNombreBarra()));
             }
         });
     }

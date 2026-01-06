@@ -1,14 +1,24 @@
 package proyectoSistemasDePotencia;
 
-import com.sun.javafx.scene.paint.GradientUtils.Point;
-
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Polyline;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
 public class Lineas {
+
+	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		this.pcs.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		this.pcs.removePropertyChangeListener(listener);
+	}
 
 	private Barras barra1;
 	private Barras barra2;
@@ -24,6 +34,7 @@ public class Lineas {
 	private double anguloCorrienteFaseC = 120;
 	private double impedanciaFalla = 0;
 	private double tensionLineaPuntoFalla = 1.0;
+	private String nombrePersonalizado;
 	private double magcorrientePuntoFallaFaseA;
 	private double magcorrientePuntoFallaFaseB;
 	private double magcorrientePuntoFallaFaseC;
@@ -70,7 +81,9 @@ public class Lineas {
 	}
 
 	public void setResitencia(double resitencia) {
+		double old = this.resitencia;
 		this.resitencia = resitencia;
+		this.pcs.firePropertyChange("resitencia", old, resitencia);
 	}
 
 	public double getmVarDeCargaTotales() {
@@ -86,7 +99,9 @@ public class Lineas {
 	}
 
 	public void setYMediaParalela(double yMediaParalela) {
+		double old = this.YMediaParalela;
 		YMediaParalela = yMediaParalela;
+		this.pcs.firePropertyChange("YMediaParalela", old, yMediaParalela);
 	}
 
 	public Point2D getPuntomedio() {
@@ -197,23 +212,45 @@ public class Lineas {
 	}
 
 	public String getNombreLinea() {
+		return nombrePersonalizado != null ? nombrePersonalizado : nombreLinea;
+	}
+
+	public String getNombreLogico() {
 		return nombreLinea;
 	}
 
+	public void setNombrePersonalizado(String nombrePersonalizado) {
+		String old = this.nombrePersonalizado;
+		this.nombrePersonalizado = nombrePersonalizado;
+		this.pcs.firePropertyChange("nombrePersonalizado", old, nombrePersonalizado);
+	}
+
+	public String getNombrePersonalizado() {
+		return nombrePersonalizado;
+	}
+
 	public void setNombreLinea(String nombreLinea) {
+		String old = this.nombreLinea;
 		this.nombreLinea = nombreLinea;
+		this.pcs.firePropertyChange("nombreLinea", old, nombreLinea);
 	}
 
 	public void setimpedanciaLineaZ1(double impedancia1) {
+		double old = this.z1;
 		this.z1 = impedancia1;
+		this.pcs.firePropertyChange("impedanciaLineaZ1", old, impedancia1);
 	}
 
 	public void setimpedanciaLineaZ2(double impedancia2) {
+		double old = this.z2;
 		this.z2 = impedancia2;
+		this.pcs.firePropertyChange("impedanciaLineaZ2", old, impedancia2);
 	}
 
 	public void setimpedanciaLineaZ0(double impedancia0) {
+		double old = this.z0;
 		this.z0 = impedancia0;
+		this.pcs.firePropertyChange("impedanciaLineaZ0", old, impedancia0);
 	}
 
 	public double getimpedanciaLineaZ1() {

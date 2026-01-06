@@ -10,8 +10,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import proyectoSistemasDePotencia.Barras;
+import proyectoSistemasDePotencia.Lineas;
 
 import application.view.panels.forms.BusForm;
+import application.view.panels.forms.LineForm;
 
 public class PropertiesPanel extends VBox {
 
@@ -23,12 +25,12 @@ public class PropertiesPanel extends VBox {
         this.setPadding(new Insets(10));
         this.setSpacing(10);
         // Asegura que el panel ocupe el espacio vertical si es necesario
-        VBox.setVgrow(this, Priority.ALWAYS); 
+        VBox.setVgrow(this, Priority.ALWAYS);
         this.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #ccc; -fx-border-width: 0 0 0 1;");
 
         Label title = new Label("Propiedades");
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-        
+
         this.contentBox = new VBox();
         this.contentBox.setSpacing(10);
         this.getChildren().addAll(title, contentBox);
@@ -44,7 +46,8 @@ public class PropertiesPanel extends VBox {
 
         if (elemento instanceof Barras) {
             contentBox.getChildren().add(new BusForm().render((Barras) elemento));
-        } 
-        // Aquí irían los else if para Lineas, Transformadores, etc.
+        } else if (elemento instanceof Lineas) {
+            contentBox.getChildren().add(new LineForm().render((Lineas) elemento));
+        }
     }
 }

@@ -4,311 +4,342 @@ import java.util.*;
 
 public class FallaAsimetricas {
 
-	private double[][] matrizImpedanciaZ0;
-	private double[][] matrizImpedanciaZ1;
-	private double[][] matrizImpedanciaZ2;
-	private List<Barras> barras;
-	private List<Lineas> lineas;
-	private List<Transformador> trafo;
-	private double corrienteFalla;
-	private Barras barraFallada;
-	private List<Double> vectorVoltajesSecuencia0 = new ArrayList<>();
-	private List<Double> vectorVoltajesSecuencia1 = new ArrayList<>();
-	private List<Double> vectorVoltajesSecuencia2 = new ArrayList<>();
-	private List<Generadores> generador;
+  private double[][] matrizImpedanciaZ0;
+  private double[][] matrizImpedanciaZ1;
+  private double[][] matrizImpedanciaZ2;
+  private List<Barras> barras;
+  private List<Lineas> lineas;
+  private List<Transformador> trafo;
+  private double corrienteFalla;
+  private Barras barraFallada;
+  private List<Double> vectorVoltajesSecuencia0 = new ArrayList<>();
+  private List<Double> vectorVoltajesSecuencia1 = new ArrayList<>();
+  private List<Double> vectorVoltajesSecuencia2 = new ArrayList<>();
+  private List<Generadores> generador;
 
-	public FallaAsimetricas(double[][] matrizImpedanciaZ0, double[][] matrizImpedanciaZ1, double[][] matrizImpedanciaZ2,
-			List<Barras> barras, List<Lineas> lineas, List<Transformador> trafo,
-			Barras barraFallada, List<Generadores> generador) {
+  public FallaAsimetricas(
+      double[][] matrizImpedanciaZ0,
+      double[][] matrizImpedanciaZ1,
+      double[][] matrizImpedanciaZ2,
+      List<Barras> barras,
+      List<Lineas> lineas,
+      List<Transformador> trafo,
+      Barras barraFallada,
+      List<Generadores> generador) {
 
-		super();
-		this.matrizImpedanciaZ0 = matrizImpedanciaZ0;
-		this.matrizImpedanciaZ1 = matrizImpedanciaZ1;
-		this.matrizImpedanciaZ2 = matrizImpedanciaZ2;
-		this.barras = barras;
-		this.lineas = lineas;
-		this.trafo = trafo;
-		this.barraFallada = barraFallada;
-		this.generador = generador;
+    super();
+    this.matrizImpedanciaZ0 = matrizImpedanciaZ0;
+    this.matrizImpedanciaZ1 = matrizImpedanciaZ1;
+    this.matrizImpedanciaZ2 = matrizImpedanciaZ2;
+    this.barras = barras;
+    this.lineas = lineas;
+    this.trafo = trafo;
+    this.barraFallada = barraFallada;
+    this.generador = generador;
 
-		calculoFallas();
+    calculoFallas();
+  } // Fin del constructor
 
-	} // Fin del constructor
+  public void calculoFallas() {
 
-	public void calculoFallas() {
+    calculoCorrienteFalla();
+    calculoVectorVoltajes();
+    calculoCorrientesFalla();
+  }
 
-		calculoCorrienteFalla();
-		calculoVectorVoltajes();
-		calculoCorrientesFalla();
+  private void calculoCorrienteFalla() {
 
-	}
+    int indexBarraFallada = barras.indexOf(barraFallada) - 1;
 
-	private void calculoCorrienteFalla() {
+    double corrienteFalla =
+        barraFallada.getVoltajePrefalla()
+            / (matrizImpedanciaZ0[indexBarraFallada][indexBarraFallada]
+                + matrizImpedanciaZ1[indexBarraFallada][indexBarraFallada]
+                + matrizImpedanciaZ2[indexBarraFallada][indexBarraFallada]
+                + 3 * barraFallada.getImpedanciaFalla());
+
+    this.corrienteFalla = (-1) * corrienteFalla;
+
+    barraFallada.setAngCorrientePuntoFallaFaseA(-90);
+    barraFallada.setAngCorrientePuntoFallaFaseB(0);
+    barraFallada.setAngCorrientePuntoFallaFaseC(0);
+    barraFallada.setMagcorrientePuntoFallaFaseA(3 * corrienteFalla);
+    barraFallada.setMagcorrientePuntoFallaFaseB(0);
+    barraFallada.setMagcorrientePuntoFallaFaseC(0);
+  }
+
+  public double getCorrientePuntoFallaSecuencia0() {
+
+    return corrienteFalla;
+  }
 
-		int indexBarraFallada = barras.indexOf(barraFallada) - 1;
+  public double getCorrientePuntoFallaTotal() {
 
-		double corrienteFalla = barraFallada.getVoltajePrefalla()
-				/ (matrizImpedanciaZ0[indexBarraFallada][indexBarraFallada] +
-						matrizImpedanciaZ1[indexBarraFallada][indexBarraFallada] +
-						matrizImpedanciaZ2[indexBarraFallada][indexBarraFallada]
-						+ 3 * barraFallada.getImpedanciaFalla());
+    return corrienteFalla * 3;
+  }
 
-		this.corrienteFalla = (-1) * corrienteFalla;
+  public void calculoVectorVoltajes() {
 
-		barraFallada.setAngCorrientePuntoFallaFaseA(-90);
-		barraFallada.setAngCorrientePuntoFallaFaseB(0);
-		barraFallada.setAngCorrientePuntoFallaFaseC(0);
-		barraFallada.setMagcorrientePuntoFallaFaseA(3 * corrienteFalla);
-		barraFallada.setMagcorrientePuntoFallaFaseB(0);
-		barraFallada.setMagcorrientePuntoFallaFaseC(0);
+    int indexBarraFallada = barras.indexOf(barraFallada) - 1;
 
-	}
+    for (int i = 0; i < matrizImpedanciaZ2.length; i++) {
 
-	public double getCorrientePuntoFallaSecuencia0() {
+      double vA0 = matrizImpedanciaZ0[i][indexBarraFallada] * corrienteFalla;
+      vectorVoltajesSecuencia0.add(vA0);
 
-		return corrienteFalla;
-	}
+      double vA2 = matrizImpedanciaZ2[i][indexBarraFallada] * corrienteFalla;
+      vectorVoltajesSecuencia2.add(vA2);
 
-	public double getCorrientePuntoFallaTotal() {
+      double vA1 =
+          barras.get(i + 1).getVoltajePrefalla()
+              + matrizImpedanciaZ1[i][indexBarraFallada] * corrienteFalla;
+      vectorVoltajesSecuencia1.add(vA1);
 
-		return corrienteFalla * 3;
-	}
+      double VFaseA = vA0 + vA1 + vA2;
 
-	public void calculoVectorVoltajes() {
+      barras.get(i + 1).setVoltajePosFallaFaseA(VFaseA);
+      barras.get(i + 1).setAnguloVoltajeFaseA(0);
 
-		int indexBarraFallada = barras.indexOf(barraFallada) - 1;
+      Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
+      Complejo a = new Complejo(-0.5, 0.8660254038);
 
-		for (int i = 0; i < matrizImpedanciaZ2.length; i++) {
+      Complejo vA1aCuadrado = Complejo.producto(aCuadrado, vA1);
+      Complejo vA2a = Complejo.producto(a, vA2);
 
-			double vA0 = matrizImpedanciaZ0[i][indexBarraFallada] * corrienteFalla;
-			vectorVoltajesSecuencia0.add(vA0);
+      Complejo sumavA1aCuadradovA2a = Complejo.suma(vA1aCuadrado, vA2a);
+      Complejo ResultadoFaseB = Complejo.suma(sumavA1aCuadradovA2a, new Complejo(vA0, 0));
 
-			double vA2 = matrizImpedanciaZ2[i][indexBarraFallada] * corrienteFalla;
-			vectorVoltajesSecuencia2.add(vA2);
+      double magFaseB = new Complejo(ResultadoFaseB.getReal(), ResultadoFaseB.getImag()).modulo();
+      double angFaseB =
+          new Complejo(ResultadoFaseB.getReal(), ResultadoFaseB.getImag()).argumento();
 
-			double vA1 = barras.get(i + 1).getVoltajePrefalla()
-					+ matrizImpedanciaZ1[i][indexBarraFallada] * corrienteFalla;
-			vectorVoltajesSecuencia1.add(vA1);
+      barras.get(i + 1).setVoltajePosFallaFaseB(magFaseB);
+      barras.get(i + 1).setAnguloVoltajeFaseB(angFaseB);
 
-			double VFaseA = vA0 + vA1 + vA2;
+      vA1aCuadrado = Complejo.producto(a, vA1);
+      vA2a = Complejo.producto(aCuadrado, vA2);
 
-			barras.get(i + 1).setVoltajePosFallaFaseA(VFaseA);
-			barras.get(i + 1).setAnguloVoltajeFaseA(0);
+      sumavA1aCuadradovA2a = Complejo.suma(vA1aCuadrado, vA2a);
+      Complejo resultadoFaseC = Complejo.suma(sumavA1aCuadradovA2a, new Complejo(vA0, 0));
 
-			Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
-			Complejo a = new Complejo(-0.5, 0.8660254038);
+      double magFaseC = new Complejo(resultadoFaseC.getReal(), resultadoFaseC.getImag()).modulo();
+      double angFaseC =
+          new Complejo(resultadoFaseC.getReal(), resultadoFaseC.getImag()).argumento();
 
-			Complejo vA1aCuadrado = Complejo.producto(aCuadrado, vA1);
-			Complejo vA2a = Complejo.producto(a, vA2);
+      barras.get(i + 1).setVoltajePosFallaFaseC(magFaseC);
+      barras.get(i + 1).setAnguloVoltajeFaseC(angFaseC);
+    }
+  }
 
-			Complejo sumavA1aCuadradovA2a = Complejo.suma(vA1aCuadrado, vA2a);
-			Complejo ResultadoFaseB = Complejo.suma(sumavA1aCuadradovA2a, new Complejo(vA0, 0));
+  public void calculoCorrientesFalla() {
 
-			double magFaseB = new Complejo(ResultadoFaseB.getReal(), ResultadoFaseB.getImag()).modulo();
-			double angFaseB = new Complejo(ResultadoFaseB.getReal(), ResultadoFaseB.getImag()).argumento();
+    for (int i = 0; i < lineas.size(); i++) {
 
-			barras.get(i + 1).setVoltajePosFallaFaseB(magFaseB);
-			barras.get(i + 1).setAnguloVoltajeFaseB(angFaseB);
+      int barra1 = barras.indexOf(lineas.get(i).getBarra1());
+      int barra2 = barras.indexOf(lineas.get(i).getBarra2());
 
-			vA1aCuadrado = Complejo.producto(a, vA1);
-			vA2a = Complejo.producto(aCuadrado, vA2);
+      int minimo = Math.min(barra1, barra2);
+      int maximo = Math.max(barra2, barra1);
 
-			sumavA1aCuadradovA2a = Complejo.suma(vA1aCuadrado, vA2a);
-			Complejo resultadoFaseC = Complejo.suma(sumavA1aCuadradovA2a, new Complejo(vA0, 0));
+      try {
 
-			double magFaseC = new Complejo(resultadoFaseC.getReal(), resultadoFaseC.getImag()).modulo();
-			double angFaseC = new Complejo(resultadoFaseC.getReal(), resultadoFaseC.getImag()).argumento();
+        Complejo iA0 =
+            Complejo.cociente(
+                new Complejo(
+                    (vectorVoltajesSecuencia0.get(minimo - 1)
+                        - vectorVoltajesSecuencia0.get(maximo - 1)),
+                    0),
+                new Complejo(0, lineas.get(i).getimpedanciaLineaZ0()));
 
-			barras.get(i + 1).setVoltajePosFallaFaseC(magFaseC);
-			barras.get(i + 1).setAnguloVoltajeFaseC(angFaseC);
+        Complejo iA1;
+        iA1 =
+            Complejo.cociente(
+                new Complejo(
+                    (vectorVoltajesSecuencia1.get(minimo - 1)
+                        - vectorVoltajesSecuencia1.get(maximo - 1)),
+                    0),
+                new Complejo(0, lineas.get(i).getimpedanciaLineaZ1()));
 
-		}
+        Complejo iA2 =
+            Complejo.cociente(
+                new Complejo(
+                    (vectorVoltajesSecuencia2.get(minimo - 1)
+                        - vectorVoltajesSecuencia2.get(maximo - 1)),
+                    0),
+                new Complejo(0, lineas.get(i).getimpedanciaLineaZ2()));
 
-	}
+        Complejo iA = Complejo.suma(Complejo.suma(iA1, iA2), iA0);
 
-	public void calculoCorrientesFalla() {
+        double magIA = new Complejo(iA.getReal(), iA.getImag()).modulo();
 
-		for (int i = 0; i < lineas.size(); i++) {
+        double angIa = new Complejo(iA.getReal(), iA.getImag()).argumento();
 
-			int barra1 = barras.indexOf(lineas.get(i).getBarra1());
-			int barra2 = barras.indexOf(lineas.get(i).getBarra2());
+        lineas.get(i).setCorrienteFallaFaseA(magIA);
+        lineas.get(i).setAnguloCorrienteFaseA(angIa);
 
-			int minimo = Math.min(barra1, barra2);
-			int maximo = Math.max(barra2, barra1);
+        Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
 
-			try {
+        Complejo a = new Complejo(-0.5, 0.8660254038);
 
-				Complejo iA0 = Complejo.cociente(new Complejo(
-						(vectorVoltajesSecuencia0.get(minimo - 1) - vectorVoltajesSecuencia0.get(maximo - 1)), 0),
-						new Complejo(0, lineas.get(i).getimpedanciaLineaZ0()));
+        Complejo aCuadradoiA1 = Complejo.producto(aCuadrado, iA1);
+        Complejo aIA2 = Complejo.producto(a, iA2);
 
-				Complejo iA1;
-				iA1 = Complejo.cociente(new Complejo(
-						(vectorVoltajesSecuencia1.get(minimo - 1) - vectorVoltajesSecuencia1.get(maximo - 1)), 0),
-						new Complejo(0, lineas.get(i).getimpedanciaLineaZ1()));
+        Complejo iB = Complejo.suma(iA0, Complejo.suma(aCuadradoiA1, aIA2));
 
-				Complejo iA2 = Complejo.cociente(new Complejo(
-						(vectorVoltajesSecuencia2.get(minimo - 1) - vectorVoltajesSecuencia2.get(maximo - 1)), 0),
-						new Complejo(0, lineas.get(i).getimpedanciaLineaZ2()));
+        double magIB = new Complejo(iB.getReal(), iB.getImag()).modulo();
+        double angIB = new Complejo(iB.getReal(), iB.getImag()).argumento();
 
-				Complejo iA = Complejo.suma(Complejo.suma(iA1, iA2), iA0);
+        lineas.get(i).setCorrienteFallaFaseB(magIB);
+        lineas.get(i).setAnguloCorrienteFaseB(angIB);
 
-				double magIA = new Complejo(iA.getReal(), iA.getImag()).modulo();
+        Complejo aCuadradoiA2 = Complejo.producto(aCuadrado, iA2);
+        Complejo aIA1 = Complejo.producto(a, iA1);
+        Complejo iC = Complejo.suma(iA0, Complejo.suma(aCuadradoiA2, aIA1));
 
-				double angIa = new Complejo(iA.getReal(), iA.getImag()).argumento();
+        double magIC = new Complejo(iC.getReal(), iC.getImag()).modulo();
+        double angIC = new Complejo(iC.getReal(), iC.getImag()).argumento();
 
-				lineas.get(i).setCorrienteFallaFaseA(magIA);
-				lineas.get(i).setAnguloCorrienteFaseA(angIa);
+        lineas.get(i).setCorrienteFallaFaseC(magIC);
+        lineas.get(i).setAnguloCorrienteFaseC(angIC);
 
-				Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
+      } catch (ExcepcionDivideCero e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
 
-				Complejo a = new Complejo(-0.5, 0.8660254038);
+    for (int i = 0; i < trafo.size(); i++) {
+      Complejo iA0;
 
-				Complejo aCuadradoiA1 = Complejo.producto(aCuadrado, iA1);
-				Complejo aIA2 = Complejo.producto(a, iA2);
+      int barra1 = barras.indexOf(trafo.get(i).getBarra1());
+      int barra2 = barras.indexOf(trafo.get(i).getBarra2());
 
-				Complejo iB = Complejo.suma(iA0, Complejo.suma(aCuadradoiA1, aIA2));
+      int minimo = Math.min(barra1, barra2);
+      int maximo = Math.max(barra2, barra1);
 
-				double magIB = new Complejo(iB.getReal(), iB.getImag()).modulo();
-				double angIB = new Complejo(iB.getReal(), iB.getImag()).argumento();
+      try {
 
-				lineas.get(i).setCorrienteFallaFaseB(magIB);
-				lineas.get(i).setAnguloCorrienteFaseB(angIB);
+        if ((trafo.get(i).getConexionPrimaria().contains("Y-")
+                || trafo.get(i).getConexionSecundaria().contains("Y-"))
+            || (trafo.get(i).getConexionPrimaria().contains("DELTA")
+                && trafo.get(i).getConexionSecundaria().contains("DELTA"))) {
 
-				Complejo aCuadradoiA2 = Complejo.producto(aCuadrado, iA2);
-				Complejo aIA1 = Complejo.producto(a, iA1);
-				Complejo iC = Complejo.suma(iA0, Complejo.suma(aCuadradoiA2, aIA1));
+          iA0 = new Complejo(0, 0);
+        } else {
+          iA0 =
+              Complejo.cociente(
+                  new Complejo(
+                      (vectorVoltajesSecuencia0.get(minimo - 1)
+                          - vectorVoltajesSecuencia0.get(maximo - 1)),
+                      0),
+                  new Complejo(
+                      0,
+                      trafo.get(i).getimpedanciaLineaZ0()
+                          + 3 * trafo.get(i).getImpedanciaAterrizamientoPrimaria()
+                          + 3 * trafo.get(i).getImpedanciaAterrizamientoSecundaria()));
+        }
 
-				double magIC = new Complejo(iC.getReal(), iC.getImag()).modulo();
-				double angIC = new Complejo(iC.getReal(), iC.getImag()).argumento();
+        Complejo iA1 =
+            Complejo.cociente(
+                new Complejo(
+                    (vectorVoltajesSecuencia1.get(minimo - 1)
+                        - vectorVoltajesSecuencia1.get(maximo - 1)),
+                    0),
+                new Complejo(0, trafo.get(i).getimpedanciaLineaZ1()));
 
-				lineas.get(i).setCorrienteFallaFaseC(magIC);
-				lineas.get(i).setAnguloCorrienteFaseC(angIC);
+        Complejo iA2 =
+            Complejo.cociente(
+                new Complejo(
+                    (vectorVoltajesSecuencia2.get(minimo - 1)
+                        - vectorVoltajesSecuencia2.get(maximo - 1)),
+                    0),
+                new Complejo(0, trafo.get(i).getimpedanciaLineaZ2()));
 
-			} catch (ExcepcionDivideCero e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        Complejo iA = Complejo.suma(Complejo.suma(iA1, iA2), iA0);
 
-		}
+        double magIA = new Complejo(iA.getReal(), iA.getImag()).modulo();
+        double angIa = new Complejo(iA.getReal(), iA.getImag()).argumento();
 
-		for (int i = 0; i < trafo.size(); i++) {
-			Complejo iA0;
+        trafo.get(i).setCorrienteFallaFaseA(magIA);
+        trafo.get(i).setAnguloCorrienteFaseA(angIa);
 
-			int barra1 = barras.indexOf(trafo.get(i).getBarra1());
-			int barra2 = barras.indexOf(trafo.get(i).getBarra2());
+        Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
+        Complejo a = new Complejo(-0.5, 0.8660254038);
 
-			int minimo = Math.min(barra1, barra2);
-			int maximo = Math.max(barra2, barra1);
+        Complejo aCuadradoiA1 = Complejo.producto(aCuadrado, iA1);
+        Complejo aIA2 = Complejo.producto(a, iA2);
+        Complejo iB = Complejo.suma(iA0, Complejo.suma(aCuadradoiA1, aIA2));
 
-			try {
+        double magIB = new Complejo(iB.getReal(), iB.getImag()).modulo();
+        double angIB = new Complejo(iB.getReal(), iB.getImag()).argumento();
 
-				if ((trafo.get(i).getConexionPrimaria().contains("Y-")
-						|| trafo.get(i).getConexionSecundaria().contains("Y-")) ||
-						(trafo.get(i).getConexionPrimaria().contains("DELTA")
-								&& trafo.get(i).getConexionSecundaria().contains("DELTA"))) {
+        trafo.get(i).setCorrienteFallaFaseB(magIB);
+        trafo.get(i).setAnguloCorrienteFaseB(angIB);
 
-					iA0 = new Complejo(0, 0);
-				} else {
-					iA0 = Complejo.cociente(new Complejo(
-							(vectorVoltajesSecuencia0.get(minimo - 1) - vectorVoltajesSecuencia0.get(maximo - 1)), 0),
-							new Complejo(0,
-									trafo.get(i).getimpedanciaLineaZ0()
-											+ 3 * trafo.get(i).getImpedanciaAterrizamientoPrimaria() +
-											3 * trafo.get(i).getImpedanciaAterrizamientoSecundaria()));
-				}
+        Complejo aCuadradoiA2 = Complejo.producto(aCuadrado, iA2);
+        Complejo aIA1 = Complejo.producto(a, iA1);
+        Complejo iC = Complejo.suma(iA0, Complejo.suma(aCuadradoiA2, aIA1));
 
-				Complejo iA1 = Complejo.cociente(new Complejo(
-						(vectorVoltajesSecuencia1.get(minimo - 1) - vectorVoltajesSecuencia1.get(maximo - 1)), 0),
-						new Complejo(0, trafo.get(i).getimpedanciaLineaZ1()));
+        double magIC = new Complejo(iC.getReal(), iC.getImag()).modulo();
+        double angIC = new Complejo(iC.getReal(), iC.getImag()).argumento();
 
-				Complejo iA2 = Complejo.cociente(new Complejo(
-						(vectorVoltajesSecuencia2.get(minimo - 1) - vectorVoltajesSecuencia2.get(maximo - 1)), 0),
-						new Complejo(0, trafo.get(i).getimpedanciaLineaZ2()));
+        trafo.get(i).setCorrienteFallaFaseC(magIC);
+        trafo.get(i).setAnguloCorrienteFaseC(angIC);
 
-				Complejo iA = Complejo.suma(Complejo.suma(iA1, iA2), iA0);
+      } catch (ExcepcionDivideCero e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
 
-				double magIA = new Complejo(iA.getReal(), iA.getImag()).modulo();
-				double angIa = new Complejo(iA.getReal(), iA.getImag()).argumento();
+    for (int i = 0; i < generador.size(); i++) {
 
-				trafo.get(i).setCorrienteFallaFaseA(magIA);
-				trafo.get(i).setAnguloCorrienteFaseA(angIa);
+      int indexBarraGe = barras.indexOf(generador.get(i).getBarra());
 
-				Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
-				Complejo a = new Complejo(-0.5, 0.8660254038);
+      double iA0 =
+          vectorVoltajesSecuencia0.get(indexBarraGe - 1)
+              / (generador.get(i).getImpedanciaZ0()
+                  + generador.get(i).getImpedanciaAterrizamiento());
 
-				Complejo aCuadradoiA1 = Complejo.producto(aCuadrado, iA1);
-				Complejo aIA2 = Complejo.producto(a, iA2);
-				Complejo iB = Complejo.suma(iA0, Complejo.suma(aCuadradoiA1, aIA2));
+      double iA1 =
+          (-1)
+              * (Barras.vprefalla - vectorVoltajesSecuencia1.get(indexBarraGe - 1))
+              / generador.get(i).getImpedanciaZ1();
 
-				double magIB = new Complejo(iB.getReal(), iB.getImag()).modulo();
-				double angIB = new Complejo(iB.getReal(), iB.getImag()).argumento();
+      double iA2 =
+          vectorVoltajesSecuencia2.get(indexBarraGe - 1) / generador.get(i).getImpedanciaZ2();
 
-				trafo.get(i).setCorrienteFallaFaseB(magIB);
-				trafo.get(i).setAnguloCorrienteFaseB(angIB);
+      double corrinteFaseA = iA0 + iA1 + iA2;
 
-				Complejo aCuadradoiA2 = Complejo.producto(aCuadrado, iA2);
-				Complejo aIA1 = Complejo.producto(a, iA1);
-				Complejo iC = Complejo.suma(iA0, Complejo.suma(aCuadradoiA2, aIA1));
+      generador.get(i).setCorrienteFaseA((-1) * corrinteFaseA);
+      generador.get(i).setAnguloCorrienteFaseA(-90);
 
-				double magIC = new Complejo(iC.getReal(), iC.getImag()).modulo();
-				double angIC = new Complejo(iC.getReal(), iC.getImag()).argumento();
+      Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
+      Complejo a = new Complejo(-0.5, 0.8660254038);
 
-				trafo.get(i).setCorrienteFallaFaseC(magIC);
-				trafo.get(i).setAnguloCorrienteFaseC(angIC);
+      Complejo acuadradoIa = Complejo.producto(aCuadrado, new Complejo(0, iA1));
+      Complejo aIa = Complejo.producto(a, new Complejo(0, iA2));
 
-			} catch (ExcepcionDivideCero e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+      Complejo sumaacuadradoIaaIa = Complejo.suma(acuadradoIa, aIa);
+      Complejo sumaFinal = Complejo.suma(sumaacuadradoIaaIa, new Complejo(0, iA0));
 
-		}
+      double magCorrienteFaseB = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).modulo();
+      double angCorrienteFaseB = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).argumento();
 
-		for (int i = 0; i < generador.size(); i++) {
+      generador.get(i).setCorrienteFaseB(magCorrienteFaseB);
+      generador.get(i).setAnguloCorrienteFaseB(angCorrienteFaseB);
 
-			int indexBarraGe = barras.indexOf(generador.get(i).getBarra());
+      acuadradoIa = Complejo.producto(aCuadrado, new Complejo(0, iA2));
+      aIa = Complejo.producto(a, new Complejo(0, iA1));
 
-			double iA0 = vectorVoltajesSecuencia0.get(indexBarraGe - 1)
-					/ (generador.get(i).getImpedanciaZ0() + generador.get(i).getImpedanciaAterrizamiento());
+      sumaacuadradoIaaIa = Complejo.suma(acuadradoIa, aIa);
+      sumaFinal = Complejo.suma(sumaacuadradoIaaIa, new Complejo(0, iA0));
 
-			double iA1 = (-1) * (Barras.vprefalla - vectorVoltajesSecuencia1.get(indexBarraGe - 1))
-					/ generador.get(i).getImpedanciaZ1();
+      double magCorrienteFaseC = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).modulo();
+      double angCorrienteFaseC = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).argumento();
 
-			double iA2 = vectorVoltajesSecuencia2.get(indexBarraGe - 1) / generador.get(i).getImpedanciaZ2();
-
-			double corrinteFaseA = iA0 + iA1 + iA2;
-
-			generador.get(i).setCorrienteFaseA((-1) * corrinteFaseA);
-			generador.get(i).setAnguloCorrienteFaseA(-90);
-
-			Complejo aCuadrado = new Complejo(-0.5, -0.8660254038);
-			Complejo a = new Complejo(-0.5, 0.8660254038);
-
-			Complejo acuadradoIa = Complejo.producto(aCuadrado, new Complejo(0, iA1));
-			Complejo aIa = Complejo.producto(a, new Complejo(0, iA2));
-
-			Complejo sumaacuadradoIaaIa = Complejo.suma(acuadradoIa, aIa);
-			Complejo sumaFinal = Complejo.suma(sumaacuadradoIaaIa, new Complejo(0, iA0));
-
-			double magCorrienteFaseB = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).modulo();
-			double angCorrienteFaseB = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).argumento();
-
-			generador.get(i).setCorrienteFaseB(magCorrienteFaseB);
-			generador.get(i).setAnguloCorrienteFaseB(angCorrienteFaseB);
-
-			acuadradoIa = Complejo.producto(aCuadrado, new Complejo(0, iA2));
-			aIa = Complejo.producto(a, new Complejo(0, iA1));
-
-			sumaacuadradoIaaIa = Complejo.suma(acuadradoIa, aIa);
-			sumaFinal = Complejo.suma(sumaacuadradoIaaIa, new Complejo(0, iA0));
-
-			double magCorrienteFaseC = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).modulo();
-			double angCorrienteFaseC = new Complejo(sumaFinal.getReal(), sumaFinal.getImag()).argumento();
-
-			generador.get(i).setCorrienteFaseC(magCorrienteFaseC);
-			generador.get(i).setAnguloCorrienteFaseC(angCorrienteFaseC);
-
-		}
-	}
-
+      generador.get(i).setCorrienteFaseC(magCorrienteFaseC);
+      generador.get(i).setAnguloCorrienteFaseC(angCorrienteFaseC);
+    }
+  }
 }

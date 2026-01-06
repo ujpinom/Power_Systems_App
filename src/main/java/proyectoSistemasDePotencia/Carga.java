@@ -3,87 +3,81 @@ package proyectoSistemasDePotencia;
 import javafx.geometry.Point2D;
 
 public class Carga {
-	
-	private double potenciaActiva;
-	private double potenciaReactiva;
-	private Point2D puntoMedio;
-	private Point2D inicio;
-	private Barras barra;
-	private String nombreCarga;
-	static final String LEFT="LEFT";
-	static final String RIGHT="RIGHT";
-	static final String ARRIBA="ARRIBA";
-	static final String ABAJO="ABAJO";
-	private String orientacion="LEFT";
-	
-	
-	public String getOrientacion() {
-		return orientacion;
-	}
 
-	public void setOrientacion(String orientacion) {
-		this.orientacion = orientacion;
-	}
+  private double potenciaActiva;
+  private double potenciaReactiva;
+  private Point2D puntoMedio;
+  private Point2D inicio;
+  private Barras barra;
+  private String nombreCarga;
+  static final String LEFT = "LEFT";
+  static final String RIGHT = "RIGHT";
+  static final String ARRIBA = "ARRIBA";
+  static final String ABAJO = "ABAJO";
+  private String orientacion = "LEFT";
 
-	public Carga() {
-		
-	}
-	
-	public Carga(Point2D inicio, Barras barra, String nombreCarga) {
-		super();
-		this.inicio = inicio;
-		this.barra = barra;
-		this.nombreCarga = nombreCarga;
-	}
+  public String getOrientacion() {
+    return orientacion;
+  }
 
-	public double getPotenciaActiva() {
-		return potenciaActiva;
-	}
+  public void setOrientacion(String orientacion) {
+    this.orientacion = orientacion;
+  }
 
-	public void setPotenciaActiva(double potenciaActiva) {
-		this.potenciaActiva = potenciaActiva;
-	}
+  public Carga() {}
 
-	public double getPotenciaReactiva() {
-		return potenciaReactiva;
-	}
+  public Carga(Point2D inicio, Barras barra, String nombreCarga) {
+    super();
+    this.inicio = inicio;
+    this.barra = barra;
+    this.nombreCarga = nombreCarga;
+  }
 
-	public void setPotenciaReactiva(double potenciaReactiva) {
-		this.potenciaReactiva = potenciaReactiva;
-	}
+  public double getPotenciaActiva() {
+    return potenciaActiva;
+  }
 
-	public Point2D getPuntoMedio() {
-		return puntoMedio;
-	}
+  public void setPotenciaActiva(double potenciaActiva) {
+    this.potenciaActiva = potenciaActiva;
+  }
 
-	public void setPuntoMedio(Point2D puntoMedio) {
-		this.puntoMedio = puntoMedio;
-	}
+  public double getPotenciaReactiva() {
+    return potenciaReactiva;
+  }
 
-	public Point2D getInicio() {
-		return inicio;
-	}
+  public void setPotenciaReactiva(double potenciaReactiva) {
+    this.potenciaReactiva = potenciaReactiva;
+  }
 
-	public void setInicio(Point2D inicio) {
-		this.inicio = inicio;
-	}
+  public Point2D getPuntoMedio() {
+    return puntoMedio;
+  }
 
-	public Barras getBarra() {
-		return barra;
-	}
+  public void setPuntoMedio(Point2D puntoMedio) {
+    this.puntoMedio = puntoMedio;
+  }
 
-	public void setBarra(Barras barra) {
-		this.barra = barra;
-	}
+  public Point2D getInicio() {
+    return inicio;
+  }
 
-	public String getNombreCarga() {
-		return nombreCarga;
-	}
+  public void setInicio(Point2D inicio) {
+    this.inicio = inicio;
+  }
 
-	public void setNombreCarga(String nombreCarga) {
-		this.nombreCarga = nombreCarga;
-	}
+  public Barras getBarra() {
+    return barra;
+  }
 
+  public void setBarra(Barras barra) {
+    this.barra = barra;
+  }
 
+  public String getNombreCarga() {
+    return nombreCarga;
+  }
+
+  public void setNombreCarga(String nombreCarga) {
+    this.nombreCarga = nombreCarga;
+  }
 }
-

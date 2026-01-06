@@ -1,5 +1,14 @@
 package application.controller.main;
 
+import application.DeterminacionPotenciasBarras;
+import application.EcuacionesVoltajeYPotencia;
+import application.NewtonRaphson;
+import application.enums.ToolType;
+import application.model.project.NetworkModel;
+import application.view.canvas.DiagramManager;
+import application.view.panels.PropertiesPanel;
+import grafos.Edges;
+import grafos.MyGraph;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -7,17 +16,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
-
-import javax.swing.JOptionPane;
-
-import application.DeterminacionPotenciasBarras;
-import application.EcuacionesVoltajeYPotencia;
-import application.NewtonRaphson;
-import application.enums.ToolType;
-import application.model.project.NetworkModel;
-import application.view.canvas.DiagramManager;
-import grafos.Edges;
-import grafos.MyGraph;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
@@ -63,6 +61,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
 import javafx.stage.Stage;
+import javax.swing.JOptionPane;
 import proyectoSistemasDePotencia.Bancos;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Carga;
@@ -79,2615 +78,2611 @@ import proyectoSistemasDePotencia.FallaLineaALineaTierraEnLinea;
 import proyectoSistemasDePotencia.FallaTrifasica;
 import proyectoSistemasDePotencia.FallaTrifasicaLinea;
 import proyectoSistemasDePotencia.Generadores;
-import proyectoSistemasDePotencia.InfoImpedanciaFalla;
-import proyectoSistemasDePotencia.InfoImpedanciaFallaLinea;
 import proyectoSistemasDePotencia.Lineas;
 import proyectoSistemasDePotencia.Transformador;
 import proyectoSistemasDePotencia.Zbarra;
 import weightedGraphs.WeightEdeges;
 import weightedGraphs.WeightedGraph;
-import application.view.panels.PropertiesPanel;
 
 public class SPController implements Initializable {
 
-	@FXML
-	private ToggleButton Compensador;
+  @FXML private ToggleButton Compensador;
 
-	// --- VARIABLES DE LA NUEVA INTERFAZ ---
-	@FXML
-	private ScrollPane scrollContainer;
-	@FXML
-	private StackPane zoomContainer;
-	@FXML
-	private Label zoomLabel;
-	@FXML
-	private TableView<?> tablaBarras; // El <?> evita errores si no tienes clase modelo aún
-	@FXML
-	private TableView<?> tablaRamas;
-
-	@FXML
-	private TextArea infoFlujo;
-
-	@FXML
-	private MenuItem Action1;
-
-	@FXML
-	private MenuItem GaussSeidel;
-
-	@FXML
-	private MenuItem matrizSecuencia;
-
-	@FXML
-	private MenuItem flujoTabular;
-
-	@FXML
-	private MenuItem fallaTabular;
-
-	@FXML
-	private AnchorPane areaDibujo = new AnchorPane();
-	DoubleProperty myScale = new SimpleDoubleProperty(1.0);
-	@FXML
-	private TextField infoElemento;
-
-	@FXML
-	private TextField infoTare;
-
-	@FXML
-	private TextField infoPosiMouse;
-	@FXML
-	private TextArea display;
-
-	@FXML
-	private ToggleButton barra;
-
-	@FXML
-	private Button undo;
-
-	@FXML
-	private Button undo1;
-
-	@FXML
-	private ToggleButton banco;
-
-	@FXML
-	private ToggleButton generador;
-
-	@FXML
-	private ToggleButton trafo;
-
-	@FXML
-	private ToggleButton none;
-
-	@FXML
-	private Button ejecutar;
-
-	@FXML
-	private ToggleButton linea;
-
-	@FXML
-	private ToggleButton carga;
-
-	@FXML
-	private ToggleGroup group;
-
-	@FXML
-	private TextField factorAceleracion;
-
-	public static double BASE_SISTEMA = 100;
-	private Complejo[][] perdidadsPotencia;
-	private Complejo[][] potenciaEntranteBarras;
-
-	private List<Complejo>[] perdidasLineas;
-
-	// --- State Management ---
-	private ToolType currentTool = ToolType.NONE;
-
-	private boolean trifasica;
-	private boolean monofasica;
-	private boolean lineaALinea;
-	private boolean bifasicaATierra;
-	private boolean fPotencia;
-	private List<Barras> barras;
-	private List<Lineas> conexiones;
-	private List<Transformador> conexiones1;
-	private List<Generadores> conexiongene;
-	private List<Carga> cargas;
-	private List<Bancos> bancos;
-	private List<CompensadorEstatico> compensadores;
-	private double endOfLineX, endOfLineY;
-	private Barras startB = null;
-	private boolean isLineOn = false;
-	private int radioCirculo = 14;
-	private String nombreBarra = "B";
-	private String nombreLinea = "L";
-	private String nombreTrafo = "T";
-	private String nombreGenerador = "G";
-	private String nombreCarga = "C";
-	private String nombreBanco = "BA";
-	private String nombreCompensador = "E";
-
-	private ArrayList<Double> distanciasLineas = new ArrayList<>();
-	private ArrayList<Double> corGenerador = new ArrayList<>();
-	private ArrayList<Double> corCarga = new ArrayList<>();
-	private ArrayList<Double> corBanco = new ArrayList<>();
-	private ArrayList<Double> corCompensador = new ArrayList<>();
-	private ObservableList<Node> lista;
-	private ArrayList<Double> posBarra = new ArrayList<>();
-	private WeightedGraph<Barras> grafo1;
-	private WeightedGraph<Barras> grafo2;
-	private WeightedGraph<Barras> grafo0;
-	private double impedanciaDeFalla;
-	private String tipoElementoFallado;
-	private ArrayList<Double> coorFalla = new ArrayList<>();
-	private boolean fallaEnLinea = false;
-	private Lineas lineaFallada;
-	private Barras barraFallada;
-	private double xCoorG;
-	private double yCoorG;
-	private double magCorrientePuntoFallaFaseA;
-	private double magCorrientePuntoFallaFaseB;
-	private double magCorrientePuntoFallaFaseC;
-	private double angCorrientePuntoFallaFaseA;
-	private double angCorrientePuntoFallaFaseB;
-	private double angCorrientePuntoFallaFaseC;
-	private double largoBarra = 70;
-	private double ancho = 5;
-	private double currentScale = 1.0;
-	private static boolean borrarUltimoElemento = false;
-	private double FACTOR_ACELERACION = 1.6;
-	private int NUMERO_ITERACIONES = 50; // numero de iteraciones para el problema de flujo de potencia.
-
-	private LinkedList<Object> objetosCreados = new LinkedList<>(); // Almacena todos los objectos creados para llevar
-	// un record de ellos;
-	private LinkedList<Object> restablecerElementos = new LinkedList<>();
-
-	private String metodoFlujoPotencia = "Seidel";
-
-	private double epsilon = 0.01;
-
-	private Barras barraCompensacion = null;
-	private NetworkModel networkModel;
-	private DiagramManager diagramManager;
-	private PropertiesPanel propertiesPanel;
-	@FXML
-	private VBox rightPanelContainer;;
-
-	@Override
-	public void initialize(URL arg0, ResourceBundle arg1) {
-		scrollContainer.setHvalue(0.5);
-		scrollContainer.setVvalue(0.5);
-		this.networkModel = NetworkModel.getInstance();
-		this.diagramManager = new DiagramManager(areaDibujo);
-		this.propertiesPanel = new PropertiesPanel();
-		rightPanelContainer.getChildren().clear();
-		rightPanelContainer.getChildren().add(propertiesPanel);
-		VBox.setVgrow(propertiesPanel, Priority.ALWAYS);
-		networkModel.seleccionActualProperty().addListener((obs, oldVal, newVal) -> {
-			propertiesPanel.mostrarPropiedades(newVal);
-		});
-
-		// ... existing initializations ...
-
-		// Manejo de tecla ESC para cancelar conexión/herramienta
-		areaDibujo.sceneProperty().addListener((obs, oldScene, newScene) -> {
-			if (newScene != null) {
-				newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-					if (event.getCode() == KeyCode.ESCAPE) {
-						diagramManager.cancelConnection();
-						none.setSelected(true);
-						currentTool = ToolType.NONE;
-						infoElemento.setText("Elemento: Edición");
-						diagramManager.setConnectionMode(false);
-					}
-				});
-			}
-		});
-	}
-
-	/**
-	 * Metodo destinado para Newton-raphson
-	 * 
-	 * @param e
-	 * @throws IOException
-	 */
-
-	@FXML
-	public void Action1(ActionEvent e) throws IOException {
-
-		matrizSecuencia.setDisable(true);
-		fallaTabular.setDisable(true);
-		fPotencia = true;
-		metodoFlujoPotencia = "Raphson";
-		infoTare.setText("Tarea: Flujo de Potencia: Newton-Raphson");
-
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/application/MatricesSeq.fxml"));
-		Parent root = fxmlLoader.load();
-
-		Scene scene = new Scene(root);
-
-		Stage s = new Stage();
-
-		MatricesController p = fxmlLoader.getController();
-		p.initialize(this);
-		p.setTexte("" + epsilon);
-		p.setTextfac("" + FACTOR_ACELERACION);
-		p.setTextIter("" + NUMERO_ITERACIONES);
-
-		s.setTitle("Especificaciones Flujo de Potencia");
-		s.setScene(scene);
-		s.show();
-		s.setResizable(false);
-
-		setTextInfoPotencia();
-	}
-
-	@FXML
-	public void GaussSeidel(ActionEvent e) throws IOException {
-
-		matrizSecuencia.setDisable(true);
-		fallaTabular.setDisable(true);
-		fPotencia = true;
-		metodoFlujoPotencia = "Seidel";
-		infoTare.setText("Tarea: Flujo de Potencia: Gauss-Seidel");
-
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/application/MatricesSeq.fxml"));
-		Parent root = fxmlLoader.load();
-
-		Scene scene = new Scene(root);
-
-		Stage s = new Stage();
-
-		MatricesController p = fxmlLoader.getController();
-		p.initialize(this);
-		p.setTexte("" + epsilon);
-		p.setTextfac("" + FACTOR_ACELERACION);
-		p.setTextIter("" + NUMERO_ITERACIONES);
-
-		s.setTitle("Especificaciones Flujo de Potencia");
-		s.setScene(scene);
-		s.show();
-		s.setResizable(false);
-
-		setTextInfoPotencia();
-
-	}
-
-	public void setTextInfoPotencia() {
-		infoFlujo
-				.setText("MÃ©todo: " + metodoFlujoPotencia + "\nAceleraciÃ³n: " + FACTOR_ACELERACION + "\nIteraciones: "
-						+ String.format("%d", NUMERO_ITERACIONES) + "\nEpsilon: " + epsilon + "\nConvergencia: " + 0);
-	}
-
-	@FXML
-	public void mouseMoved(MouseEvent e) {
-
-		double x = e.getX();
-		double y = e.getY();
-
-		infoPosiMouse.setText(String.format("X=%.2f     Y=%.2f", x, y));
-
-	}
-
-	@FXML
-	void fallaTrifasica(ActionEvent event) {
-
-		trifasica = true;
-		monofasica = false;
-		lineaALinea = false;
-		bifasicaATierra = false;
-		fPotencia = false;
-
-		infoTare.setText("Tarea: Falla TrifÃ¡sica");
-
-		matrizSecuencia.setDisable(false);
-		fallaTabular.setDisable(false);
-		fPotencia = false;
-
-	}
-
-	@FXML
-	void fallaMono(ActionEvent event) {
-		fPotencia = false;
-		trifasica = false;
-		monofasica = true;
-		lineaALinea = false;
-		bifasicaATierra = false;
-		fPotencia = false;
-
-		infoTare.setText("Tarea: Falla MonofÃ¡sica");
-
-		matrizSecuencia.setDisable(false);
-		fallaTabular.setDisable(false);
-
-	}
-
-	@FXML
-	void fallaLaL(ActionEvent event) {
-		fPotencia = false;
-
-		trifasica = false;
-		monofasica = false;
-		lineaALinea = true;
-		bifasicaATierra = false;
-		fPotencia = false;
-
-		infoTare.setText("Tarea: Falla LÃ­nea a LÃ­nea");
-
-		matrizSecuencia.setDisable(false);
-		fallaTabular.setDisable(false);
-	}
-
-	@FXML
-	void fallaLLTierra(ActionEvent event) {
-		fPotencia = false;
-
-		trifasica = false;
-		monofasica = false;
-		lineaALinea = false;
-		bifasicaATierra = true;
-		fPotencia = false;
-
-		infoTare.setText("Tarea: Falla LÃ­nea-LÃ­nea a tierra");
-
-		matrizSecuencia.setDisable(false);
-		fallaTabular.setDisable(false);
-	}
-
-	@FXML
-	private void lineaSelected(ActionEvent e) {
-		currentTool = ToolType.LINEA;
-		infoElemento.setText("Elemento: Lí­nea");
-		diagramManager.setConnectionMode(true);
-	}
-
-	@FXML
-	private void barraSelected(ActionEvent e) {
-		currentTool = ToolType.BARRA;
-		infoElemento.setText("Elemento: Barra");
-		diagramManager.setConnectionMode(false);
-	}
-
-	@FXML
-	private void compensadorSelected(ActionEvent e) {
-		currentTool = ToolType.COMPENSADOR;
-		infoElemento.setText("Elemento: Compensador EstÃ¡tico");
-	}
-
-	@FXML
-	private void trafoSelected(ActionEvent e) {
-		currentTool = ToolType.TRANSFORMADOR;
-		infoElemento.setText("Elemento: Transformador");
-	}
-
-	@FXML
-	private void genSelected(ActionEvent e) {
-		currentTool = ToolType.GENERADOR;
-		infoElemento.setText("Elemento: Generador");
-	}
-
-	@FXML
-	private void cargaSelected(ActionEvent e) {
-		currentTool = ToolType.CARGA;
-		infoElemento.setText("Elemento: Carga");
-	}
-
-	@FXML
-	private void bancoSelected(ActionEvent e) {
-		currentTool = ToolType.BANCO;
-		infoElemento.setText("Elemento: Banco");
-	}
-
-	@FXML
-	private void editionSelected(ActionEvent e) {
-		currentTool = ToolType.NONE;
-		infoElemento.setText("Elemento: EdiciÃ³n");
-		diagramManager.setConnectionMode(false);
-	}
+  // --- VARIABLES DE LA NUEVA INTERFAZ ---
+  @FXML private ScrollPane scrollContainer;
+  @FXML private StackPane zoomContainer;
+  @FXML private Label zoomLabel;
+  @FXML private TableView<?> tablaBarras; // El <?> evita errores si no tienes clase modelo aún
+  @FXML private TableView<?> tablaRamas;
 
-	@FXML
-	private void borrarUltimoElemento(ActionEvent e) {
+  @FXML private TextArea infoFlujo;
+
+  @FXML private MenuItem Action1;
+
+  @FXML private MenuItem GaussSeidel;
+
+  @FXML private MenuItem matrizSecuencia;
+
+  @FXML private MenuItem flujoTabular;
+
+  @FXML private MenuItem fallaTabular;
+
+  @FXML private AnchorPane areaDibujo = new AnchorPane();
+  DoubleProperty myScale = new SimpleDoubleProperty(1.0);
+  @FXML private TextField infoElemento;
+
+  @FXML private TextField infoTare;
+
+  @FXML private TextField infoPosiMouse;
+  @FXML private TextArea display;
+
+  @FXML private ToggleButton barra;
+
+  @FXML private Button undo;
+
+  @FXML private Button undo1;
+
+  @FXML private ToggleButton banco;
+
+  @FXML private ToggleButton generador;
+
+  @FXML private ToggleButton trafo;
+
+  @FXML private ToggleButton none;
+
+  @FXML private Button ejecutar;
+
+  @FXML private ToggleButton linea;
+
+  @FXML private ToggleButton carga;
+
+  @FXML private ToggleGroup group;
+
+  @FXML private TextField factorAceleracion;
+
+  public static double BASE_SISTEMA = 100;
+  private Complejo[][] perdidadsPotencia;
+  private Complejo[][] potenciaEntranteBarras;
+
+  private List<Complejo>[] perdidasLineas;
+
+  // --- State Management ---
+  private ToolType currentTool = ToolType.NONE;
+
+  private boolean trifasica;
+  private boolean monofasica;
+  private boolean lineaALinea;
+  private boolean bifasicaATierra;
+  private boolean fPotencia;
+  private List<Barras> barras;
+  private List<Lineas> conexiones;
+  private List<Transformador> conexiones1;
+  private List<Generadores> conexiongene;
+  private List<Carga> cargas;
+  private List<Bancos> bancos;
+  private List<CompensadorEstatico> compensadores;
+  private double endOfLineX, endOfLineY;
+  private Barras startB = null;
+  private boolean isLineOn = false;
+  private int radioCirculo = 14;
+  private String nombreBarra = "B";
+  private String nombreLinea = "L";
+  private String nombreTrafo = "T";
+  private String nombreGenerador = "G";
+  private String nombreCarga = "C";
+  private String nombreBanco = "BA";
+  private String nombreCompensador = "E";
+
+  private ArrayList<Double> distanciasLineas = new ArrayList<>();
+  private ArrayList<Double> corGenerador = new ArrayList<>();
+  private ArrayList<Double> corCarga = new ArrayList<>();
+  private ArrayList<Double> corBanco = new ArrayList<>();
+  private ArrayList<Double> corCompensador = new ArrayList<>();
+  private ObservableList<Node> lista;
+  private ArrayList<Double> posBarra = new ArrayList<>();
+  private WeightedGraph<Barras> grafo1;
+  private WeightedGraph<Barras> grafo2;
+  private WeightedGraph<Barras> grafo0;
+  private double impedanciaDeFalla;
+  private String tipoElementoFallado;
+  private ArrayList<Double> coorFalla = new ArrayList<>();
+  private boolean fallaEnLinea = false;
+  private Lineas lineaFallada;
+  private Barras barraFallada;
+  private double xCoorG;
+  private double yCoorG;
+  private double magCorrientePuntoFallaFaseA;
+  private double magCorrientePuntoFallaFaseB;
+  private double magCorrientePuntoFallaFaseC;
+  private double angCorrientePuntoFallaFaseA;
+  private double angCorrientePuntoFallaFaseB;
+  private double angCorrientePuntoFallaFaseC;
+  private double largoBarra = 70;
+  private double ancho = 5;
+  private double currentScale = 1.0;
+  private static boolean borrarUltimoElemento = false;
+  private double FACTOR_ACELERACION = 1.6;
+  private int NUMERO_ITERACIONES =
+      50; // numero de iteraciones para el problema de flujo de potencia.
+
+  private LinkedList<Object> objetosCreados =
+      new LinkedList<>(); // Almacena todos los objectos creados para llevar
+  // un record de ellos;
+  private LinkedList<Object> restablecerElementos = new LinkedList<>();
+
+  private String metodoFlujoPotencia = "Seidel";
+
+  private double epsilon = 0.01;
+
+  private Barras barraCompensacion = null;
+  private NetworkModel networkModel;
+  private DiagramManager diagramManager;
+  private PropertiesPanel propertiesPanel;
+  @FXML private VBox rightPanelContainer;
+  ;
+
+  @Override
+  public void initialize(URL arg0, ResourceBundle arg1) {
+    scrollContainer.setHvalue(0.5);
+    scrollContainer.setVvalue(0.5);
+    this.networkModel = NetworkModel.getInstance();
+    this.diagramManager = new DiagramManager(areaDibujo);
+    this.propertiesPanel = new PropertiesPanel();
+    rightPanelContainer.getChildren().clear();
+    rightPanelContainer.getChildren().add(propertiesPanel);
+    VBox.setVgrow(propertiesPanel, Priority.ALWAYS);
+    networkModel
+        .seleccionActualProperty()
+        .addListener(
+            (obs, oldVal, newVal) -> {
+              propertiesPanel.mostrarPropiedades(newVal);
+            });
+
+    // ... existing initializations ...
+
+    // Manejo de tecla ESC para cancelar conexión/herramienta
+    areaDibujo
+        .sceneProperty()
+        .addListener(
+            (obs, oldScene, newScene) -> {
+              if (newScene != null) {
+                newScene.addEventFilter(
+                    KeyEvent.KEY_PRESSED,
+                    event -> {
+                      if (event.getCode() == KeyCode.ESCAPE) {
+                        diagramManager.cancelConnection();
+                        none.setSelected(true);
+                        currentTool = ToolType.NONE;
+                        infoElemento.setText("Elemento: Edición");
+                        diagramManager.setConnectionMode(false);
+                      }
+                    });
+              }
+            });
+  }
+
+  /**
+   * Metodo destinado para Newton-raphson
+   *
+   * @param e
+   * @throws IOException
+   */
+  @FXML
+  public void Action1(ActionEvent e) throws IOException {
+
+    matrizSecuencia.setDisable(true);
+    fallaTabular.setDisable(true);
+    fPotencia = true;
+    metodoFlujoPotencia = "Raphson";
+    infoTare.setText("Tarea: Flujo de Potencia: Newton-Raphson");
+
+    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/application/MatricesSeq.fxml"));
+    Parent root = fxmlLoader.load();
+
+    Scene scene = new Scene(root);
+
+    Stage s = new Stage();
+
+    MatricesController p = fxmlLoader.getController();
+    p.initialize(this);
+    p.setTexte("" + epsilon);
+    p.setTextfac("" + FACTOR_ACELERACION);
+    p.setTextIter("" + NUMERO_ITERACIONES);
+
+    s.setTitle("Especificaciones Flujo de Potencia");
+    s.setScene(scene);
+    s.show();
+    s.setResizable(false);
+
+    setTextInfoPotencia();
+  }
+
+  @FXML
+  public void GaussSeidel(ActionEvent e) throws IOException {
+
+    matrizSecuencia.setDisable(true);
+    fallaTabular.setDisable(true);
+    fPotencia = true;
+    metodoFlujoPotencia = "Seidel";
+    infoTare.setText("Tarea: Flujo de Potencia: Gauss-Seidel");
+
+    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/application/MatricesSeq.fxml"));
+    Parent root = fxmlLoader.load();
+
+    Scene scene = new Scene(root);
+
+    Stage s = new Stage();
+
+    MatricesController p = fxmlLoader.getController();
+    p.initialize(this);
+    p.setTexte("" + epsilon);
+    p.setTextfac("" + FACTOR_ACELERACION);
+    p.setTextIter("" + NUMERO_ITERACIONES);
+
+    s.setTitle("Especificaciones Flujo de Potencia");
+    s.setScene(scene);
+    s.show();
+    s.setResizable(false);
+
+    setTextInfoPotencia();
+  }
+
+  public void setTextInfoPotencia() {
+    infoFlujo.setText(
+        "MÃ©todo: "
+            + metodoFlujoPotencia
+            + "\nAceleraciÃ³n: "
+            + FACTOR_ACELERACION
+            + "\nIteraciones: "
+            + String.format("%d", NUMERO_ITERACIONES)
+            + "\nEpsilon: "
+            + epsilon
+            + "\nConvergencia: "
+            + 0);
+  }
+
+  @FXML
+  public void mouseMoved(MouseEvent e) {
+
+    double x = e.getX();
+    double y = e.getY();
+
+    infoPosiMouse.setText(String.format("X=%.2f     Y=%.2f", x, y));
+  }
+
+  @FXML
+  void fallaTrifasica(ActionEvent event) {
+
+    trifasica = true;
+    monofasica = false;
+    lineaALinea = false;
+    bifasicaATierra = false;
+    fPotencia = false;
+
+    infoTare.setText("Tarea: Falla TrifÃ¡sica");
+
+    matrizSecuencia.setDisable(false);
+    fallaTabular.setDisable(false);
+    fPotencia = false;
+  }
+
+  @FXML
+  void fallaMono(ActionEvent event) {
+    fPotencia = false;
+    trifasica = false;
+    monofasica = true;
+    lineaALinea = false;
+    bifasicaATierra = false;
+    fPotencia = false;
+
+    infoTare.setText("Tarea: Falla MonofÃ¡sica");
+
+    matrizSecuencia.setDisable(false);
+    fallaTabular.setDisable(false);
+  }
+
+  @FXML
+  void fallaLaL(ActionEvent event) {
+    fPotencia = false;
+
+    trifasica = false;
+    monofasica = false;
+    lineaALinea = true;
+    bifasicaATierra = false;
+    fPotencia = false;
+
+    infoTare.setText("Tarea: Falla LÃ­nea a LÃ­nea");
+
+    matrizSecuencia.setDisable(false);
+    fallaTabular.setDisable(false);
+  }
+
+  @FXML
+  void fallaLLTierra(ActionEvent event) {
+    fPotencia = false;
+
+    trifasica = false;
+    monofasica = false;
+    lineaALinea = false;
+    bifasicaATierra = true;
+    fPotencia = false;
+
+    infoTare.setText("Tarea: Falla LÃ­nea-LÃ­nea a tierra");
+
+    matrizSecuencia.setDisable(false);
+    fallaTabular.setDisable(false);
+  }
+
+  @FXML
+  private void lineaSelected(ActionEvent e) {
+    currentTool = ToolType.LINEA;
+    infoElemento.setText("Elemento: Lí­nea");
+    diagramManager.setConnectionMode(true);
+  }
+
+  @FXML
+  private void barraSelected(ActionEvent e) {
+    currentTool = ToolType.BARRA;
+    infoElemento.setText("Elemento: Barra");
+    diagramManager.setConnectionMode(false);
+  }
+
+  @FXML
+  private void compensadorSelected(ActionEvent e) {
+    currentTool = ToolType.COMPENSADOR;
+    infoElemento.setText("Elemento: Compensador EstÃ¡tico");
+  }
+
+  @FXML
+  private void trafoSelected(ActionEvent e) {
+    currentTool = ToolType.TRANSFORMADOR;
+    infoElemento.setText("Elemento: Transformador");
+  }
+
+  @FXML
+  private void genSelected(ActionEvent e) {
+    currentTool = ToolType.GENERADOR;
+    infoElemento.setText("Elemento: Generador");
+  }
+
+  @FXML
+  private void cargaSelected(ActionEvent e) {
+    currentTool = ToolType.CARGA;
+    infoElemento.setText("Elemento: Carga");
+  }
+
+  @FXML
+  private void bancoSelected(ActionEvent e) {
+    currentTool = ToolType.BANCO;
+    infoElemento.setText("Elemento: Banco");
+  }
+
+  @FXML
+  private void editionSelected(ActionEvent e) {
+    currentTool = ToolType.NONE;
+    infoElemento.setText("Elemento: EdiciÃ³n");
+    diagramManager.setConnectionMode(false);
+  }
+
+  @FXML
+  private void borrarUltimoElemento(ActionEvent e) {
+
+    borrarUltimoElemento();
+  }
+
+  @FXML
+  private void limpiarArea(ActionEvent e) {
+
+    limpiarArea();
+  }
+
+  @FXML
+  private void ejecutar(ActionEvent e) throws ExcepcionDivideCero {
+
+    List<List<Integer>> bb = getGraph().componentesConectados();
+
+    if (bb.size() == 2) {
+
+      if (fPotencia) {
+
+        Complejo[][] m3 = calculoMatrizAdyacenciaFlujo();
+
+        perdidadsPotencia = new Complejo[barras.size()][barras.size()];
+        potenciaEntranteBarras = new Complejo[barras.size()][barras.size()];
+
+        for (int i = 0; i < perdidadsPotencia.length; i++) {
+          for (int j = 0; j < perdidadsPotencia.length; j++) {
+
+            perdidadsPotencia[i][j] =
+                new Complejo(); // No se tiene en cuenta la admitancia de carga de la
+            // lÃ­nea
+            potenciaEntranteBarras[i][j] =
+                new Complejo(); // Se tiene en cuenta la admitancia de carga de
+            // la linea.
+
+          }
+        }
+
+        if (metodoFlujoPotencia.equals("Seidel")) {
+
+          EcuacionesVoltajeYPotencia gaussS =
+              new EcuacionesVoltajeYPotencia(
+                  barras, NUMERO_ITERACIONES, FACTOR_ACELERACION, epsilon);
+
+          List<Complejo>[] solucion =
+              gaussS.calcularFlujoPotencia(conexiongene, bancos, cargas, m3);
+
+          DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
+
+          DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(
+              barras,
+              solucion,
+              conexiones,
+              conexiones1,
+              m3,
+              perdidadsPotencia,
+              potenciaEntranteBarras);
+
+          System.out.println("RESULTADOS Angulos Y voltajes:");
+
+          for (int i = 1; i < solucion.length; i++) {
+
+            for (Complejo c : solucion[i]) {
+
+              System.out.println("Barra" + i);
+
+              System.out.println(c.modulo() + "  " + c.argumento());
+            }
+
+            System.out.println();
+          }
+
+          System.out.println();
+
+          for (int i = 1; i < barras.size(); i++) {
+
+            Barras b = barras.get(i);
+
+            if (b.isBarraCompensacion()) {
+
+              System.out.println("Generacion: ");
+
+              System.out.println(
+                  "Real: "
+                      + b.getFlowPowerRealCalculada()
+                      + " Imag: "
+                      + b.getFlowPowerImagCalculada());
+            }
+
+            if (b.isBarraPV()) {
+
+              System.out.println("Generacion: ");
+
+              System.out.println(
+                  "Real: "
+                      + b.getGenerador().getMWSalida()
+                      + " Imag: "
+                      + b.getFlowPowerImagCalculada());
+            }
+
+            if (b.isBarraFromPV2PQ()) {
+
+              System.out.println("Generacion: ");
+
+              System.out.println(
+                  "Real: "
+                      + b.getGenerador().getMWSalida()
+                      + " Imag: "
+                      + b.getGenerador().getMVarSalida());
+            }
+
+            if (b.containsCarga()) {
+
+              System.out.println("Carga: ");
+
+              System.out.println(
+                  "Real: "
+                      + b.getCarga().getPotenciaActiva()
+                      + " Imag: "
+                      + b.getCarga().getPotenciaReactiva());
+            }
+          }
+
+          System.out.println("Potencia en barras");
+
+          for (int i = 0; i < perdidadsPotencia.length; i++) {
+            for (int j = 0; j < perdidadsPotencia.length; j++) {
+
+              System.out.print(potenciaEntranteBarras[i][j] + " ");
+            }
+
+            System.out.println();
+          }
 
-		borrarUltimoElemento();
+          ////
+
+        } else if (metodoFlujoPotencia.equals("Raphson")) {
 
-	}
+          NewtonRaphson raphson = new NewtonRaphson(barras, NUMERO_ITERACIONES, epsilon, m3);
+
+          raphson.calcularFlujoPotencia(conexiongene, bancos, cargas);
 
-	@FXML
-	private void limpiarArea(ActionEvent e) {
+          List<Double>[] solucionVoltajes = raphson.solucionVoltajes();
+
+          List<Double>[] solucionAngulos = raphson.solucionAngulos();
 
-		limpiarArea();
-	}
+          List<Complejo>[] solucion = raphson.solucionFormaCompleja();
+
+          DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
 
-	@FXML
-	private void ejecutar(ActionEvent e) throws ExcepcionDivideCero {
+          DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(
+              barras,
+              solucion,
+              conexiones,
+              conexiones1,
+              m3,
+              perdidadsPotencia,
+              potenciaEntranteBarras);
+
+          System.out.println("\n\nSoluciones: ");
+
+          for (int i = 1; i < solucionVoltajes.length; i++) {
+            System.out.println("BarraVoltaje" + i);
+
+            for (Double d : solucionVoltajes[i]) {
 
-		List<List<Integer>> bb = getGraph().componentesConectados();
+              System.out.print(d + " ");
+            }
+
+            System.out.println();
+          }
 
-		if (bb.size() == 2) {
+          System.out.println();
 
-			if (fPotencia) {
+          for (int i = 1; i < solucionAngulos.length; i++) {
+            System.out.println("BarraAngulo" + i);
 
-				Complejo[][] m3 = calculoMatrizAdyacenciaFlujo();
+            for (Double d : solucionAngulos[i]) {
 
-				perdidadsPotencia = new Complejo[barras.size()][barras.size()];
-				potenciaEntranteBarras = new Complejo[barras.size()][barras.size()];
+              System.out.print(d * 180 / Math.PI + " ");
+            }
 
-				for (int i = 0; i < perdidadsPotencia.length; i++) {
-					for (int j = 0; j < perdidadsPotencia.length; j++) {
+            System.out.println();
+          }
 
-						perdidadsPotencia[i][j] = new Complejo(); // No se tiene en cuenta la admitancia de carga de la
-																	// lÃ­nea
-						potenciaEntranteBarras[i][j] = new Complejo(); // Se tiene en cuenta la admitancia de carga de
-																		// la linea.
+          System.out.println();
 
-					}
-				}
+          for (int i = 1; i < barras.size(); i++) {
 
-				if (metodoFlujoPotencia.equals("Seidel")) {
+            Barras b = barras.get(i);
 
-					EcuacionesVoltajeYPotencia gaussS = new EcuacionesVoltajeYPotencia(barras, NUMERO_ITERACIONES,
-							FACTOR_ACELERACION, epsilon);
+            if (b.isBarraCompensacion()) {
 
-					List<Complejo>[] solucion = gaussS.calcularFlujoPotencia(conexiongene, bancos, cargas, m3);
+              System.out.println("Generacion: ");
 
-					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
+              System.out.println(
+                  "Real: "
+                      + b.getFlowPowerRealCalculada()
+                      + " Imag: "
+                      + b.getFlowPowerImagCalculada());
 
-					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras, solucion, conexiones,
-							conexiones1, m3, perdidadsPotencia, potenciaEntranteBarras);
+            } else if (b.isBarraPV()) {
 
-					System.out.println("RESULTADOS Angulos Y voltajes:");
+              System.out.println("Generacion: ");
 
-					for (int i = 1; i < solucion.length; i++) {
+              System.out.println(
+                  "Real: "
+                      + b.getGenerador().getMWSalida()
+                      + " Imag: "
+                      + b.getFlowPowerImagCalculada());
+            }
 
-						for (Complejo c : solucion[i]) {
+            if (b.containsCarga()) {
 
-							System.out.println("Barra" + i);
+              System.out.println("Carga: ");
 
-							System.out.println(c.modulo() + "  " + c.argumento());
+              System.out.println(
+                  "Real: "
+                      + b.getCarga().getPotenciaActiva()
+                      + " Imag: "
+                      + b.getCarga().getPotenciaReactiva());
+            }
+          }
 
-						}
+          System.out.println("Potencia en barras");
 
-						System.out.println();
+          for (int i = 0; i < perdidadsPotencia.length; i++) {
+            for (int j = 0; j < perdidadsPotencia.length; j++) {
 
-					}
+              System.out.print(potenciaEntranteBarras[i][j] + " ");
+            }
 
-					System.out.println();
+            System.out.println();
+          }
+        }
 
-					for (int i = 1; i < barras.size(); i++) {
+      } else {
+        crearGrafos();
+      }
+    } else {
 
-						Barras b = barras.get(i);
+      JOptionPane.showMessageDialog(null, "El sistema no es cerrado. RÃ©viselo por favor.");
+    }
+  }
 
-						if (b.isBarraCompensacion()) {
+  public double getFACTOR_ACELERACION() {
+    return FACTOR_ACELERACION;
+  }
 
-							System.out.println("Generacion: ");
+  public void setFACTOR_ACELERACION(double fACTOR_ACELERACION) {
+    FACTOR_ACELERACION = fACTOR_ACELERACION;
+  }
 
-							System.out.println("Real: " + b.getFlowPowerRealCalculada() + " Imag: "
-									+ b.getFlowPowerImagCalculada());
+  public int getNUMERO_ITERACIONES() {
+    return NUMERO_ITERACIONES;
+  }
 
-						}
+  public void setNUMERO_ITERACIONES(int nUMERO_ITERACIONES) {
+    NUMERO_ITERACIONES = nUMERO_ITERACIONES;
+  }
 
-						if (b.isBarraPV()) {
+  public double getEpsilon() {
+    return epsilon;
+  }
 
-							System.out.println("Generacion: ");
+  public void setEpsilon(double epsilon) {
+    this.epsilon = epsilon;
+  }
 
-							System.out.println("Real: " + b.getGenerador().getMWSalida() + " Imag: "
-									+ b.getFlowPowerImagCalculada());
+  private ObservableList<Double> listPuntosPolyLine;
 
-						}
+  private boolean isLineOn2 = false;
 
-						if (b.isBarraFromPV2PQ()) {
+  private Point2D ultimoPunto;
 
-							System.out.println("Generacion: ");
+  private Polyline poliactual;
 
-							System.out.println("Real: " + b.getGenerador().getMWSalida() + " Imag: "
-									+ b.getGenerador().getMVarSalida());
+  private Path path;
 
-						}
+  private LinkedList<Integer>[] listaBarras = (LinkedList<Integer>[]) new LinkedList[100];
 
-						if (b.containsCarga()) {
+  public SPController() {
+    this.barras = NetworkModel.getInstance().getBarras();
+    this.conexiones = NetworkModel.getInstance().getLineas();
+    this.conexiones1 = NetworkModel.getInstance().getTransformadores();
+    this.conexiongene = NetworkModel.getInstance().getGeneradores();
+    this.cargas = NetworkModel.getInstance().getCargas();
+    this.bancos = NetworkModel.getInstance().getBancos();
+    this.compensadores = NetworkModel.getInstance().getCompensadores();
 
-							System.out.println("Carga: ");
+    for (int i = 0; i < listaBarras.length; i++) {
 
-							System.out.println("Real: " + b.getCarga().getPotenciaActiva() + " Imag: "
-									+ b.getCarga().getPotenciaReactiva());
+      listaBarras[i] = new LinkedList<Integer>();
+    }
+  }
 
-						}
+  private double snap(double value) {
+    double gridSize = 20.0;
+    return Math.round(value / gridSize) * gridSize;
+  }
 
-					}
+  @FXML
+  private void zoomIn(ActionEvent event) {
+    updateZoom(1.2); // Aumentar 20%
+  }
 
-					System.out.println("Potencia en barras");
+  @FXML
+  private void zoomOut(ActionEvent event) {
+    updateZoom(0.833); // Disminuir
+  }
 
-					for (int i = 0; i < perdidadsPotencia.length; i++) {
-						for (int j = 0; j < perdidadsPotencia.length; j++) {
+  private void updateZoom(double factor) {
+    // Limites de zoom (entre 10% y 500%)
+    double newScale = currentScale * factor;
+    if (newScale < 0.1 || newScale > 5.0) return;
 
-							System.out.print(potenciaEntranteBarras[i][j] + " ");
+    currentScale = newScale;
 
-						}
+    // Aplicar transformación al área de dibujo
+    Scale scaleTransform = new Scale(currentScale, currentScale, 0, 0);
+    areaDibujo.getTransforms().clear();
+    areaDibujo.getTransforms().add(scaleTransform);
 
-						System.out.println();
-					}
+    // Ajustar el tamaño del contenedor para que el ScrollPane sepa que el contenido
+    // cambió
+    // Esto es clave para que las barras de scroll funcionen bien al hacer zoom
+    zoomContainer.setPrefWidth(areaDibujo.getPrefWidth() * currentScale);
+    zoomContainer.setPrefHeight(areaDibujo.getPrefHeight() * currentScale);
 
-					////
+    zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
+  }
 
-				}
+  private StackPane nodoSeleccionadoVisual = null;
 
-				else if (metodoFlujoPotencia.equals("Raphson")) {
+  private void dibujarPOly() {
 
-					NewtonRaphson raphson = new NewtonRaphson(barras, NUMERO_ITERACIONES, epsilon, m3);
+    if (isLineOn && currentTool == ToolType.LINEA) {
+      Line perro = new Line();
 
-					raphson.calcularFlujoPotencia(conexiongene, bancos, cargas);
+      perro.setStartX(ultimoPunto.getX());
 
-					List<Double>[] solucionVoltajes = raphson.solucionVoltajes();
+      perro.setStartY(ultimoPunto.getY());
 
-					List<Double>[] solucionAngulos = raphson.solucionAngulos();
+      perro.setEndX(endOfLineX);
 
-					List<Complejo>[] solucion = raphson.solucionFormaCompleja();
+      perro.setEndY(endOfLineY);
 
-					DeterminacionPotenciasBarras.potenciasEnBarrasComPV(barras, solucion, m3);
+      areaDibujo.getChildren().addAll(perro, path);
+    }
 
-					DeterminacionPotenciasBarras.calculoPerdidasPotenciaLineas(barras, solucion, conexiones,
-							conexiones1, m3, perdidadsPotencia, potenciaEntranteBarras);
+    int cont = 0;
+    for (Lineas l : conexiones) {
 
-					System.out.println("\n\nSoluciones: ");
+      l.setNombreLinea(nombreLinea + (++cont));
+      MoveTo mt =
+          new MoveTo(
+              l.getBarra1().getPuntoMedioBarra().getX(), l.getBarra1().getPuntoMedioBarra().getY());
 
-					for (int i = 1; i < solucionVoltajes.length; i++) {
-						System.out.println("BarraVoltaje" + i);
+      LineTo lt =
+          new LineTo(
+              l.getBarra2().getPuntoMedioBarra().getX(), l.getBarra2().getPuntoMedioBarra().getY());
 
-						for (Double d : solucionVoltajes[i]) {
+      ObservableList<PathElement> pt = l.getPath().getElements();
 
-							System.out.print(d + " ");
+      Path path = new Path();
+      path.setStrokeWidth(1.5);
+      path.setStroke(Color.GREEN);
+      path.getElements().add(mt);
 
-						}
+      for (int i = 1; i < pt.size() - 1; i++) {
 
-						System.out.println();
+        path.getElements().add(pt.get(i));
+      }
 
-					}
+      path.getElements().add(lt);
 
-					System.out.println();
+      double puntoMedioX = 0.0;
+      double puntoMedioY;
 
-					for (int i = 1; i < solucionAngulos.length; i++) {
-						System.out.println("BarraAngulo" + i);
+      if (path.getElements().size() == 2) {
+        MoveTo m1 = (MoveTo) path.getElements().get(0);
+        LineTo m2 = (LineTo) path.getElements().get(1);
 
-						for (Double d : solucionAngulos[i]) {
+        double m1X = m1.getX();
+        double m1Y = m1.getY();
+        double m2X = m2.getX();
+        double m2Y = m2.getY();
+
+        puntoMedioX = Math.abs(m1X + m2X) / 2;
+        puntoMedioY = Math.abs(m1Y + m2Y) / 2;
+      } else {
+
+        LineTo m1 = (LineTo) path.getElements().get(1);
+        LineTo m2 = (LineTo) path.getElements().get(2);
+        double m1X = m1.getX();
+        double m1Y = m1.getY();
+        double m2X = m2.getX();
+        double m2Y = m2.getY();
+
+        puntoMedioX = Math.abs(m1X + m2X) / 2;
+        puntoMedioY = Math.abs(m1Y + m2Y) / 2;
+      }
+
+      l.setPuntomedio(new Point2D(puntoMedioX, puntoMedioY));
+
+      Rectangle rec = new Rectangle();
+      rec.setX(puntoMedioX - 15);
+      rec.setY(puntoMedioY - 15);
+      rec.setWidth(30);
+      rec.setHeight(30);
+      rec.setStroke(Color.RED);
+      rec.setFill(Color.WHITE);
+
+      Text textLinea = new Text(l.getNombreLinea());
+      textLinea.setStrokeWidth(1);
+      textLinea.setStroke(Color.RED);
+
+      textLinea.setX(puntoMedioX - 3);
+      textLinea.setY(puntoMedioY + 2);
+
+      areaDibujo.getChildren().addAll(path, rec, textLinea);
+    }
+  }
+
+  public void repaint() {
+
+    areaDibujo.getChildren().clear();
+    dibujarBarra();
+    dibujarLineas();
+    dibujarGenerador();
+    dibujarFalla();
+    dibujarCarga();
+    dibujarCompensador();
+    dibujarBanco();
+    dibujarPOly();
+    coorFalla.clear();
+    posBarra.clear();
+  }
+
+  // --- LÓGICA DE CREACIÓN DE OBJETOS ---
+
+  private boolean validarProximidad(double x, double y) {
+    double radioMinimo = 50.0; // Distancia mínima en píxeles
+    for (Barras b : barras) {
+      // Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene
+      // coordenadas reales aún
+      if (b.getNombreBarra().equals("Tierra")) continue;
+
+      // Calcular distancia Euclideana entre el punto de click y las barras existentes
+      double dist = Math.sqrt(Math.pow(x - b.getXbarra(), 2) + Math.pow(y - b.getYbarra(), 2));
+
+      if (dist < radioMinimo) {
+        return false; // Conflicto espacial detectado
+      }
+    }
+    return true; // Espacio libre
+  }
+
+  private void crearBarra(double x, double y) {
+
+    if (!validarProximidad(x, y)) {
+      infoTare.setText("Error: Espacio ocupado, seleccione otra ubicación.");
+      return;
+    }
+
+    String nombreDefault = "Bus-" + (barras.size());
+    Barras logicaBarra = new Barras(nombreDefault);
+    logicaBarra.setXbarra(x - 3);
+    logicaBarra.setYbarra(y - 30);
+    // barras.add(logicaBarra); // Ya no es necesario, addBarra lo añade al modelo
+    // centralizado
+    System.out.println("Barra creada en: " + x + ", " + y);
+    NetworkModel.getInstance().addBarra(logicaBarra);
+    infoTare.setText("Barra creada exitosamente.");
+  }
+
+  @FXML
+  private void mouseClicked(MouseEvent e) throws IOException {
+
+    areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    double x = snap(e.getX());
+    double y = snap(e.getY());
+    if (e.getButton() == MouseButton.PRIMARY) {
+      switch (currentTool) {
+        case BARRA:
+          crearBarra(x, y);
+          break;
+        case NONE:
+          // Lógica para seleccionar/ver propiedades
+          System.out.println("Modo Selección: Click en " + x + ", " + y);
+          break;
+        case TRANSFORMADOR:
+          handleTrafoCreation(x, y);
+          break;
+        case GENERADOR:
+          handleGeneradorCreation(x, y);
+          break;
+        case CARGA:
+          handleCargaCreation(x, y);
+          break;
+        case BANCO:
+          handleBancoCreation(x, y);
+          break;
+        case COMPENSADOR:
+          handleCompensadorCreation(x, y);
+          break;
+        default:
+          break;
+      }
+      return;
+    }
+  }
 
-							System.out.print(d * 180 / Math.PI + " ");
+  @FXML
+  private void dragEvent(MouseEvent e) {
+    areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    if (currentTool.equals(ToolType.NONE)) {
 
-						}
+      lista = areaDibujo.getChildren();
 
-						System.out.println();
+      double x = e.getX();
+      double y = e.getY();
 
-					}
+      Node tipoElemento = tipoElemento(x, y);
 
-					System.out.println();
+      if (tipoElemento instanceof Ellipse) {
 
-					for (int i = 1; i < barras.size(); i++) {
+        Barras temp = new Barras();
 
-						Barras b = barras.get(i);
+        for (int i = 1; i < barras.size(); i++) {
 
-						if (b.isBarraCompensacion()) {
+          Barras b = barras.get(i);
 
-							System.out.println("Generacion: ");
+          if (b.getEllipse().equals(((Ellipse) tipoElemento))) {
 
-							System.out.println("Real: " + b.getFlowPowerRealCalculada() + " Imag: "
-									+ b.getFlowPowerImagCalculada());
+            temp = b;
+            break;
+          }
+        }
 
-						}
+        ((Ellipse) tipoElemento).setCenterX(x);
+        ((Ellipse) tipoElemento).setCenterY(y);
 
-						else if (b.isBarraPV()) {
+        temp.setNombreBarraX(((Ellipse) tipoElemento).getCenterX());
+        temp.setNombreBarraY(((Ellipse) tipoElemento).getCenterY());
 
-							System.out.println("Generacion: ");
+        repaint();
 
-							System.out.println("Real: " + b.getGenerador().getMWSalida() + " Imag: "
-									+ b.getFlowPowerImagCalculada());
+        return;
+      } else if (tipoElemento instanceof Circle && ((Circle) tipoElemento).getRadius() == 14) {
 
-						}
+        Barras b =
+            getContainingVertex(
+                ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY());
 
-						if (b.containsCarga()) {
+        ((Circle) tipoElemento).setCenterX(x);
+        ((Circle) tipoElemento).setCenterY(y);
 
-							System.out.println("Carga: ");
+        b.setXbarra(((Circle) tipoElemento).getCenterX() - b.getAncho() / 2);
+        b.setYbarra(((Circle) tipoElemento).getCenterY() - b.getLargo() / 2);
 
-							System.out.println("Real: " + b.getCarga().getPotenciaActiva() + " Imag: "
-									+ b.getCarga().getPotenciaReactiva());
+        b.setxCoorG(b.getXbarra() + b.getAncho() / 2);
+        b.setyCoorG(b.getYbarra() + b.getLargo() / 2);
 
-						}
+        repaint();
+        return;
+      }
 
-					}
+      if (tipoElemento instanceof Text) {
+        if (((Text) tipoElemento).getText().equals("X")) {
+          coorFalla.add(0, x);
+          coorFalla.add(1, y);
+          repaint();
+          return;
+        }
+      }
 
-					System.out.println("Potencia en barras");
+      if (tipoElemento instanceof Circle) {
 
-					for (int i = 0; i < perdidadsPotencia.length; i++) {
-						for (int j = 0; j < perdidadsPotencia.length; j++) {
+        double xcenter = ((Circle) tipoElemento).getCenterX();
+        double ycenter = ((Circle) tipoElemento).getCenterY();
 
-							System.out.print(potenciaEntranteBarras[i][j] + " ");
+        boolean bandera1 = false;
 
-						}
+        for (int i = 0; i < cargas.size(); i++) {
 
-						System.out.println();
-					}
+          double xcarga = cargas.get(i).getBarra().getCoordenadasCarga().getX();
+          double ycarga = cargas.get(i).getBarra().getCoordenadasCarga().getY();
 
-				}
+          if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
 
-			} else {
-				crearGrafos();
+            ((Circle) tipoElemento).setCenterX(x);
+            ((Circle) tipoElemento).setCenterY(y);
 
-			}
-		} else {
+            bandera1 = true;
 
-			JOptionPane.showMessageDialog(null, "El sistema no es cerrado. RÃ©viselo por favor.");
-		}
+            Barras b = cargas.get(i).getBarra();
 
-	}
+            b.setCoordenadasCarga(
+                new Point2D(
+                    ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY()));
 
-	public double getFACTOR_ACELERACION() {
-		return FACTOR_ACELERACION;
-	}
+            repaint();
+            return;
+          }
+        }
 
-	public void setFACTOR_ACELERACION(double fACTOR_ACELERACION) {
-		FACTOR_ACELERACION = fACTOR_ACELERACION;
-	}
+        for (int i = 0; i < bancos.size(); i++) {
 
-	public int getNUMERO_ITERACIONES() {
-		return NUMERO_ITERACIONES;
-	}
+          double xcarga = bancos.get(i).getBarra().getCoordenadasBanco().getX();
+          double ycarga = bancos.get(i).getBarra().getCoordenadasBanco().getY();
 
-	public void setNUMERO_ITERACIONES(int nUMERO_ITERACIONES) {
-		NUMERO_ITERACIONES = nUMERO_ITERACIONES;
-	}
+          if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
 
-	public double getEpsilon() {
-		return epsilon;
-	}
+            ((Circle) tipoElemento).setCenterX(x);
+            ((Circle) tipoElemento).setCenterY(y);
 
-	public void setEpsilon(double epsilon) {
-		this.epsilon = epsilon;
-	}
+            bandera1 = true;
 
-	private ObservableList<Double> listPuntosPolyLine;
+            Barras b = bancos.get(i).getBarra();
 
-	private boolean isLineOn2 = false;
+            b.setCoordenadasBanco(
+                new Point2D(
+                    ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY()));
 
-	private Point2D ultimoPunto;
+            repaint();
+            return;
+          }
+        }
 
-	private Polyline poliactual;
+        for (int i = 0; i < compensadores.size(); i++) {
 
-	private Path path;
+          double xcarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getX();
+          double ycarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getY();
 
-	private LinkedList<Integer>[] listaBarras = (LinkedList<Integer>[]) new LinkedList[100];
+          if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
 
-	public SPController() {
-		this.barras = NetworkModel.getInstance().getBarras();
-		this.conexiones = NetworkModel.getInstance().getLineas();
-		this.conexiones1 = NetworkModel.getInstance().getTransformadores();
-		this.conexiongene = NetworkModel.getInstance().getGeneradores();
-		this.cargas = NetworkModel.getInstance().getCargas();
-		this.bancos = NetworkModel.getInstance().getBancos();
-		this.compensadores = NetworkModel.getInstance().getCompensadores();
+            ((Circle) tipoElemento).setCenterX(x);
+            ((Circle) tipoElemento).setCenterY(y);
 
-		for (int i = 0; i < listaBarras.length; i++) {
+            bandera1 = true;
 
-			listaBarras[i] = new LinkedList<Integer>();
-		}
+            Barras b = compensadores.get(i).getBarra();
 
-	}
+            b.setCoordenadaCompensador(
+                new Point2D(
+                    ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY()));
 
-	private double snap(double value) {
-		double gridSize = 20.0;
-		return Math.round(value / gridSize) * gridSize;
-	}
+            repaint();
+            return;
+          }
+        }
+      }
+    }
+  }
 
-	@FXML
-	private void zoomIn(ActionEvent event) {
-		updateZoom(1.2); // Aumentar 20%
-	}
+  @FXML
+  private void mouseEvent(MouseEvent e) {
+    areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    lista = areaDibujo.getChildren();
 
-	@FXML
-	private void zoomOut(ActionEvent event) {
-		updateZoom(0.833); // Disminuir
-	}
+    double x = e.getX();
+    double y = e.getY();
+    infoPosiMouse.setText(String.format("X=%.3f   Y=%.3f", x, y));
+    Node tipoElemento = tipoElemento(x, y);
 
-	private void updateZoom(double factor) {
-		// Limites de zoom (entre 10% y 500%)
-		double newScale = currentScale * factor;
-		if (newScale < 0.1 || newScale > 5.0)
-			return;
+    if (((currentTool == ToolType.LINEA || currentTool == ToolType.TRANSFORMADOR)) && isLineOn) {
 
-		currentScale = newScale;
+      endOfLineX = e.getX();
+      endOfLineY = e.getY();
+      repaint();
+    }
+  }
 
-		// Aplicar transformación al área de dibujo
-		Scale scaleTransform = new Scale(currentScale, currentScale, 0, 0);
-		areaDibujo.getTransforms().clear();
-		areaDibujo.getTransforms().add(scaleTransform);
+  @FXML private TextField MVAbase;
 
-		// Ajustar el tamaño del contenedor para que el ScrollPane sepa que el contenido
-		// cambió
-		// Esto es clave para que las barras de scroll funcionen bien al hacer zoom
-		zoomContainer.setPrefWidth(areaDibujo.getPrefWidth() * currentScale);
-		zoomContainer.setPrefHeight(areaDibujo.getPrefHeight() * currentScale);
+  public double longitudLinea(Barras b1, Barras b2) {
 
-		zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
-	}
+    return Math.sqrt(
+        (b1.getXbarra() - b2.getXbarra()) * (b1.getXbarra() - b2.getXbarra())
+            + (b1.getYbarra() - b2.getYbarra()) * (b1.getYbarra() - b2.getYbarra()));
+  }
 
-	private StackPane nodoSeleccionadoVisual = null;
+  public double longitudLinea(double x1, double y1, double x2, double y2) {
 
-	private void dibujarPOly() {
+    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+  }
 
-		if (isLineOn && currentTool == ToolType.LINEA) {
-			Line perro = new Line();
+  public void removeGeneradorAdyacente(Barras b) {
 
-			perro.setStartX(ultimoPunto.getX());
+    for (int i = 0; i < conexiongene.size(); i++) {
 
-			perro.setStartY(ultimoPunto.getY());
+      if (conexiongene.get(i).getBarra() == b) {
+        conexiongene.remove(i--);
+      }
+    }
+  }
 
-			perro.setEndX(endOfLineX);
+  public void removeCargaAdyacente(Barras b) {
 
-			perro.setEndY(endOfLineY);
+    for (int i = 0; i < cargas.size(); i++) {
 
-			areaDibujo.getChildren().addAll(perro, path);
-		}
+      if (cargas.get(i).getBarra() == b) {
+        cargas.remove(i--);
+      }
+    }
+  }
 
-		int cont = 0;
-		for (Lineas l : conexiones) {
+  public void removerBancoAdyacente(Barras b) {
 
-			l.setNombreLinea(nombreLinea + (++cont));
-			MoveTo mt = new MoveTo(l.getBarra1().getPuntoMedioBarra().getX(),
-					l.getBarra1().getPuntoMedioBarra().getY());
+    for (int i = 0; i < bancos.size(); i++) {
 
-			LineTo lt = new LineTo(l.getBarra2().getPuntoMedioBarra().getX(),
-					l.getBarra2().getPuntoMedioBarra().getY());
+      if (bancos.get(i).getBarra() == b) {
+        bancos.remove(i--);
+      }
+    }
+  }
 
-			ObservableList<PathElement> pt = l.getPath().getElements();
+  public void removeAdjacentEdges(Barras b) {
 
-			Path path = new Path();
-			path.setStrokeWidth(1.5);
-			path.setStroke(Color.GREEN);
-			path.getElements().add(mt);
+    for (int i = 0; i < conexiones.size(); i++) {
 
-			for (int i = 1; i < pt.size() - 1; i++) {
+      if (conexiones.get(i).getBarra1() == b || conexiones.get(i).getBarra2() == b) {
+        conexiones.remove(i--);
+      }
+    }
 
-				path.getElements().add(pt.get(i));
+    for (int i = 0; i < conexiones1.size(); i++) {
 
-			}
+      if (conexiones1.get(i).getBarra1() == b || conexiones1.get(i).getBarra2() == b) {
+        conexiones1.remove(i--);
+      }
+    }
+  }
 
-			path.getElements().add(lt);
+  public Node tipoElemento(double x, double y) {
 
-			double puntoMedioX = 0.0;
-			double puntoMedioY;
+    for (int i = 0; i < lista.size(); i++) {
 
-			if (path.getElements().size() == 2) {
-				MoveTo m1 = (MoveTo) path.getElements().get(0);
-				LineTo m2 = (LineTo) path.getElements().get(1);
+      if (lista.get(i).contains(x, y)) {
+        return lista.get(i);
+      }
+    }
 
-				double m1X = m1.getX();
-				double m1Y = m1.getY();
-				double m2X = m2.getX();
-				double m2Y = m2.getY();
+    return null;
+  }
 
-				puntoMedioX = Math.abs(m1X + m2X) / 2;
-				puntoMedioY = Math.abs(m1Y + m2Y) / 2;
-			} else {
+  public Circle getCirculo(double x, double y) {
 
-				LineTo m1 = (LineTo) path.getElements().get(1);
-				LineTo m2 = (LineTo) path.getElements().get(2);
-				double m1X = m1.getX();
-				double m1Y = m1.getY();
-				double m2X = m2.getX();
-				double m2Y = m2.getY();
+    for (Node list : lista) {
 
-				puntoMedioX = Math.abs(m1X + m2X) / 2;
-				puntoMedioY = Math.abs(m1Y + m2Y) / 2;
-			}
+      if (list instanceof Circle) {
 
-			l.setPuntomedio(new Point2D(puntoMedioX, puntoMedioY));
+        if (((Circle) list).contains(x, y)) {
+          return (Circle) list;
+        }
+      }
+    }
 
-			Rectangle rec = new Rectangle();
-			rec.setX(puntoMedioX - 15);
-			rec.setY(puntoMedioY - 15);
-			rec.setWidth(30);
-			rec.setHeight(30);
-			rec.setStroke(Color.RED);
-			rec.setFill(Color.WHITE);
+    return null;
+  }
 
-			Text textLinea = new Text(l.getNombreLinea());
-			textLinea.setStrokeWidth(1);
-			textLinea.setStroke(Color.RED);
+  public boolean sonIguales(Barras barra1, Barras barra2) {
 
-			textLinea.setX(puntoMedioX - 3);
-			textLinea.setY(puntoMedioY + 2);
+    if (barra1.getXbarra() == barra2.getXbarra() && barra1.getYbarra() == barra2.getYbarra()) {
 
-			areaDibujo.getChildren().addAll(path, rec, textLinea);
+      return true;
+    } else {
 
-		}
+      return false;
+    }
+  }
 
-	}
+  public Barras getContainingVertex(double x, double y) {
 
-	public void repaint() {
+    for (int i = 0; i < barras.size(); i++) {
 
-		areaDibujo.getChildren().clear();
-		dibujarBarra();
-		dibujarLineas();
-		dibujarGenerador();
-		dibujarFalla();
-		dibujarCarga();
-		dibujarCompensador();
-		dibujarBanco();
-		dibujarPOly();
-		coorFalla.clear();
-		posBarra.clear();
+      if (dentroBarra(barras.get(i), x, y)) {
 
-	}
+        return barras.get(i);
+      }
+    }
 
-	// --- LÓGICA DE CREACIÓN DE OBJETOS ---
+    return null;
+  }
 
-	private boolean validarProximidad(double x, double y) {
-		double radioMinimo = 50.0; // Distancia mínima en píxeles
-		for (Barras b : barras) {
-			// Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene
-			// coordenadas reales aún
-			if (b.getNombreBarra().equals("Tierra"))
-				continue;
+  public boolean dentroBarra(Barras barra, double x, double y) {
 
-			// Calcular distancia Euclideana entre el punto de click y las barras existentes
-			double dist = Math.sqrt(Math.pow(x - b.getXbarra(), 2) + Math.pow(y - b.getYbarra(), 2));
+    if (barra.getOrientacion().equals("V")) {
 
-			if (dist < radioMinimo) {
-				return false; // Conflicto espacial detectado
-			}
-		}
-		return true; // Espacio libre
-	}
+      if (x >= barra.getXbarra()
+          && x <= barra.getXbarra() + barra.getAncho()
+          && y >= barra.getYbarra()
+          && y <= barra.getYbarra() + barra.getLargo()) {
 
-	private void crearBarra(double x, double y) {
+        return true;
+      } else {
 
-		if (!validarProximidad(x, y)) {
-			infoTare.setText("Error: Espacio ocupado, seleccione otra ubicación.");
-			return;
-		}
+        return false;
+      }
 
-		String nombreDefault = "Bus-" + (barras.size());
-		Barras logicaBarra = new Barras(nombreDefault);
-		logicaBarra.setXbarra(x - 3);
-		logicaBarra.setYbarra(y - 30);
-		// barras.add(logicaBarra); // Ya no es necesario, addBarra lo añade al modelo
-		// centralizado
-		System.out.println("Barra creada en: " + x + ", " + y);
-		NetworkModel.getInstance().addBarra(logicaBarra);
-		infoTare.setText("Barra creada exitosamente.");
-	}
+    } else {
 
-	@FXML
-	private void mouseClicked(MouseEvent e) throws IOException {
+      if (x >= barra.getXbarra()
+          && x <= barra.getXbarra() + barra.getAncho()
+          && y >= barra.getYbarra()
+          && y <= barra.getYbarra() + barra.getLargo()) {
 
-		areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
-		double x = snap(e.getX());
-		double y = snap(e.getY());
-		if (e.getButton() == MouseButton.PRIMARY) {
-			switch (currentTool) {
-				case BARRA:
-					crearBarra(x, y);
-					break;
-				case NONE:
-					// Lógica para seleccionar/ver propiedades
-					System.out.println("Modo Selección: Click en " + x + ", " + y);
-					break;
-				case TRANSFORMADOR:
-					handleTrafoCreation(x, y);
-					break;
-				case GENERADOR:
-					handleGeneradorCreation(x, y);
-					break;
-				case CARGA:
-					handleCargaCreation(x, y);
-					break;
-				case BANCO:
-					handleBancoCreation(x, y);
-					break;
-				case COMPENSADOR:
-					handleCompensadorCreation(x, y);
-					break;
-				default:
-					break;
-			}
-			return;
-		}
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
 
-	}
+  public boolean barraMuycerca(double x, double y) {
 
-	@FXML
+    for (int i = 1; i < barras.size(); i++) {
 
-	private void dragEvent(MouseEvent e) {
-		areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
-		if (currentTool.equals(ToolType.NONE)) {
+      if (obtenerDistancia(
+              x,
+              y,
+              barras.get(i).getPuntoMedioBarra().getX(),
+              barras.get(i).getPuntoMedioBarra().getY())
+          && barras.get(i).getOrientacion().equals("V")) {
+        return true;
+      }
+    }
 
-			lista = areaDibujo.getChildren();
+    return false;
+  }
 
-			double x = e.getX();
-			double y = e.getY();
+  public boolean obtenerDistancia(double x1, double y1, double x2, double y2) {
 
-			Node tipoElemento = tipoElemento(x, y);
+    if (Math.abs(x1 - x2) < 10 + 5 && Math.abs(y1 - y2) < 70 + 10) {
 
-			if (tipoElemento instanceof Ellipse) {
+      return true;
 
-				Barras temp = new Barras();
+    } else {
 
-				for (int i = 1; i < barras.size(); i++) {
+      return false;
+    }
+  }
 
-					Barras b = barras.get(i);
+  public void limpiarArea() {
 
-					if (b.getEllipse().equals(((Ellipse) tipoElemento))) {
+    for (int i = 0; i < listaBarras.length; i++) {
 
-						temp = b;
-						break;
+      listaBarras[i].clear();
+    }
 
-					}
+    conexiones.clear();
+    conexiones1.clear();
+    conexiongene.clear();
+    barras.clear();
+    cargas.clear();
+    bancos.clear();
+    distanciasLineas.clear();
+    corGenerador.clear();
+    corCarga.clear();
+    corBanco.clear();
+    posBarra.clear();
+    objetosCreados.clear();
+    restablecerElementos.clear();
+    repaint();
+    barras.add(new Barras("Tierra"));
+    tipoElementoFallado = null;
+  }
 
-				}
+  public void borrarUltimoElemento() {
 
-				((Ellipse) tipoElemento).setCenterX(x);
-				((Ellipse) tipoElemento).setCenterY(y);
+    Object elemento = objetosCreados.pollLast();
+    if (elemento != null) restablecerElementos.add(elemento);
 
-				temp.setNombreBarraX(((Ellipse) tipoElemento).getCenterX());
-				temp.setNombreBarraY(((Ellipse) tipoElemento).getCenterY());
+    if (elemento instanceof Barras && elemento != null && barras.size() > 1) {
 
-				repaint();
+      Barras b = ((Barras) elemento);
 
-				return;
-			}
+      if (b.isBarraCompensacion()) {
+        barraCompensacion = null;
+      }
 
-			else if (tipoElemento instanceof Circle && ((Circle) tipoElemento).getRadius() == 14) {
+      int indexBarrab = barras.indexOf(b);
 
-				Barras b = getContainingVertex(((Circle) tipoElemento).getCenterX(),
-						((Circle) tipoElemento).getCenterY());
+      for (int i : listaBarras[indexBarrab]) {
 
-				((Circle) tipoElemento).setCenterX(x);
-				((Circle) tipoElemento).setCenterY(y);
+        listaBarras[i].remove(listaBarras[i].indexOf(indexBarrab));
+      }
 
-				b.setXbarra(((Circle) tipoElemento).getCenterX() - b.getAncho() / 2);
-				b.setYbarra(((Circle) tipoElemento).getCenterY() - b.getLargo() / 2);
+      listaBarras[indexBarrab].clear();
 
-				b.setxCoorG(b.getXbarra() + b.getAncho() / 2);
-				b.setyCoorG(b.getYbarra() + b.getLargo() / 2);
+      barras.remove(b);
+      repaint();
 
-				repaint();
-				return;
+    } else if (elemento instanceof Lineas
+        && !(elemento instanceof Transformador)
+        && elemento != null
+        && conexiones.size() > 0) {
 
-			}
+      int one = barras.indexOf(conexiones.get(conexiones.size() - 1).getBarra1());
+      int other = barras.indexOf(conexiones.get(conexiones.size() - 1).getBarra2());
 
-			if (tipoElemento instanceof Text) {
-				if (((Text) tipoElemento).getText().equals("X")) {
-					coorFalla.add(0, x);
-					coorFalla.add(1, y);
-					repaint();
-					return;
+      listaBarras[one].remove(listaBarras[one].indexOf(other));
+      listaBarras[other].remove(listaBarras[other].indexOf(one));
+      conexiones.remove(conexiones.size() - 1);
+      distanciasLineas.clear();
+      repaint();
 
-				}
+    } else if (elemento instanceof Generadores && elemento != null && conexiongene.size() > 0) {
 
-			}
+      Barras b = conexiongene.get(conexiongene.size() - 1).getBarra();
+      if (!b.containsCompensador()) {
+        b.setBarraPQ(true);
+        b.setBarraPV(false);
+      }
 
-			if (tipoElemento instanceof Circle) {
+      b.setGenerador(null);
+      conexiongene.remove(conexiongene.size() - 1);
+      corGenerador.clear();
 
-				double xcenter = ((Circle) tipoElemento).getCenterX();
-				double ycenter = ((Circle) tipoElemento).getCenterY();
+      repaint();
+    } else if (elemento instanceof CompensadorEstatico
+        && elemento != null
+        && compensadores.size() > 0) {
 
-				boolean bandera1 = false;
+      Barras b = compensadores.get(compensadores.size() - 1).getBarra();
+      if (!b.containsGenerador()) {
+        b.setBarraPQ(true);
+        b.setBarraPV(false);
+      }
+      b.setCompensador(null);
+      compensadores.remove(compensadores.size() - 1);
+      corCompensador.clear();
 
-				for (int i = 0; i < cargas.size(); i++) {
+      repaint();
+    } else if ((elemento instanceof Transformador)
+        && (elemento instanceof Lineas)
+        && elemento != null
+        && conexiones1.size() > 0) {
 
-					double xcarga = cargas.get(i).getBarra().getCoordenadasCarga().getX();
-					double ycarga = cargas.get(i).getBarra().getCoordenadasCarga().getY();
+      int one = barras.indexOf(conexiones1.get(conexiones1.size() - 1).getBarra1());
+      int other = barras.indexOf(conexiones1.get(conexiones1.size() - 1).getBarra2());
 
-					if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
+      listaBarras[one].remove(listaBarras[one].indexOf(other));
+      listaBarras[other].remove(listaBarras[other].indexOf(one));
 
-						((Circle) tipoElemento).setCenterX(x);
-						((Circle) tipoElemento).setCenterY(y);
+      conexiones1.remove(conexiones1.size() - 1);
+      distanciasLineas.clear();
+      repaint();
+    } else if (elemento instanceof Carga && elemento != null && cargas.size() > 0) {
+      Barras b = cargas.get(cargas.size() - 1).getBarra();
+      b.setCarga(null);
+      cargas.remove(cargas.size() - 1);
+      corCarga.clear();
+      repaint();
+    } else if (elemento instanceof Bancos && elemento != null && bancos.size() > 0) {
+      Barras b = bancos.get(bancos.size() - 1).getBarra();
+      b.setBanco(null);
+      bancos.remove(bancos.size() - 1);
+      corBanco.clear();
+      repaint();
+    }
+  }
 
-						bandera1 = true;
+  public void dibujarBarra() {
 
-						Barras b = cargas.get(i).getBarra();
+    for (int i = 0; i < barras.size(); i++) {
 
-						b.setCoordenadasCarga(new Point2D(((Circle) tipoElemento).getCenterX(),
-								((Circle) tipoElemento).getCenterY()));
+      if (barras.get(i).getOrientacion().equals("H")) {
 
-						repaint();
-						return;
+        posBarra.add(barras.get(i).getXbarra());
 
-					}
+        Collections.sort(posBarra);
+        Rectangle barra = new Rectangle();
 
-				}
+        if (barras.get(i).isBarraCompensacion()) {
 
-				for (int i = 0; i < bancos.size(); i++) {
+          barra.setFill(Color.BLUE);
 
-					double xcarga = bancos.get(i).getBarra().getCoordenadasBanco().getX();
-					double ycarga = bancos.get(i).getBarra().getCoordenadasBanco().getY();
+        } else {
+          barra.setFill(Color.BLACK);
+        }
 
-					if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
+        barra.setX(barras.get(i).getXbarra());
+        barra.setY(barras.get(i).getYbarra());
+        barra.setWidth(barras.get(i).getAncho());
 
-						((Circle) tipoElemento).setCenterX(x);
-						((Circle) tipoElemento).setCenterY(y);
+        barra.setHeight(barras.get(i).getLargo());
 
-						bandera1 = true;
+        double xMedio = barras.get(i).getXbarra() + barras.get(i).getAncho() / 2;
+        double yMedio = barras.get(i).getYbarra() + barras.get(i).getLargo() / 2;
 
-						Barras b = bancos.get(i).getBarra();
+        barras.get(i).setPuntoMedioBarra(new Point2D(xMedio, yMedio));
+        // barra.setRotate(-90);
 
-						b.setCoordenadasBanco(new Point2D(((Circle) tipoElemento).getCenterX(),
-								((Circle) tipoElemento).getCenterY()));
+        Circle circulo = new Circle();
+        circulo.setRadius(radioCirculo);
+        circulo.setCenterX(barras.get(i).getXbarra() + barras.get(i).getAncho() / 2);
+        circulo.setCenterY(barras.get(i).getYbarra() + barras.get(i).getLargo() / 2);
+        circulo.setVisible(false);
 
-						repaint();
-						return;
+        Text nbarra = new Text();
 
-					}
+        if (barras.get(i).getNombrePersonalizado() == null) {
+          String nombre = barras.get(i).getNombreBarra();
 
-				}
+          nbarra.setText(nombre);
+          // if(!nombreBarras.contains(nombre))
+          // nombreBarras.put(nombre, barras.get(i));
+          // else {
+          // nombre=nombre+i;
+          // nombreBarras.put(nombre, barras.get(i));
+          //
+          // }
+        } else {
 
-				for (int i = 0; i < compensadores.size(); i++) {
+          String nombre = barras.get(i).getNombrePersonalizado();
+          nbarra.setText(nombre);
+          // if(!nombreBarras.contains(nombre))
+          // nombreBarras.put(nombre, barras.get(i));
+          // else {
+          // nombre=nombre+i;
+          // nombreBarras.put(nombre, barras.get(i));
+          //
+          // }
 
-					double xcarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getX();
-					double ycarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getY();
+        }
 
-					if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
+        nbarra.setStroke(Color.ORANGE);
+        nbarra.setStrokeWidth(1);
 
-						((Circle) tipoElemento).setCenterX(x);
-						((Circle) tipoElemento).setCenterY(y);
+        nbarra.setStyle("-fx-font: 12 arial;");
 
-						bandera1 = true;
+        nbarra.setX(barras.get(i).getNombreBarraX());
+        nbarra.setY(barras.get(i).getNombreBarraY());
 
-						Barras b = compensadores.get(i).getBarra();
+        Ellipse ellipse = new Ellipse();
 
-						b.setCoordenadaCompensador(new Point2D(((Circle) tipoElemento).getCenterX(),
-								((Circle) tipoElemento).getCenterY()));
+        ellipse.setCenterX(barras.get(i).getNombreBarraX() + nbarra.getText().length() * 3);
+        ellipse.setCenterY(barras.get(i).getNombreBarraY());
+        ellipse.setRadiusX(nbarra.getText().length() * 6);
+        ellipse.setRadiusY(8);
+        ellipse.setVisible(false);
 
-						repaint();
-						return;
+        barras.get(i).setEllipse(ellipse);
 
-					}
+        areaDibujo.getChildren().addAll(barra, ellipse, nbarra, circulo);
 
-				}
+      } else if (barras.get(i).getOrientacion().equals("V")) {
 
-			}
+        posBarra.add(barras.get(i).getXbarra());
+        Collections.sort(posBarra);
+        if (i == 0) {
+          continue;
+        } else {
 
-		}
+          double xMedio = barras.get(i).getXbarra() + barras.get(i).getAncho() / 2;
+          double yMedio = barras.get(i).getYbarra() + barras.get(i).getLargo() / 2;
 
-	}
+          barras.get(i).setPuntoMedioBarra(new Point2D(xMedio, yMedio));
 
-	@FXML
-	private void mouseEvent(MouseEvent e) {
-		areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
-		lista = areaDibujo.getChildren();
+          Rectangle barra = new Rectangle();
 
-		double x = e.getX();
-		double y = e.getY();
-		infoPosiMouse.setText(String.format("X=%.3f   Y=%.3f", x, y));
-		Node tipoElemento = tipoElemento(x, y);
+          if (barras.get(i).isBarraCompensacion()) {
 
-		if (((currentTool == ToolType.LINEA || currentTool == ToolType.TRANSFORMADOR)) && isLineOn) {
+            barra.setFill(Color.BLUE);
 
-			endOfLineX = e.getX();
-			endOfLineY = e.getY();
-			repaint();
+          } else {
+            barra.setFill(Color.BLACK);
+          }
 
-		}
+          barra.setX(barras.get(i).getXbarra());
+          barra.setY(barras.get(i).getYbarra());
+          barra.setWidth(barras.get(i).getAncho());
+          barra.setHeight(barras.get(i).getLargo());
 
-	}
+          Circle circulo = new Circle();
+          circulo.setRadius(radioCirculo);
+          circulo.setCenterX(barras.get(i).getXbarra() + barras.get(i).getAncho() / 2);
+          circulo.setCenterY(barras.get(i).getYbarra() + barras.get(i).getLargo() / 2);
+          circulo.setVisible(false);
 
-	@FXML
-	private TextField MVAbase;
+          Text nbarra = new Text();
 
-	public double longitudLinea(Barras b1, Barras b2) {
+          if (barras.get(i).getNombrePersonalizado() == null) {
 
-		return Math.sqrt((b1.getXbarra() - b2.getXbarra()) * (b1.getXbarra() - b2.getXbarra())
-				+ (b1.getYbarra() - b2.getYbarra()) * (b1.getYbarra() - b2.getYbarra()));
-	}
+            String nombre = barras.get(i).getNombreBarra();
 
-	public double longitudLinea(double x1, double y1, double x2, double y2) {
+            nbarra.setText(nombre);
+            // if(!nombreBarras.contains(nombre))
+            // nombreBarras.put(nombre, barras.get(i));
+            // else {
+            // nombre=nombre+i;
+            // nombreBarras.put(nombre, barras.get(i));
+            //
+            // }
+          } else {
+            String nombre = barras.get(i).getNombrePersonalizado();
+            nbarra.setText(nombre);
+            // if(!nombreBarras.contains(nombre))
+            // nombreBarras.put(nombre, barras.get(i));
+            // else {
+            // nombre=nombre+i;
+            // nombreBarras.put(nombre, barras.get(i));
+            //
+            // }
 
-		return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-	}
+          }
+          nbarra.setStroke(Color.ORANGE);
+          nbarra.setStrokeWidth(1);
 
-	public void removeGeneradorAdyacente(Barras b) {
+          nbarra.setStyle("-fx-font: 12 arial;");
+          nbarra.setX(barras.get(i).getNombreBarraX());
+          nbarra.setY(barras.get(i).getNombreBarraY());
 
-		for (int i = 0; i < conexiongene.size(); i++) {
+          Ellipse ellipse = new Ellipse();
 
-			if (conexiongene.get(i).getBarra() == b) {
-				conexiongene.remove(i--);
-			}
-		}
+          ellipse.setCenterX(barras.get(i).getNombreBarraX() + nbarra.getText().length() * 3);
+          ellipse.setCenterY(barras.get(i).getNombreBarraY());
+          ellipse.setRadiusX(nbarra.getText().length() * 6);
+          ellipse.setRadiusY(8);
+          ellipse.setVisible(false);
+          barras.get(i).setEllipse(ellipse);
+          areaDibujo.getChildren().addAll(barra, ellipse, nbarra, circulo);
+        }
+      }
+    }
+  }
 
-	}
+  public void dibujarFalla() {
 
-	public void removeCargaAdyacente(Barras b) {
+    if (coorFalla.size() > 0) {
 
-		for (int i = 0; i < cargas.size(); i++) {
+      Text ubicarFalla = new Text("X");
+      ubicarFalla.setFont(Font.font("Courier", FontWeight.BOLD, FontPosture.ITALIC, 25));
 
-			if (cargas.get(i).getBarra() == b) {
-				cargas.remove(i--);
-			}
-		}
+      ubicarFalla.setFill(Color.RED);
+      ubicarFalla.setX(coorFalla.get(0));
+      ubicarFalla.setY(coorFalla.get(1));
+      areaDibujo.getChildren().add(ubicarFalla);
+    }
+  }
 
-	}
+  public void dibujarCarga() {
 
-	public void removerBancoAdyacente(Barras b) {
+    for (int i = 0; i < cargas.size(); i++) {
 
-		for (int i = 0; i < bancos.size(); i++) {
+      corCarga.add(cargas.get(i).getBarra().getXbarra());
+      cargas.get(i).setNombreCarga(nombreCarga + (i + 1));
 
-			if (bancos.get(i).getBarra() == b) {
-				bancos.remove(i--);
-			}
-		}
+      areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(cargas.get(i), "C"));
+      areaDibujo.getChildren().add(DibujarCarga.nombreCargaBanco(cargas.get(i), "C"));
+    }
+  }
 
-	}
+  public void dibujarBanco() {
 
-	public void removeAdjacentEdges(Barras b) {
+    for (int i = 0; i < bancos.size(); i++) {
 
-		for (int i = 0; i < conexiones.size(); i++) {
+      corBanco.add(bancos.get(i).getBarra().getXbarra());
+      bancos.get(i).setNombreCarga(nombreBanco + (i + 1));
 
-			if (conexiones.get(i).getBarra1() == b || conexiones.get(i).getBarra2() == b) {
-				conexiones.remove(i--);
-			}
+      areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(bancos.get(i), "B"));
+      areaDibujo
+          .getChildren()
+          .add(DibujarCarga.nombreCargaBanco(bancos.get(i), "E")); // Modificar el metodos
+      // para establecer el
+      // nombre
 
-		}
+    }
+  }
 
-		for (int i = 0; i < conexiones1.size(); i++) {
+  public void dibujarCompensador() {
 
-			if (conexiones1.get(i).getBarra1() == b || conexiones1.get(i).getBarra2() == b) {
-				conexiones1.remove(i--);
-			}
-		}
+    for (int i = 0; i < compensadores.size(); i++) {
 
-	}
+      corCompensador.add(compensadores.get(i).getBarra().getXbarra());
+      compensadores.get(i).setNombreCompensador(nombreCompensador + (i + 1));
 
-	public Node tipoElemento(double x, double y) {
+      areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(compensadores.get(i), "E"));
+    }
+  }
 
-		for (int i = 0; i < lista.size(); i++) {
+  public void dibujarGenerador() {
 
-			if (lista.get(i).contains(x, y)) {
-				return lista.get(i);
-			}
+    for (int i = 0; i < conexiongene.size(); i++) {
+      corGenerador.add(conexiongene.get(i).getBarra().getXbarra());
 
-		}
+      conexiongene.get(i).setNombreGenerador(nombreGenerador + (i + 1));
+      if (conexiongene.get(i).getOrientacion().equals(Generadores.RIGHT)) {
 
-		return null;
+        Line lineg =
+            new Line(
+                conexiongene.get(i).getBarra().getxCoorG(),
+                conexiongene.get(i).getBarra().getyCoorG(),
+                conexiongene.get(i).getBarra().getxCoorG() + 20,
+                conexiongene.get(i).getBarra().getyCoorG());
 
-	}
+        lineg.setStrokeWidth(4);
 
-	public Circle getCirculo(double x, double y) {
+        Circle cirg = new Circle();
+        cirg.setRadius(20);
+        cirg.setCenterX(lineg.getEndX() + 20);
+        cirg.setCenterY(lineg.getEndY());
+        cirg.setFill(Color.WHITE);
+        cirg.setStroke(Color.BLACK);
 
-		for (Node list : lista) {
+        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
+        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
+        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
 
-			if (list instanceof Circle) {
+        nombreg.setFill(Color.BLUE);
+        nombreg.setX(cirg.getCenterX() - 3);
+        nombreg.setY(cirg.getCenterY() - 25);
 
-				if (((Circle) list).contains(x, y)) {
-					return (Circle) list;
-				}
-			}
+        arc1.setFill(Color.WHITE);
+        arc1.setStroke(Color.BLACK);
+        arc2.setFill(Color.WHITE);
+        arc2.setStroke(Color.BLACK);
 
-		}
+        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
 
-		return null;
-	}
+      } else if (conexiongene.get(i).getOrientacion().equals(Generadores.LEFT)) {
 
-	public boolean sonIguales(Barras barra1, Barras barra2) {
+        Line lineg =
+            new Line(
+                conexiongene.get(i).getBarra().getxCoorG(),
+                conexiongene.get(i).getBarra().getyCoorG(),
+                conexiongene.get(i).getBarra().getxCoorG() - 10,
+                conexiongene.get(i).getBarra().getyCoorG());
 
-		if (barra1.getXbarra() == barra2.getXbarra() && barra1.getYbarra() == barra2.getYbarra()) {
+        lineg.setStrokeWidth(4);
 
-			return true;
-		} else {
+        Circle cirg = new Circle();
+        cirg.setRadius(20);
+        cirg.setCenterX(lineg.getEndX() - 20);
+        cirg.setCenterY(lineg.getEndY());
+        cirg.setFill(Color.WHITE);
+        cirg.setStroke(Color.BLACK);
 
-			return false;
-		}
-	}
+        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
+        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
 
-	public Barras getContainingVertex(double x, double y) {
+        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
+        nombreg.setFill(Color.BLUE);
+        nombreg.setX(cirg.getCenterX() - 3);
+        nombreg.setY(cirg.getCenterY() - 25);
 
-		for (int i = 0; i < barras.size(); i++) {
+        arc1.setFill(Color.WHITE);
+        arc1.setStroke(Color.BLACK);
+        arc2.setFill(Color.WHITE);
+        arc2.setStroke(Color.BLACK);
 
-			if (dentroBarra(barras.get(i), x, y)) {
+        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
+      } else if (conexiongene.get(i).getOrientacion().equals(Generadores.ARRIBA)) {
 
-				return barras.get(i);
-			}
+        Line lineg =
+            new Line(
+                conexiongene.get(i).getBarra().getXbarra()
+                    + conexiongene.get(i).getBarra().getAncho() / 2,
+                conexiongene.get(i).getBarra().getYbarra()
+                    + conexiongene.get(i).getBarra().getLargo() / 2,
+                conexiongene.get(i).getBarra().getXbarra()
+                    + conexiongene.get(i).getBarra().getAncho() / 2,
+                (conexiongene.get(i).getBarra().getYbarra()
+                        + conexiongene.get(i).getBarra().getLargo() / 2)
+                    - 10);
 
-		}
+        lineg.setStrokeWidth(4);
 
-		return null;
+        Circle cirg = new Circle();
+        cirg.setRadius(20);
+        cirg.setCenterX(lineg.getEndX());
+        cirg.setCenterY(lineg.getEndY() - 20);
 
-	}
+        conexiongene.get(i).setXCenter(lineg.getEndX());
+        conexiongene.get(i).setYCenter(lineg.getEndY() - 20);
 
-	public boolean dentroBarra(Barras barra, double x, double y) {
+        cirg.setFill(Color.WHITE);
+        cirg.setStroke(Color.BLACK);
 
-		if (barra.getOrientacion().equals("V")) {
+        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
+        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
 
-			if (x >= barra.getXbarra() && x <= barra.getXbarra() + barra.getAncho() && y >= barra.getYbarra()
-					&& y <= barra.getYbarra() + barra.getLargo()) {
+        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
+        nombreg.setFill(Color.BLUE);
+        nombreg.setX(cirg.getCenterX() - 3);
+        nombreg.setY(cirg.getCenterY() - 25);
 
-				return true;
-			}
+        arc1.setFill(Color.WHITE);
+        arc1.setStroke(Color.BLACK);
+        arc2.setFill(Color.WHITE);
+        arc2.setStroke(Color.BLACK);
+        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
 
-			else {
+      } else if (conexiongene.get(i).getOrientacion().equals(Generadores.ABAJO)) {
 
-				return false;
-			}
+        Line lineg =
+            new Line(
+                conexiongene.get(i).getBarra().getXbarra()
+                    + conexiongene.get(i).getBarra().getAncho() / 2,
+                conexiongene.get(i).getBarra().getYbarra()
+                    + conexiongene.get(i).getBarra().getLargo() / 2,
+                conexiongene.get(i).getBarra().getXbarra()
+                    + conexiongene.get(i).getBarra().getAncho() / 2,
+                (conexiongene.get(i).getBarra().getYbarra()
+                        + conexiongene.get(i).getBarra().getLargo() / 2)
+                    + 10);
 
-		} else {
+        lineg.setStrokeWidth(4);
+        Circle cirg = new Circle();
 
-			if (x >= barra.getXbarra() && x <= barra.getXbarra() + barra.getAncho() && y >= barra.getYbarra()
-					&& y <= barra.getYbarra() + barra.getLargo()) {
+        cirg.setRadius(20);
+        cirg.setCenterX(lineg.getEndX());
+        cirg.setCenterY(lineg.getEndY() + 20);
 
-				return true;
-			}
+        conexiongene.get(i).setXCenter(lineg.getEndX());
+        conexiongene.get(i).setYCenter(lineg.getEndY() + 20);
 
-			else {
-				return false;
-			}
+        cirg.setFill(Color.WHITE);
+        cirg.setStroke(Color.BLACK);
 
-		}
+        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
+        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
 
-	}
+        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
 
-	public boolean barraMuycerca(double x, double y) {
+        nombreg.setFill(Color.BLUE);
+        nombreg.setX(cirg.getCenterX() - 3);
+        nombreg.setY(cirg.getCenterY() + 30);
 
-		for (int i = 1; i < barras.size(); i++) {
+        arc1.setFill(Color.WHITE);
+        arc1.setStroke(Color.BLACK);
+        arc2.setFill(Color.WHITE);
+        arc2.setStroke(Color.BLACK);
 
-			if (obtenerDistancia(x, y, barras.get(i).getPuntoMedioBarra().getX(),
-					barras.get(i).getPuntoMedioBarra().getY()) && barras.get(i).getOrientacion().equals("V")) {
-				return true;
-			}
+        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
+      }
+    }
+  }
 
-		}
+  public void dibujarLineas() {
 
-		return false;
+    if (isLineOn && currentTool == ToolType.TRANSFORMADOR) {
 
-	}
+      Line linea =
+          new Line(
+              startB.getXbarra() + startB.getAncho() / 2,
+              startB.getYbarra() + startB.getLargo() / 2,
+              endOfLineX,
+              endOfLineY);
+      linea.setStroke(Color.RED);
+      linea.setStrokeWidth(2);
+      areaDibujo.getChildren().add(linea);
+    }
 
-	public boolean obtenerDistancia(double x1, double y1, double x2, double y2) {
+    for (int i = 0; i < conexiones1.size(); i++) {
 
-		if (Math.abs(x1 - x2) < 10 + 5 && Math.abs(y1 - y2) < 70 + 10) {
+      Line linea =
+          new Line(
+              conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX(),
+              conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY(),
+              conexiones1.get(i).getBarra2().getPuntoMedioBarra().getX(),
+              conexiones1.get(i).getBarra2().getPuntoMedioBarra().getY());
+      linea.setStrokeWidth(1);
+      double pe =
+          longitudLinea(linea.getStartX(), linea.getStartY(), linea.getEndX(), linea.getEndY());
+      distanciasLineas.add(pe);
 
-			return true;
+      conexiones1.get(i).setNombreLinea(nombreTrafo + (i + 1));
+      double puntoMedioX =
+          Math.abs(
+                  conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX()
+                      + conexiones1.get(i).getBarra2().getPuntoMedioBarra().getX())
+              / 2;
 
-		} else {
+      double puntoMedioY =
+          Math.abs(
+                  conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY()
+                      + conexiones1.get(i).getBarra2().getPuntoMedioBarra().getY())
+              / 2;
 
-			return false;
-		}
+      conexiones1.get(i).setPuntoMedio(new Point2D(puntoMedioX, puntoMedioY));
+      Circle cc1 = new Circle();
+      Circle cc2 = new Circle();
 
-	}
+      cc1.setRadius(15);
+      cc1.setCenterX(puntoMedioX - 5);
+      cc1.setCenterY(puntoMedioY);
+      cc1.setStroke(Color.GREEN);
+      cc1.setFill(Color.WHITE);
+      cc2.setRadius(15);
+      cc2.setCenterX(puntoMedioX + 5);
+      cc2.setCenterY(puntoMedioY);
+      cc2.setStroke(Color.RED);
+      cc2.setFill(Color.WHITE);
 
-	public void limpiarArea() {
+      ;
 
-		for (int i = 0; i < listaBarras.length; i++) {
+      linea.setStroke(Color.BLACK);
+      linea.setStrokeWidth(2);
 
-			listaBarras[i].clear();
+      areaDibujo.getChildren().add(linea);
+      areaDibujo.getChildren().addAll(cc1, cc2);
 
-		}
+      Text textLinea = new Text(conexiones1.get(i).getNombreLinea());
+      textLinea.setStroke(Color.BLACK);
+      textLinea.setStrokeWidth(1);
 
-		conexiones.clear();
-		conexiones1.clear();
-		conexiongene.clear();
-		barras.clear();
-		cargas.clear();
-		bancos.clear();
-		distanciasLineas.clear();
-		corGenerador.clear();
-		corCarga.clear();
-		corBanco.clear();
-		posBarra.clear();
-		objetosCreados.clear();
-		restablecerElementos.clear();
-		repaint();
-		barras.add(new Barras("Tierra"));
-		tipoElementoFallado = null;
+      if (conexiones1.get(i).isHasTap()) {
+        textLinea.setStroke(Color.BLUE);
+      }
 
-	}
+      if (conexiones1.get(i).isHasTap() && conexiones1.get(i).getAngtab() != 0) {
+        textLinea.setStroke(Color.GREEN);
+      }
 
-	public void borrarUltimoElemento() {
+      textLinea.setX(puntoMedioX);
+      textLinea.setY(puntoMedioY);
 
-		Object elemento = objetosCreados.pollLast();
-		if (elemento != null)
+      areaDibujo.getChildren().addAll(textLinea);
+    }
+  }
 
-			restablecerElementos.add(elemento);
+  public MyGraph<Barras> getGraph() {
 
-		if (elemento instanceof Barras && elemento != null && barras.size() > 1) {
+    List<Edges> edges = new ArrayList<>();
 
-			Barras b = ((Barras) elemento);
+    for (int i = 0; i < conexiones.size(); i++) {
 
-			if (b.isBarraCompensacion()) {
-				barraCompensacion = null;
-			}
+      int x = barras.indexOf(conexiones.get(i).getBarra1());
+      int y = barras.indexOf(conexiones.get(i).getBarra2());
 
-			int indexBarrab = barras.indexOf(b);
+      edges.add(new Edges(x, y));
+      edges.add(new Edges(y, x));
+    }
 
-			for (int i : listaBarras[indexBarrab]) {
+    for (int i = 0; i < conexiones1.size(); i++) {
 
-				listaBarras[i].remove(listaBarras[i].indexOf(indexBarrab));
+      int x = barras.indexOf(conexiones1.get(i).getBarra1());
+      int y = barras.indexOf(conexiones1.get(i).getBarra2());
 
-			}
+      edges.add(new Edges(x, y));
+      edges.add(new Edges(y, x));
+    }
 
-			listaBarras[indexBarrab].clear();
+    MyGraph<Barras> graph = new MyGraph<>(barras, edges);
+    return graph;
+  }
 
-			barras.remove(b);
-			repaint();
+  public void
+      crearGrafos() { // Crea las matrices de ayancencia y los diferentes tipos de matrices de
+    // impedancia de sencuencia
 
-		}
+    if (tipoElementoFallado != null) {
 
-		else if (elemento instanceof Lineas && !(elemento instanceof Transformador) && elemento != null
-				&& conexiones.size() > 0) {
+      if (trifasica) fallaTrifasica();
 
-			int one = barras.indexOf(conexiones.get(conexiones.size() - 1).getBarra1());
-			int other = barras.indexOf(conexiones.get(conexiones.size() - 1).getBarra2());
+      if (monofasica || bifasicaATierra) fallaMonofasica();
 
-			listaBarras[one].remove(listaBarras[one].indexOf(other));
-			listaBarras[other].remove(listaBarras[other].indexOf(one));
-			conexiones.remove(conexiones.size() - 1);
-			distanciasLineas.clear();
-			repaint();
+      // if(bifasicaATierra);
+      // fallaBifasicaATierra();
 
-		} else if (elemento instanceof Generadores && elemento != null && conexiongene.size() > 0) {
+      if (lineaALinea) fallaLineaALinea();
+    } else {
 
-			Barras b = conexiongene.get(conexiongene.size() - 1).getBarra();
-			if (!b.containsCompensador()) {
-				b.setBarraPQ(true);
-				b.setBarraPV(false);
-			}
+      JOptionPane.showMessageDialog(
+          null, "POR FAVOR UBIQUE LA FALLA YA SEA SOBRE UNA BARRA O LÃNEA");
+    }
+  }
 
-			b.setGenerador(null);
-			conexiongene.remove(conexiongene.size() - 1);
-			corGenerador.clear();
+  public void fallaLineaALinea() {
 
-			repaint();
-		}
+    List<WeightEdeges> bordes1 = new ArrayList<>();
+    List<WeightEdeges> bordes2 = new ArrayList<>();
 
-		else if (elemento instanceof CompensadorEstatico && elemento != null && compensadores.size() > 0) {
+    for (int i = 0; i < conexiones.size(); i++) {
 
-			Barras b = compensadores.get(compensadores.size() - 1).getBarra();
-			if (!b.containsGenerador()) {
-				b.setBarraPQ(true);
-				b.setBarraPV(false);
-			}
-			b.setCompensador(null);
-			compensadores.remove(compensadores.size() - 1);
-			corCompensador.clear();
+      int x = barras.indexOf(conexiones.get(i).getBarra1());
+      int y = barras.indexOf(conexiones.get(i).getBarra2());
+      double z1 = conexiones.get(i).getimpedanciaLineaZ1();
+      double z2 = conexiones.get(i).getimpedanciaLineaZ2();
 
-			repaint();
-		}
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
 
-		else if ((elemento instanceof Transformador) && (elemento instanceof Lineas) && elemento != null
-				&& conexiones1.size() > 0) {
+      bordes2.add(new WeightEdeges(x, y, z2));
+      bordes2.add(new WeightEdeges(y, x, z2));
+    }
 
-			int one = barras.indexOf(conexiones1.get(conexiones1.size() - 1).getBarra1());
-			int other = barras.indexOf(conexiones1.get(conexiones1.size() - 1).getBarra2());
+    for (int i = 0; i < conexiones1.size(); i++) {
 
-			listaBarras[one].remove(listaBarras[one].indexOf(other));
-			listaBarras[other].remove(listaBarras[other].indexOf(one));
+      int x = barras.indexOf(conexiones1.get(i).getBarra1());
+      int y = barras.indexOf(conexiones1.get(i).getBarra2());
 
-			conexiones1.remove(conexiones1.size() - 1);
-			distanciasLineas.clear();
-			repaint();
-		}
+      double z1 = conexiones1.get(i).getimpedanciaLineaZ1();
+      double z2 = conexiones1.get(i).getimpedanciaLineaZ2();
 
-		else if (elemento instanceof Carga && elemento != null && cargas.size() > 0) {
-			Barras b = cargas.get(cargas.size() - 1).getBarra();
-			b.setCarga(null);
-			cargas.remove(cargas.size() - 1);
-			corCarga.clear();
-			repaint();
-		}
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
 
-		else if (elemento instanceof Bancos && elemento != null && bancos.size() > 0) {
-			Barras b = bancos.get(bancos.size() - 1).getBarra();
-			b.setBanco(null);
-			bancos.remove(bancos.size() - 1);
-			corBanco.clear();
-			repaint();
+      bordes2.add(new WeightEdeges(x, y, z2));
+      bordes2.add(new WeightEdeges(y, x, z2));
+    }
 
-		}
+    for (int i = 0; i < conexiongene.size(); i++) {
 
-	}
+      int x = barras.indexOf(conexiongene.get(i).getBarra());
+      int y = 0;
 
-	public void dibujarBarra() {
+      double z1 = conexiongene.get(i).getImpedanciaZ1();
+      double z2 = conexiongene.get(i).getImpedanciaZ2();
 
-		for (int i = 0; i < barras.size(); i++) {
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
 
-			if (barras.get(i).getOrientacion().equals("H")) {
+      bordes2.add(new WeightEdeges(x, y, z2));
+      bordes2.add(new WeightEdeges(y, x, z2));
+    }
 
-				posBarra.add(barras.get(i).getXbarra());
+    grafo1 = new WeightedGraph<>(barras, bordes1);
+    grafo2 = new WeightedGraph<>(barras, bordes2);
 
-				Collections.sort(posBarra);
-				Rectangle barra = new Rectangle();
+    //
+    List<List<Edges>> borde1 = grafo1.getConexiones();
+    List<List<Edges>> borde2 = grafo2.getConexiones();
 
-				if (barras.get(i).isBarraCompensacion()) {
+    double[][] yBarraSecuencia1 = obtenerMatrizAdyacencia(borde1);
+    double[][] yBarraSecuencia2 = obtenerMatrizAdyacencia(borde2);
+    //
+    double[][] zBarraSecuencia1 = Zbarra.getZbarra(yBarraSecuencia1);
+    double[][] zBarraSecuencia2 = Zbarra.getZbarra(yBarraSecuencia2);
 
-					barra.setFill(Color.BLUE);
+    if (tipoElementoFallado.charAt(0) == 'B') {
 
-				} else {
-					barra.setFill(Color.BLACK);
-				}
+      FallaLineaALinea fallalinealinea =
+          new FallaLineaALinea(
+              zBarraSecuencia1,
+              zBarraSecuencia2,
+              barras,
+              conexiones,
+              conexiones1,
+              conexiongene,
+              barraFallada,
+              borde1);
 
-				barra.setX(barras.get(i).getXbarra());
-				barra.setY(barras.get(i).getYbarra());
-				barra.setWidth(barras.get(i).getAncho());
+      angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
+      angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
+      angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
 
-				barra.setHeight(barras.get(i).getLargo());
+      magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
+      magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
+      magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
 
-				double xMedio = barras.get(i).getXbarra() + barras.get(i).getAncho() / 2;
-				double yMedio = barras.get(i).getYbarra() + barras.get(i).getLargo() / 2;
+    } else if (tipoElementoFallado.charAt(0) == 'L') {
 
-				barras.get(i).setPuntoMedioBarra(new Point2D(xMedio, yMedio));
-				// barra.setRotate(-90);
+      FallaLineaALineaLinea fallaLineaALineaLinea =
+          new FallaLineaALineaLinea(
+              zBarraSecuencia1,
+              zBarraSecuencia2,
+              barras,
+              conexiones,
+              conexiones1,
+              conexiongene,
+              lineaFallada);
 
-				Circle circulo = new Circle();
-				circulo.setRadius(radioCirculo);
-				circulo.setCenterX(barras.get(i).getXbarra() + barras.get(i).getAncho() / 2);
-				circulo.setCenterY(barras.get(i).getYbarra() + barras.get(i).getLargo() / 2);
-				circulo.setVisible(false);
+      angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
+      angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
+      angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
 
-				Text nbarra = new Text();
+      magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
+      magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
+      magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
+    }
+  }
 
-				if (barras.get(i).getNombrePersonalizado() == null) {
-					String nombre = barras.get(i).getNombreBarra();
+  public void fallaTrifasica() {
 
-					nbarra.setText(nombre);
-					// if(!nombreBarras.contains(nombre))
-					// nombreBarras.put(nombre, barras.get(i));
-					// else {
-					// nombre=nombre+i;
-					// nombreBarras.put(nombre, barras.get(i));
-					//
-					// }
-				} else {
+    List<WeightEdeges> bordes1 = new ArrayList<>();
 
-					String nombre = barras.get(i).getNombrePersonalizado();
-					nbarra.setText(nombre);
-					// if(!nombreBarras.contains(nombre))
-					// nombreBarras.put(nombre, barras.get(i));
-					// else {
-					// nombre=nombre+i;
-					// nombreBarras.put(nombre, barras.get(i));
-					//
-					// }
+    for (int i = 0; i < conexiones.size(); i++) {
 
-				}
+      int x = barras.indexOf(conexiones.get(i).getBarra1());
+      int y = barras.indexOf(conexiones.get(i).getBarra2());
+      double z1 = conexiones.get(i).getimpedanciaLineaZ1();
 
-				nbarra.setStroke(Color.ORANGE);
-				nbarra.setStrokeWidth(1);
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
+    }
 
-				nbarra.setStyle("-fx-font: 12 arial;");
+    for (int i = 0; i < conexiones1.size(); i++) {
 
-				nbarra.setX(barras.get(i).getNombreBarraX());
-				nbarra.setY(barras.get(i).getNombreBarraY());
+      int x = barras.indexOf(conexiones1.get(i).getBarra1());
+      int y = barras.indexOf(conexiones1.get(i).getBarra2());
 
-				Ellipse ellipse = new Ellipse();
+      double z1 = conexiones1.get(i).getimpedanciaLineaZ1();
 
-				ellipse.setCenterX(barras.get(i).getNombreBarraX() + nbarra.getText().length() * 3);
-				ellipse.setCenterY(barras.get(i).getNombreBarraY());
-				ellipse.setRadiusX(nbarra.getText().length() * 6);
-				ellipse.setRadiusY(8);
-				ellipse.setVisible(false);
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
+    }
 
-				barras.get(i).setEllipse(ellipse);
+    for (int i = 0; i < conexiongene.size(); i++) {
 
-				areaDibujo.getChildren().addAll(barra, ellipse, nbarra, circulo);
+      int x = barras.indexOf(conexiongene.get(i).getBarra());
+      int y = 0;
 
-			} else if (barras.get(i).getOrientacion().equals("V")) {
+      double z1 = conexiongene.get(i).getImpedanciaZ1();
 
-				posBarra.add(barras.get(i).getXbarra());
-				Collections.sort(posBarra);
-				if (i == 0) {
-					continue;
-				} else {
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
+    }
 
-					double xMedio = barras.get(i).getXbarra() + barras.get(i).getAncho() / 2;
-					double yMedio = barras.get(i).getYbarra() + barras.get(i).getLargo() / 2;
+    grafo1 = new WeightedGraph<>(barras, bordes1);
 
-					barras.get(i).setPuntoMedioBarra(new Point2D(xMedio, yMedio));
+    List<List<Edges>> borde1 = grafo1.getConexiones();
 
-					Rectangle barra = new Rectangle();
+    double[][] yBarraSecuencia1 = obtenerMatrizAdyacencia(borde1);
 
-					if (barras.get(i).isBarraCompensacion()) {
+    double[][] zBarraSecuencia1 = Zbarra.getZbarra(yBarraSecuencia1);
 
-						barra.setFill(Color.BLUE);
+    if (tipoElementoFallado.charAt(0) == 'B') {
 
-					} else {
-						barra.setFill(Color.BLACK);
-					}
+      FallaTrifasica calculoFalla =
+          new FallaTrifasica(
+              zBarraSecuencia1, tipoElementoFallado, barras, conexiones, conexiones1, conexiongene);
 
-					barra.setX(barras.get(i).getXbarra());
-					barra.setY(barras.get(i).getYbarra());
-					barra.setWidth(barras.get(i).getAncho());
-					barra.setHeight(barras.get(i).getLargo());
+      angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
+      angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
+      angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
 
-					Circle circulo = new Circle();
-					circulo.setRadius(radioCirculo);
-					circulo.setCenterX(barras.get(i).getXbarra() + barras.get(i).getAncho() / 2);
-					circulo.setCenterY(barras.get(i).getYbarra() + barras.get(i).getLargo() / 2);
-					circulo.setVisible(false);
+      magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
+      magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
+      magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
+    } else if (tipoElementoFallado.charAt(0) == 'L') {
 
-					Text nbarra = new Text();
+      FallaTrifasicaLinea fallatrifasicalinea =
+          new FallaTrifasicaLinea(
+              zBarraSecuencia1, lineaFallada, barras, conexiones, conexiones1, conexiongene);
 
-					if (barras.get(i).getNombrePersonalizado() == null) {
+      angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
+      angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
+      angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
 
-						String nombre = barras.get(i).getNombreBarra();
+      magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
+      magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
+      magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
+    }
+  }
 
-						nbarra.setText(nombre);
-						// if(!nombreBarras.contains(nombre))
-						// nombreBarras.put(nombre, barras.get(i));
-						// else {
-						// nombre=nombre+i;
-						// nombreBarras.put(nombre, barras.get(i));
-						//
-						// }
-					} else {
-						String nombre = barras.get(i).getNombrePersonalizado();
-						nbarra.setText(nombre);
-						// if(!nombreBarras.contains(nombre))
-						// nombreBarras.put(nombre, barras.get(i));
-						// else {
-						// nombre=nombre+i;
-						// nombreBarras.put(nombre, barras.get(i));
-						//
-						// }
+  public void fallaMonofasica() {
 
-					}
-					nbarra.setStroke(Color.ORANGE);
-					nbarra.setStrokeWidth(1);
+    List<WeightEdeges> bordes1 = new ArrayList<>();
+    List<WeightEdeges> bordes2 = new ArrayList<>();
+    List<WeightEdeges> bordes0 = new ArrayList<>();
 
-					nbarra.setStyle("-fx-font: 12 arial;");
-					nbarra.setX(barras.get(i).getNombreBarraX());
-					nbarra.setY(barras.get(i).getNombreBarraY());
+    for (int i = 0; i < conexiones.size(); i++) {
 
-					Ellipse ellipse = new Ellipse();
+      int x = barras.indexOf(conexiones.get(i).getBarra1());
+      int y = barras.indexOf(conexiones.get(i).getBarra2());
 
-					ellipse.setCenterX(barras.get(i).getNombreBarraX() + nbarra.getText().length() * 3);
-					ellipse.setCenterY(barras.get(i).getNombreBarraY());
-					ellipse.setRadiusX(nbarra.getText().length() * 6);
-					ellipse.setRadiusY(8);
-					ellipse.setVisible(false);
-					barras.get(i).setEllipse(ellipse);
-					areaDibujo.getChildren().addAll(barra, ellipse, nbarra, circulo);
+      double z1 = conexiones.get(i).getimpedanciaLineaZ1();
+      double z2 = conexiones.get(i).getimpedanciaLineaZ2();
+      double z0 = conexiones.get(i).getimpedanciaLineaZ0();
 
-				}
-			}
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
 
-		}
+      bordes2.add(new WeightEdeges(x, y, z2));
+      bordes2.add(new WeightEdeges(y, x, z2));
 
-	}
+      bordes0.add(new WeightEdeges(x, y, z0));
+      bordes0.add(new WeightEdeges(y, x, z0));
+    }
 
-	public void dibujarFalla() {
+    for (int i = 0; i < conexiones1.size(); i++) {
 
-		if (coorFalla.size() > 0) {
+      int x = barras.indexOf(conexiones1.get(i).getBarra1());
+      int y = barras.indexOf(conexiones1.get(i).getBarra2());
 
-			Text ubicarFalla = new Text("X");
-			ubicarFalla.setFont(Font.font("Courier", FontWeight.BOLD, FontPosture.ITALIC, 25));
+      double z1 = conexiones1.get(i).getimpedanciaLineaZ1();
+      double z2 = conexiones1.get(i).getimpedanciaLineaZ2();
+      double z0 = conexiones1.get(i).getimpedanciaLineaZ0();
 
-			ubicarFalla.setFill(Color.RED);
-			ubicarFalla.setX(coorFalla.get(0));
-			ubicarFalla.setY(coorFalla.get(1));
-			areaDibujo.getChildren().add(ubicarFalla);
-		}
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
 
-	}
+      bordes2.add(new WeightEdeges(x, y, z2));
+      bordes2.add(new WeightEdeges(y, x, z2));
 
-	public void dibujarCarga() {
+      if (conexiones1.get(i).getConexionPrimaria().contains("YN")
+          && conexiones1.get(i).getConexionSecundaria().contains("YN")) {
 
-		for (int i = 0; i < cargas.size(); i++) {
+        z0 +=
+            conexiones1.get(i).getImpedanciaAterrizamientoPrimaria()
+                + conexiones1.get(i).getImpedanciaAterrizamientoSecundaria();
 
-			corCarga.add(cargas.get(i).getBarra().getXbarra());
-			cargas.get(i).setNombreCarga(nombreCarga + (i + 1));
+      } else if (conexiones1.get(i).getConexionPrimaria().contains("Y-")
+          && conexiones1.get(i).getConexionSecundaria().contains("Y-")) {
 
-			areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(cargas.get(i), "C"));
-			areaDibujo.getChildren().add(DibujarCarga.nombreCargaBanco(cargas.get(i), "C"));
+        z0 += 10000000;
 
-		}
+      } else if ((conexiones1.get(i).getConexionPrimaria().contains("Y-")
+              && conexiones1.get(i).getConexionSecundaria().contains("YN"))
+          || (conexiones1.get(i).getConexionPrimaria().contains("YN")
+              && conexiones1.get(i).getConexionSecundaria().contains("Y-"))) {
 
-	}
+        z0 += 10000000;
+      } else if (conexiones1.get(i).getConexionPrimaria().contains("DELTA")
+          && conexiones1.get(i).getConexionSecundaria().contains("DELTA")) {
 
-	public void dibujarBanco() {
+        z0 += 10000000;
 
-		for (int i = 0; i < bancos.size(); i++) {
+      } else if ((conexiones1.get(i).getConexionPrimaria().contains("Y-")
+              && conexiones1.get(i).getConexionSecundaria().contains("DELTA"))
+          || (conexiones1.get(i).getConexionPrimaria().contains("DELTA")
+              && conexiones1.get(i).getConexionSecundaria().contains("Y-"))) {
 
-			corBanco.add(bancos.get(i).getBarra().getXbarra());
-			bancos.get(i).setNombreCarga(nombreBanco + (i + 1));
+        z0 += 10000000;
+      } else if ((conexiones1.get(i).getConexionPrimaria().contains("YN")
+              && conexiones1.get(i).getConexionSecundaria().contains("DELTA"))
+          || (conexiones1.get(i).getConexionPrimaria().contains("DELTA")
+              && conexiones1.get(i).getConexionSecundaria().contains("YN"))) {
 
-			areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(bancos.get(i), "B"));
-			areaDibujo.getChildren().add(DibujarCarga.nombreCargaBanco(bancos.get(i), "E")); // Modificar el metodos
-			// para establecer el
-			// nombre
+        if (conexiones1.get(i).getConexionPrimaria().contains("YN")) {
 
-		}
+          z0 += conexiones1.get(i).getImpedanciaAterrizamientoPrimaria();
 
-	}
+          String xx =
+              Character.toString(
+                  conexiones1
+                      .get(i)
+                      .getConexionPrimaria()
+                      .charAt(conexiones1.get(i).getConexionPrimaria().length() - 1));
 
-	public void dibujarCompensador() {
+          x = Integer.parseInt(xx);
+          y = 0;
 
-		for (int i = 0; i < compensadores.size(); i++) {
+        } else if (conexiones1.get(i).getConexionSecundaria().contains("YN")) {
 
-			corCompensador.add(compensadores.get(i).getBarra().getXbarra());
-			compensadores.get(i).setNombreCompensador(nombreCompensador + (i + 1));
+          String xx =
+              Character.toString(
+                  conexiones1
+                      .get(i)
+                      .getConexionSecundaria()
+                      .charAt(conexiones1.get(i).getConexionSecundaria().length() - 1));
+          z0 += conexiones1.get(i).getImpedanciaAterrizamientoSecundaria();
+          x = Integer.parseInt(xx);
+          y = 0;
+        }
+      }
 
-			areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(compensadores.get(i), "E"));
+      bordes0.add(new WeightEdeges(x, y, z0));
+      bordes0.add(new WeightEdeges(y, x, z0));
+    }
 
-		}
+    for (int i = 0; i < conexiongene.size(); i++) {
 
-	}
+      int x = barras.indexOf(conexiongene.get(i).getBarra());
+      int y = 0;
 
-	public void dibujarGenerador() {
+      double z1 = conexiongene.get(i).getImpedanciaZ1();
+      double z2 = conexiongene.get(i).getImpedanciaZ2();
+      double z0 = conexiongene.get(i).getImpedanciaZ0();
 
-		for (int i = 0; i < conexiongene.size(); i++) {
-			corGenerador.add(conexiongene.get(i).getBarra().getXbarra());
+      bordes1.add(new WeightEdeges(x, y, z1));
+      bordes1.add(new WeightEdeges(y, x, z1));
 
-			conexiongene.get(i).setNombreGenerador(nombreGenerador + (i + 1));
-			if (conexiongene.get(i).getOrientacion().equals(Generadores.RIGHT)) {
+      bordes2.add(new WeightEdeges(x, y, z2));
+      bordes2.add(new WeightEdeges(y, x, z2));
 
-				Line lineg = new Line(conexiongene.get(i).getBarra().getxCoorG(),
-						conexiongene.get(i).getBarra().getyCoorG(), conexiongene.get(i).getBarra().getxCoorG() + 20,
-						conexiongene.get(i).getBarra().getyCoorG());
+      if (conexiongene.get(i).getAterrizamiento().equals(Generadores.conexion1)) {
 
-				lineg.setStrokeWidth(4);
+        z0 += conexiongene.get(i).getImpedanciaAterrizamiento();
 
-				Circle cirg = new Circle();
-				cirg.setRadius(20);
-				cirg.setCenterX(lineg.getEndX() + 20);
-				cirg.setCenterY(lineg.getEndY());
-				cirg.setFill(Color.WHITE);
-				cirg.setStroke(Color.BLACK);
+      } else if (conexiongene.get(i).getAterrizamiento().equals(Generadores.conexion2)) {
 
-				Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-				Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
-				Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
+        z0 += 10000000;
+      }
 
-				nombreg.setFill(Color.BLUE);
-				nombreg.setX(cirg.getCenterX() - 3);
-				nombreg.setY(cirg.getCenterY() - 25);
+      bordes0.add(new WeightEdeges(x, y, z0));
+      bordes0.add(new WeightEdeges(y, x, z0));
+    }
 
-				arc1.setFill(Color.WHITE);
-				arc1.setStroke(Color.BLACK);
-				arc2.setFill(Color.WHITE);
-				arc2.setStroke(Color.BLACK);
+    grafo1 = new WeightedGraph<>(barras, bordes1);
+    grafo2 = new WeightedGraph<>(barras, bordes2);
+    grafo0 = new WeightedGraph<>(barras, bordes0);
+    //
+    List<List<Edges>> borde1 = grafo1.getConexiones();
+    List<List<Edges>> borde2 = grafo2.getConexiones();
+    List<List<Edges>> borde0 = grafo0.getConexiones();
 
-				areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
+    double[][] yBarraSecuencia1 = obtenerMatrizAdyacencia(borde1);
+    double[][] yBarraSecuencia2 = obtenerMatrizAdyacencia(borde2);
+    double[][] yBarraSecuencia0 = obtenerMatrizAdyacencia(borde0);
+    //
+    double[][] zBarraSecuencia1 = Zbarra.getZbarra(yBarraSecuencia1);
+    double[][] zBarraSecuencia2 = Zbarra.getZbarra(yBarraSecuencia2);
+    double[][] zBarraSecuencia0 = Zbarra.getZbarra(yBarraSecuencia0);
 
-			} else if (conexiongene.get(i).getOrientacion().equals(Generadores.LEFT)) {
+    if (monofasica) {
+      if (tipoElementoFallado.charAt(0) == 'B') {
 
-				Line lineg = new Line(conexiongene.get(i).getBarra().getxCoorG(),
-						conexiongene.get(i).getBarra().getyCoorG(), conexiongene.get(i).getBarra().getxCoorG() - 10,
-						conexiongene.get(i).getBarra().getyCoorG());
+        FallaAsimetricas calculoFallaAsimetrica =
+            new FallaAsimetricas(
+                zBarraSecuencia0,
+                zBarraSecuencia1,
+                zBarraSecuencia2,
+                barras,
+                conexiones,
+                conexiones1,
+                barraFallada,
+                conexiongene);
 
-				lineg.setStrokeWidth(4);
+        angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
+        angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
+        angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
 
-				Circle cirg = new Circle();
-				cirg.setRadius(20);
-				cirg.setCenterX(lineg.getEndX() - 20);
-				cirg.setCenterY(lineg.getEndY());
-				cirg.setFill(Color.WHITE);
-				cirg.setStroke(Color.BLACK);
+        magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
+        magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
+        magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
 
-				Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-				Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
+      } else if (tipoElementoFallado.charAt(0) == 'L') {
 
-				Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
-				nombreg.setFill(Color.BLUE);
-				nombreg.setX(cirg.getCenterX() - 3);
-				nombreg.setY(cirg.getCenterY() - 25);
+        FallaAsimetricaLineas calculaFallaAsimetricaLinea =
+            new FallaAsimetricaLineas(
+                zBarraSecuencia0,
+                zBarraSecuencia1,
+                zBarraSecuencia2,
+                barras,
+                conexiones,
+                conexiones1,
+                conexiongene,
+                lineaFallada);
 
-				arc1.setFill(Color.WHITE);
-				arc1.setStroke(Color.BLACK);
-				arc2.setFill(Color.WHITE);
-				arc2.setStroke(Color.BLACK);
+        angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
+        angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
+        angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
 
-				areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
-			}
+        magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
+        magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
+        magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
+      }
+    } else if (bifasicaATierra) {
 
-			else if (conexiongene.get(i).getOrientacion().equals(Generadores.ARRIBA)) {
+      if (tipoElementoFallado.charAt(0) == 'B') {
 
-				Line lineg = new Line(
-						conexiongene.get(i).getBarra().getXbarra() + conexiongene.get(i).getBarra().getAncho() / 2,
-						conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2,
-						conexiongene.get(i).getBarra().getXbarra() + conexiongene.get(i).getBarra().getAncho() / 2,
-						(conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2)
-								- 10);
+        FallaLineaALineaTierra biaTierra =
+            new FallaLineaALineaTierra(
+                zBarraSecuencia0,
+                zBarraSecuencia1,
+                zBarraSecuencia2,
+                barras,
+                conexiones,
+                conexiones1,
+                barraFallada,
+                conexiongene);
 
-				lineg.setStrokeWidth(4);
+        angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
+        angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
+        angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
 
-				Circle cirg = new Circle();
-				cirg.setRadius(20);
-				cirg.setCenterX(lineg.getEndX());
-				cirg.setCenterY(lineg.getEndY() - 20);
+        magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
+        magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
+        magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
 
-				conexiongene.get(i).setXCenter(lineg.getEndX());
-				conexiongene.get(i).setYCenter(lineg.getEndY() - 20);
+      } else if (tipoElementoFallado.charAt(0) == 'L') {
 
-				cirg.setFill(Color.WHITE);
-				cirg.setStroke(Color.BLACK);
+        FallaLineaALineaTierraEnLinea bifasicaATierraEnLinea =
+            new FallaLineaALineaTierraEnLinea(
+                zBarraSecuencia0,
+                zBarraSecuencia1,
+                zBarraSecuencia2,
+                barras,
+                conexiones,
+                conexiones1,
+                conexiongene,
+                lineaFallada);
 
-				Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-				Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
+        angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
+        angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
+        angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
 
-				Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
-				nombreg.setFill(Color.BLUE);
-				nombreg.setX(cirg.getCenterX() - 3);
-				nombreg.setY(cirg.getCenterY() - 25);
+        magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
+        magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
+        magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
+      }
+    }
+  }
 
-				arc1.setFill(Color.WHITE);
-				arc1.setStroke(Color.BLACK);
-				arc2.setFill(Color.WHITE);
-				arc2.setStroke(Color.BLACK);
-				areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
+  public double[][] obtenerMatrizAdyacencia(List<List<Edges>> borde) {
 
-			}
+    double[][] resultado = new double[borde.size() - 1][borde.size() - 1];
 
-			else if (conexiongene.get(i).getOrientacion().equals(Generadores.ABAJO)) {
+    for (int i = 1; i < borde.size(); i++) {
+      for (int j = 0; j < borde.get(i).size(); j++) {
 
-				Line lineg = new Line(
-						conexiongene.get(i).getBarra().getXbarra() + conexiongene.get(i).getBarra().getAncho() / 2,
-						conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2,
-						conexiongene.get(i).getBarra().getXbarra() + conexiongene.get(i).getBarra().getAncho() / 2,
-						(conexiongene.get(i).getBarra().getYbarra() + conexiongene.get(i).getBarra().getLargo() / 2)
-								+ 10);
+        int u = borde.get(i).get(j).getU();
+        int v = borde.get(i).get(j).getV();
+        double peso = ((WeightEdeges) borde.get(i).get(j)).getWeight();
 
-				lineg.setStrokeWidth(4);
-				Circle cirg = new Circle();
+        resultado[u - 1][u - 1] -= 1 / peso;
 
-				cirg.setRadius(20);
-				cirg.setCenterX(lineg.getEndX());
-				cirg.setCenterY(lineg.getEndY() + 20);
+        if (v != 0) {
+          resultado[u - 1][v - 1] = 1 / peso;
+        }
+      }
+    }
 
-				conexiongene.get(i).setXCenter(lineg.getEndX());
-				conexiongene.get(i).setYCenter(lineg.getEndY() + 20);
+    return resultado;
+  }
 
-				cirg.setFill(Color.WHITE);
-				cirg.setStroke(Color.BLACK);
+  public Complejo[][] calculoMatrizAdyacenciaFlujo() throws ExcepcionDivideCero {
 
-				Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-				Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
+    Complejo[][] resultado = new Complejo[barras.size()][barras.size()];
 
-				Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
+    for (int i = 0; i < resultado.length; i++) {
+      for (int j = 0; j < resultado.length; j++) {
 
-				nombreg.setFill(Color.BLUE);
-				nombreg.setX(cirg.getCenterX() - 3);
-				nombreg.setY(cirg.getCenterY() + 30);
+        resultado[i][j] = new Complejo();
+      }
+    }
 
-				arc1.setFill(Color.WHITE);
-				arc1.setStroke(Color.BLACK);
-				arc2.setFill(Color.WHITE);
-				arc2.setStroke(Color.BLACK);
+    for (int i = 0; i < conexiones.size(); i++) {
 
-				areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
+      int x = barras.indexOf(conexiones.get(i).getBarra1());
+      int y = barras.indexOf(conexiones.get(i).getBarra2());
 
-			}
-		}
+      double B =
+          -conexiones.get(i).getimpedanciaLineaZ1()
+              / (conexiones.get(i).getResitencia() * conexiones.get(i).getResitencia()
+                  + conexiones.get(i).getimpedanciaLineaZ1()
+                      * conexiones.get(i).getimpedanciaLineaZ1());
+      double G =
+          conexiones.get(i).getResitencia()
+              / (conexiones.get(i).getResitencia() * conexiones.get(i).getResitencia()
+                  + conexiones.get(i).getimpedanciaLineaZ1()
+                      * conexiones.get(i).getimpedanciaLineaZ1());
+      double Y_medio = conexiones.get(i).getYMediaParalela();
 
-	}
+      Complejo fueraDi = new Complejo(G, B);
 
-	public void dibujarLineas() {
+      resultado[x][y] = Complejo.producto(new Complejo(-1, 0), fueraDi);
 
-		if (isLineOn && currentTool == ToolType.TRANSFORMADOR) {
+      resultado[y][x] = Complejo.producto(new Complejo(-1, 0), fueraDi);
 
-			Line linea = new Line(startB.getXbarra() + startB.getAncho() / 2,
-					startB.getYbarra() + startB.getLargo() / 2, endOfLineX, endOfLineY);
-			linea.setStroke(Color.RED);
-			linea.setStrokeWidth(2);
-			areaDibujo.getChildren().add(linea);
-		}
+      Complejo diagonal = resultado[x][x];
+      double real = diagonal.getReal();
+      double complejo = diagonal.getImag();
+      real += G;
+      complejo += B + Y_medio;
 
-		for (int i = 0; i < conexiones1.size(); i++) {
+      resultado[x][x] = new Complejo(real, complejo);
 
-			Line linea = new Line(conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX(),
-					conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY(),
-					conexiones1.get(i).getBarra2().getPuntoMedioBarra().getX(),
-					conexiones1.get(i).getBarra2().getPuntoMedioBarra().getY());
-			linea.setStrokeWidth(1);
-			double pe = longitudLinea(linea.getStartX(), linea.getStartY(), linea.getEndX(), linea.getEndY());
-			distanciasLineas.add(pe);
+      diagonal = resultado[y][y];
+      real = diagonal.getReal();
+      complejo = diagonal.getImag();
+      real += G;
+      complejo += B + Y_medio;
 
-			conexiones1.get(i).setNombreLinea(nombreTrafo + (i + 1));
-			double puntoMedioX = Math.abs(conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX()
-					+ conexiones1.get(i).getBarra2().getPuntoMedioBarra().getX()) / 2;
+      resultado[y][y] = new Complejo(real, complejo);
+    }
 
-			double puntoMedioY = Math.abs(conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY()
-					+ conexiones1.get(i).getBarra2().getPuntoMedioBarra().getY()) / 2;
+    for (int i = 0; i < conexiones1.size(); i++) {
 
-			conexiones1.get(i).setPuntoMedio(new Point2D(puntoMedioX, puntoMedioY));
-			Circle cc1 = new Circle();
-			Circle cc2 = new Circle();
+      Transformador trafo = conexiones1.get(i);
 
-			cc1.setRadius(15);
-			cc1.setCenterX(puntoMedioX - 5);
-			cc1.setCenterY(puntoMedioY);
-			cc1.setStroke(Color.GREEN);
-			cc1.setFill(Color.WHITE);
-			cc2.setRadius(15);
-			cc2.setCenterX(puntoMedioX + 5);
-			cc2.setCenterY(puntoMedioY);
-			cc2.setStroke(Color.RED);
-			cc2.setFill(Color.WHITE);
+      int x = barras.indexOf(conexiones1.get(i).getBarra1());
+      int y = barras.indexOf(conexiones1.get(i).getBarra2());
 
-			;
+      if (trafo.isHasTap()) {
 
-			linea.setStroke(Color.BLACK);
-			linea.setStrokeWidth(2);
+        Complejo a = Complejo.polar2Cartesiano(trafo.getMagTab(), trafo.getAngtab());
+        Complejo a_conj = Complejo.conjugado(a);
 
-			areaDibujo.getChildren().add(linea);
-			areaDibujo.getChildren().addAll(cc1, cc2);
+        double reactancia = -1 / trafo.getimpedanciaLineaZ1();
 
-			Text textLinea = new Text(conexiones1.get(i).getNombreLinea());
-			textLinea.setStroke(Color.BLACK);
-			textLinea.setStrokeWidth(1);
+        Complejo Y_trafo = new Complejo(0.0, reactancia);
 
-			if (conexiones1.get(i).isHasTap()) {
-				textLinea.setStroke(Color.BLUE);
-			}
+        resultado[y][y] = Complejo.suma(resultado[y][y], Complejo.cociente(Y_trafo, a));
 
-			if (conexiones1.get(i).isHasTap() && conexiones1.get(i).getAngtab() != 0) {
-				textLinea.setStroke(Color.GREEN);
-			}
+        double magnitud_a_squared = 1 / a.getReal() * a.getReal() + a.getImag() * a.getImag();
 
-			textLinea.setX(puntoMedioX);
-			textLinea.setY(puntoMedioY);
+        resultado[x][x] =
+            Complejo.suma(
+                resultado[x][x], Complejo.producto(new Complejo(magnitud_a_squared, 0), Y_trafo));
 
-			areaDibujo.getChildren().addAll(textLinea);
-		}
+        resultado[y][x] = Complejo.producto(new Complejo(-1, 0), Complejo.cociente(Y_trafo, a));
 
-	}
+        resultado[x][y] =
+            Complejo.producto(new Complejo(-1, 0), Complejo.cociente(Y_trafo, a_conj));
 
-	public MyGraph<Barras> getGraph() {
+        continue;
 
-		List<Edges> edges = new ArrayList<>();
+      } else {
 
-		for (int i = 0; i < conexiones.size(); i++) {
+        double B =
+            -conexiones1.get(i).getimpedanciaLineaZ1()
+                / (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
+                    + conexiones1.get(i).getimpedanciaLineaZ1()
+                        * conexiones1.get(i).getimpedanciaLineaZ1());
+        double G =
+            conexiones1.get(i).getResitencia()
+                / (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
+                    + conexiones1.get(i).getimpedanciaLineaZ1()
+                        * conexiones1.get(i).getimpedanciaLineaZ1());
 
-			int x = barras.indexOf(conexiones.get(i).getBarra1());
-			int y = barras.indexOf(conexiones.get(i).getBarra2());
+        Complejo fueraDi = new Complejo(G, B);
 
-			edges.add(new Edges(x, y));
-			edges.add(new Edges(y, x));
-		}
+        resultado[x][y] = Complejo.producto(new Complejo(-1, 0), fueraDi);
 
-		for (int i = 0; i < conexiones1.size(); i++) {
+        resultado[y][x] = Complejo.producto(new Complejo(-1, 0), fueraDi);
 
-			int x = barras.indexOf(conexiones1.get(i).getBarra1());
-			int y = barras.indexOf(conexiones1.get(i).getBarra2());
+        Complejo diagonal = resultado[x][x];
+        double real = diagonal.getReal();
+        double complejo = diagonal.getImag();
+        real += G;
+        complejo += B;
 
-			edges.add(new Edges(x, y));
-			edges.add(new Edges(y, x));
-		}
+        resultado[x][x] = new Complejo(real, complejo);
 
-		MyGraph<Barras> graph = new MyGraph<>(barras, edges);
-		return graph;
-	}
+        diagonal = resultado[y][y];
+        real = diagonal.getReal();
+        complejo = diagonal.getImag();
+        real += G;
+        complejo += B;
 
-	public void crearGrafos() { // Crea las matrices de ayancencia y los diferentes tipos de matrices de
-		// impedancia de sencuencia
+        resultado[y][y] = new Complejo(real, complejo);
+      }
+    }
 
-		if (tipoElementoFallado != null) {
+    for (int i = 0; i < bancos.size(); i++) {
 
-			if (trifasica)
-				fallaTrifasica();
+      int b = barras.indexOf(bancos.get(i).getBarra());
 
-			if (monofasica || bifasicaATierra)
-				fallaMonofasica();
+      resultado[b][b] =
+          Complejo.suma(
+              resultado[b][b],
+              new Complejo(0, bancos.get(i).getPotenciaReactiva() / SPController.BASE_SISTEMA));
+    }
 
-			// if(bifasicaATierra);
-			// fallaBifasicaATierra();
+    return resultado;
+  }
 
-			if (lineaALinea)
-				fallaLineaALinea();
-		} else {
+  class WeightEdeges2 {
 
-			JOptionPane.showMessageDialog(null, "POR FAVOR UBIQUE LA FALLA YA SEA SOBRE UNA BARRA O LÃNEA");
-		}
+    protected Complejo weight;
 
-	}
+    public WeightEdeges2(int u, int v, Complejo weight) {
+      this.weight = weight;
+    }
 
-	public void fallaLineaALinea() {
+    public Complejo getWeight() {
+      return weight;
+    }
+  }
 
-		List<WeightEdeges> bordes1 = new ArrayList<>();
-		List<WeightEdeges> bordes2 = new ArrayList<>();
+  public void imprimirGrafo(List<List<Edges>> bordes, List<Barras> vertices) {
 
-		for (int i = 0; i < conexiones.size(); i++) {
+    for (int i = 0; i < vertices.size(); i++) {
+      System.out.print("Barra " + vertices.get(i).getNombreBarra() + " : ");
+      for (int j = 0; j < bordes.get(i).size(); j++) {
 
-			int x = barras.indexOf(conexiones.get(i).getBarra1());
-			int y = barras.indexOf(conexiones.get(i).getBarra2());
-			double z1 = conexiones.get(i).getimpedanciaLineaZ1();
-			double z2 = conexiones.get(i).getimpedanciaLineaZ2();
+        System.out.print(
+            "(Barra "
+                + bordes.get(i).get(j).getU()
+                + " , "
+                + " Barra "
+                + bordes.get(i).get(j).getV()
+                + " , "
+                + ((WeightEdeges) bordes.get(i).get(j)).getWeight()
+                + " )");
+      }
+      System.out.println();
+    }
+  }
 
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
+  public void imprimir(double[][] resultado) {
 
-			bordes2.add(new WeightEdeges(x, y, z2));
-			bordes2.add(new WeightEdeges(y, x, z2));
+    for (int i = 0; i < resultado.length; i++) {
+      for (int j = 0; j < resultado.length; j++) {
 
-		}
+        System.out.print(resultado[i][j] + " ");
+      }
+      System.out.println();
+    }
+  }
 
-		for (int i = 0; i < conexiones1.size(); i++) {
+  // --- HANDLERS FOR TOOLS ---
 
-			int x = barras.indexOf(conexiones1.get(i).getBarra1());
-			int y = barras.indexOf(conexiones1.get(i).getBarra2());
+  private void handleGeneradorCreation(double x, double y) {
+    Barras b = getContainingVertex(x, y);
+    if (b != null) {
+      if (!corGenerador.contains(b.getXbarra())) {
+        b.setxCoorG(x);
+        b.setyCoorG(y);
 
-			double z1 = conexiones1.get(i).getimpedanciaLineaZ1();
-			double z2 = conexiones1.get(i).getimpedanciaLineaZ2();
+        Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
 
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
+        conexiongene.add(gene);
+        b.setBarraPV(true);
+        b.setBarraPQ(false);
+        b.setGenerador(gene);
+        objetosCreados.add(gene);
 
-			bordes2.add(new WeightEdeges(x, y, z2));
-			bordes2.add(new WeightEdeges(y, x, z2));
+        corGenerador.add(b.getXbarra());
+        repaint();
+      }
+    }
+  }
 
-		}
+  private void handleCargaCreation(double x, double y) {
+    Barras b = getContainingVertex(x, y);
+    if (b != null) {
+      if (!corCarga.contains(b.getXbarra())) {
+        b.setCoordenadasCarga(new Point2D(x, y));
+        Carga carga = new Carga(new Point2D(x, y), b, nombreCarga);
+        cargas.add(carga);
+        objetosCreados.add(carga);
+        if (b.isBarraPV()) {
+          b.setBarraPQ(false);
+        } else {
+          b.setBarraPQ(true);
+        }
+        b.setCarga(carga);
+        corCarga.add(b.getXbarra());
+        repaint();
+      }
+    }
+  }
 
-		for (int i = 0; i < conexiongene.size(); i++) {
+  private void handleBancoCreation(double x, double y) {
+    Barras b = getContainingVertex(x, y);
+    if (b != null) {
+      if (!corBanco.contains(b.getXbarra())) {
+        b.setCoordenadasBanco(new Point2D(x, y));
+        Bancos banco = new Bancos(new Point2D(x, y), b, nombreBanco);
+        bancos.add(banco);
+        objetosCreados.add(banco);
+        b.setBanco(banco);
+        corBanco.add(b.getXbarra());
+        repaint();
+      }
+    }
+  }
 
-			int x = barras.indexOf(conexiongene.get(i).getBarra());
-			int y = 0;
+  private void handleCompensadorCreation(double x, double y) {
+    Barras b = getContainingVertex(x, y);
+    if (b != null) {
+      if (!corCompensador.contains(b.getXbarra())) {
+        b.setCoordenadaCompensador(new Point2D(x, y));
+        CompensadorEstatico cp = new CompensadorEstatico(new Point2D(x, y), b, nombreCompensador);
+        b.setBarraPV(true);
+        b.setBarraPQ(false);
+        compensadores.add(cp);
+        objetosCreados.add(cp);
+        b.setCompensador(cp);
+        corCompensador.add(b.getXbarra());
+        repaint();
+      }
+    }
+  }
 
-			double z1 = conexiongene.get(i).getImpedanciaZ1();
-			double z2 = conexiongene.get(i).getImpedanciaZ2();
+  private void handleLineaCreation(double x, double y) {
+    handleConnectionCreation(x, y, false);
+  }
 
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
+  private void handleTrafoCreation(double x, double y) {
+    handleConnectionCreation(x, y, true);
+  }
 
-			bordes2.add(new WeightEdeges(x, y, z2));
-			bordes2.add(new WeightEdeges(y, x, z2));
+  private void handleConnectionCreation(double x, double y, boolean isTrafo) {
+    Barras b = getContainingVertex(x, y);
 
-		}
+    if (!isLineOn) {
+      if (b != null) {
+        path = new Path();
+        path.getElements().add(new MoveTo(x, y));
+        ultimoPunto = new Point2D(x, y);
+        startB = b;
+        endOfLineX = x;
+        isLineOn = true;
+      }
+    } else {
+      if (b != null) {
+        if (!sonIguales(b, startB)) {
+          int one = barras.indexOf(startB);
+          int other = barras.indexOf(b);
 
-		grafo1 = new WeightedGraph<>(barras, bordes1);
-		grafo2 = new WeightedGraph<>(barras, bordes2);
+          if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one)) {
+            path.getElements().add(new LineTo(x, y));
 
-		//
-		List<List<Edges>> borde1 = grafo1.getConexiones();
-		List<List<Edges>> borde2 = grafo2.getConexiones();
+            if (isTrafo) {
+              Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
+              conexiones1.add(t);
+              objetosCreados.add(t);
+            } else {
+              Lineas l = new Lineas(startB, b, 1, 1, 1, path);
+              conexiones.add(l);
+              objetosCreados.add(l);
+            }
+            listaBarras[one].add(other);
+            listaBarras[other].add(one);
+          }
 
-		double[][] yBarraSecuencia1 = obtenerMatrizAdyacencia(borde1);
-		double[][] yBarraSecuencia2 = obtenerMatrizAdyacencia(borde2);
-		//
-		double[][] zBarraSecuencia1 = Zbarra.getZbarra(yBarraSecuencia1);
-		double[][] zBarraSecuencia2 = Zbarra.getZbarra(yBarraSecuencia2);
-
-		if (tipoElementoFallado.charAt(0) == 'B') {
-
-			FallaLineaALinea fallalinealinea = new FallaLineaALinea(zBarraSecuencia1, zBarraSecuencia2, barras,
-					conexiones, conexiones1, conexiongene, barraFallada, borde1);
-
-			angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
-			angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
-			angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
-
-			magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
-			magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
-			magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
-
-		}
-
-		else if (tipoElementoFallado.charAt(0) == 'L') {
-
-			FallaLineaALineaLinea fallaLineaALineaLinea = new FallaLineaALineaLinea(zBarraSecuencia1, zBarraSecuencia2,
-					barras, conexiones, conexiones1, conexiongene, lineaFallada);
-
-			angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
-			angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
-			angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
-
-			magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
-			magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
-			magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
-		}
-
-	}
-
-	public void fallaTrifasica() {
-
-		List<WeightEdeges> bordes1 = new ArrayList<>();
-
-		for (int i = 0; i < conexiones.size(); i++) {
-
-			int x = barras.indexOf(conexiones.get(i).getBarra1());
-			int y = barras.indexOf(conexiones.get(i).getBarra2());
-			double z1 = conexiones.get(i).getimpedanciaLineaZ1();
-
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
-
-		}
-
-		for (int i = 0; i < conexiones1.size(); i++) {
-
-			int x = barras.indexOf(conexiones1.get(i).getBarra1());
-			int y = barras.indexOf(conexiones1.get(i).getBarra2());
-
-			double z1 = conexiones1.get(i).getimpedanciaLineaZ1();
-
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
-
-		}
-
-		for (int i = 0; i < conexiongene.size(); i++) {
-
-			int x = barras.indexOf(conexiongene.get(i).getBarra());
-			int y = 0;
-
-			double z1 = conexiongene.get(i).getImpedanciaZ1();
-
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
-
-		}
-
-		grafo1 = new WeightedGraph<>(barras, bordes1);
-
-		List<List<Edges>> borde1 = grafo1.getConexiones();
-
-		double[][] yBarraSecuencia1 = obtenerMatrizAdyacencia(borde1);
-
-		double[][] zBarraSecuencia1 = Zbarra.getZbarra(yBarraSecuencia1);
-
-		if (tipoElementoFallado.charAt(0) == 'B') {
-
-			FallaTrifasica calculoFalla = new FallaTrifasica(zBarraSecuencia1, tipoElementoFallado, barras, conexiones,
-					conexiones1, conexiongene);
-
-			angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
-			angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
-			angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
-
-			magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
-			magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
-			magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
-		}
-
-		else if (tipoElementoFallado.charAt(0) == 'L') {
-
-			FallaTrifasicaLinea fallatrifasicalinea = new FallaTrifasicaLinea(zBarraSecuencia1, lineaFallada, barras,
-					conexiones, conexiones1, conexiongene);
-
-			angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
-			angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
-			angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
-
-			magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
-			magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
-			magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
-
-		}
-	}
-
-	public void fallaMonofasica() {
-
-		List<WeightEdeges> bordes1 = new ArrayList<>();
-		List<WeightEdeges> bordes2 = new ArrayList<>();
-		List<WeightEdeges> bordes0 = new ArrayList<>();
-
-		for (int i = 0; i < conexiones.size(); i++) {
-
-			int x = barras.indexOf(conexiones.get(i).getBarra1());
-			int y = barras.indexOf(conexiones.get(i).getBarra2());
-
-			double z1 = conexiones.get(i).getimpedanciaLineaZ1();
-			double z2 = conexiones.get(i).getimpedanciaLineaZ2();
-			double z0 = conexiones.get(i).getimpedanciaLineaZ0();
-
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
-
-			bordes2.add(new WeightEdeges(x, y, z2));
-			bordes2.add(new WeightEdeges(y, x, z2));
-
-			bordes0.add(new WeightEdeges(x, y, z0));
-			bordes0.add(new WeightEdeges(y, x, z0));
-
-		}
-
-		for (int i = 0; i < conexiones1.size(); i++) {
-
-			int x = barras.indexOf(conexiones1.get(i).getBarra1());
-			int y = barras.indexOf(conexiones1.get(i).getBarra2());
-
-			double z1 = conexiones1.get(i).getimpedanciaLineaZ1();
-			double z2 = conexiones1.get(i).getimpedanciaLineaZ2();
-			double z0 = conexiones1.get(i).getimpedanciaLineaZ0();
-
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
-
-			bordes2.add(new WeightEdeges(x, y, z2));
-			bordes2.add(new WeightEdeges(y, x, z2));
-
-			if (conexiones1.get(i).getConexionPrimaria().contains("YN")
-					&& conexiones1.get(i).getConexionSecundaria().contains("YN")) {
-
-				z0 += conexiones1.get(i).getImpedanciaAterrizamientoPrimaria()
-						+ conexiones1.get(i).getImpedanciaAterrizamientoSecundaria();
-
-			} else if (conexiones1.get(i).getConexionPrimaria().contains("Y-")
-					&& conexiones1.get(i).getConexionSecundaria().contains("Y-")) {
-
-				z0 += 10000000;
-
-			}
-
-			else if ((conexiones1.get(i).getConexionPrimaria().contains("Y-")
-					&& conexiones1.get(i).getConexionSecundaria().contains("YN"))
-					|| (conexiones1.get(i).getConexionPrimaria().contains("YN")
-							&& conexiones1.get(i).getConexionSecundaria().contains("Y-"))) {
-
-				z0 += 10000000;
-			}
-
-			else if (conexiones1.get(i).getConexionPrimaria().contains("DELTA")
-					&& conexiones1.get(i).getConexionSecundaria().contains("DELTA")) {
-
-				z0 += 10000000;
-
-			} else if ((conexiones1.get(i).getConexionPrimaria().contains("Y-")
-					&& conexiones1.get(i).getConexionSecundaria().contains("DELTA"))
-					|| (conexiones1.get(i).getConexionPrimaria().contains("DELTA")
-							&& conexiones1.get(i).getConexionSecundaria().contains("Y-"))) {
-
-				z0 += 10000000;
-			}
-
-			else if ((conexiones1.get(i).getConexionPrimaria().contains("YN")
-					&& conexiones1.get(i).getConexionSecundaria().contains("DELTA"))
-					|| (conexiones1.get(i).getConexionPrimaria().contains("DELTA")
-							&& conexiones1.get(i).getConexionSecundaria().contains("YN"))) {
-
-				if (conexiones1.get(i).getConexionPrimaria().contains("YN")) {
-
-					z0 += conexiones1.get(i).getImpedanciaAterrizamientoPrimaria();
-
-					String xx = Character.toString(conexiones1.get(i).getConexionPrimaria()
-							.charAt(conexiones1.get(i).getConexionPrimaria().length() - 1));
-
-					x = Integer.parseInt(xx);
-					y = 0;
-
-				} else if (conexiones1.get(i).getConexionSecundaria().contains("YN")) {
-
-					String xx = Character.toString(conexiones1.get(i).getConexionSecundaria()
-							.charAt(conexiones1.get(i).getConexionSecundaria().length() - 1));
-					z0 += conexiones1.get(i).getImpedanciaAterrizamientoSecundaria();
-					x = Integer.parseInt(xx);
-					y = 0;
-
-				}
-
-			}
-
-			bordes0.add(new WeightEdeges(x, y, z0));
-			bordes0.add(new WeightEdeges(y, x, z0));
-
-		}
-
-		for (int i = 0; i < conexiongene.size(); i++) {
-
-			int x = barras.indexOf(conexiongene.get(i).getBarra());
-			int y = 0;
-
-			double z1 = conexiongene.get(i).getImpedanciaZ1();
-			double z2 = conexiongene.get(i).getImpedanciaZ2();
-			double z0 = conexiongene.get(i).getImpedanciaZ0();
-
-			bordes1.add(new WeightEdeges(x, y, z1));
-			bordes1.add(new WeightEdeges(y, x, z1));
-
-			bordes2.add(new WeightEdeges(x, y, z2));
-			bordes2.add(new WeightEdeges(y, x, z2));
-
-			if (conexiongene.get(i).getAterrizamiento().equals(Generadores.conexion1)) {
-
-				z0 += conexiongene.get(i).getImpedanciaAterrizamiento();
-
-			} else if (conexiongene.get(i).getAterrizamiento().equals(Generadores.conexion2)) {
-
-				z0 += 10000000;
-			}
-
-			bordes0.add(new WeightEdeges(x, y, z0));
-			bordes0.add(new WeightEdeges(y, x, z0));
-
-		}
-
-		grafo1 = new WeightedGraph<>(barras, bordes1);
-		grafo2 = new WeightedGraph<>(barras, bordes2);
-		grafo0 = new WeightedGraph<>(barras, bordes0);
-		//
-		List<List<Edges>> borde1 = grafo1.getConexiones();
-		List<List<Edges>> borde2 = grafo2.getConexiones();
-		List<List<Edges>> borde0 = grafo0.getConexiones();
-
-		double[][] yBarraSecuencia1 = obtenerMatrizAdyacencia(borde1);
-		double[][] yBarraSecuencia2 = obtenerMatrizAdyacencia(borde2);
-		double[][] yBarraSecuencia0 = obtenerMatrizAdyacencia(borde0);
-		//
-		double[][] zBarraSecuencia1 = Zbarra.getZbarra(yBarraSecuencia1);
-		double[][] zBarraSecuencia2 = Zbarra.getZbarra(yBarraSecuencia2);
-		double[][] zBarraSecuencia0 = Zbarra.getZbarra(yBarraSecuencia0);
-
-		if (monofasica) {
-			if (tipoElementoFallado.charAt(0) == 'B') {
-
-				FallaAsimetricas calculoFallaAsimetrica = new FallaAsimetricas(zBarraSecuencia0, zBarraSecuencia1,
-						zBarraSecuencia2, barras, conexiones, conexiones1, barraFallada, conexiongene);
-
-				angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
-				angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
-				angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
-
-				magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
-				magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
-				magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
-
-			}
-
-			else if (tipoElementoFallado.charAt(0) == 'L') {
-
-				FallaAsimetricaLineas calculaFallaAsimetricaLinea = new FallaAsimetricaLineas(zBarraSecuencia0,
-						zBarraSecuencia1, zBarraSecuencia2, barras, conexiones, conexiones1, conexiongene,
-						lineaFallada);
-
-				angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
-				angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
-				angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
-
-				magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
-				magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
-				magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
-
-			}
-		} else if (bifasicaATierra) {
-
-			if (tipoElementoFallado.charAt(0) == 'B') {
-
-				FallaLineaALineaTierra biaTierra = new FallaLineaALineaTierra(zBarraSecuencia0, zBarraSecuencia1,
-						zBarraSecuencia2, barras, conexiones, conexiones1, barraFallada, conexiongene);
-
-				angCorrientePuntoFallaFaseA = barraFallada.getAngCorrientePuntoFallaFaseA();
-				angCorrientePuntoFallaFaseB = barraFallada.getAngCorrientePuntoFallaFaseB();
-				angCorrientePuntoFallaFaseC = barraFallada.getAngCorrientePuntoFallaFaseC();
-
-				magCorrientePuntoFallaFaseA = barraFallada.getMagcorrientePuntoFallaFaseA();
-				magCorrientePuntoFallaFaseB = barraFallada.getMagcorrientePuntoFallaFaseB();
-				magCorrientePuntoFallaFaseC = barraFallada.getMagcorrientePuntoFallaFaseC();
-
-			} else if (tipoElementoFallado.charAt(0) == 'L') {
-
-				FallaLineaALineaTierraEnLinea bifasicaATierraEnLinea = new FallaLineaALineaTierraEnLinea(
-						zBarraSecuencia0, zBarraSecuencia1, zBarraSecuencia2, barras, conexiones, conexiones1,
-						conexiongene, lineaFallada);
-
-				angCorrientePuntoFallaFaseA = lineaFallada.getAngCorrientePuntoFallaFaseA();
-				angCorrientePuntoFallaFaseB = lineaFallada.getAngCorrientePuntoFallaFaseB();
-				angCorrientePuntoFallaFaseC = lineaFallada.getAngCorrientePuntoFallaFaseC();
-
-				magCorrientePuntoFallaFaseA = lineaFallada.getMagcorrientePuntoFallaFaseA();
-				magCorrientePuntoFallaFaseB = lineaFallada.getMagcorrientePuntoFallaFaseB();
-				magCorrientePuntoFallaFaseC = lineaFallada.getMagcorrientePuntoFallaFaseC();
-
-			}
-
-		}
-
-	}
-
-	public double[][] obtenerMatrizAdyacencia(List<List<Edges>> borde) {
-
-		double[][] resultado = new double[borde.size() - 1][borde.size() - 1];
-
-		for (int i = 1; i < borde.size(); i++) {
-			for (int j = 0; j < borde.get(i).size(); j++) {
-
-				int u = borde.get(i).get(j).getU();
-				int v = borde.get(i).get(j).getV();
-				double peso = ((WeightEdeges) borde.get(i).get(j)).getWeight();
-
-				resultado[u - 1][u - 1] -= 1 / peso;
-
-				if (v != 0) {
-					resultado[u - 1][v - 1] = 1 / peso;
-				}
-
-			}
-		}
-
-		return resultado;
-
-	}
-
-	public Complejo[][] calculoMatrizAdyacenciaFlujo() throws ExcepcionDivideCero {
-
-		Complejo[][] resultado = new Complejo[barras.size()][barras.size()];
-
-		for (int i = 0; i < resultado.length; i++) {
-			for (int j = 0; j < resultado.length; j++) {
-
-				resultado[i][j] = new Complejo();
-			}
-		}
-
-		for (int i = 0; i < conexiones.size(); i++) {
-
-			int x = barras.indexOf(conexiones.get(i).getBarra1());
-			int y = barras.indexOf(conexiones.get(i).getBarra2());
-
-			double B = -conexiones.get(i).getimpedanciaLineaZ1()
-					/ (conexiones.get(i).getResitencia() * conexiones.get(i).getResitencia()
-							+ conexiones.get(i).getimpedanciaLineaZ1() * conexiones.get(i).getimpedanciaLineaZ1());
-			double G = conexiones.get(i).getResitencia()
-					/ (conexiones.get(i).getResitencia() * conexiones.get(i).getResitencia()
-							+ conexiones.get(i).getimpedanciaLineaZ1() * conexiones.get(i).getimpedanciaLineaZ1());
-			double Y_medio = conexiones.get(i).getYMediaParalela();
-
-			Complejo fueraDi = new Complejo(G, B);
-
-			resultado[x][y] = Complejo.producto(new Complejo(-1, 0), fueraDi);
-
-			resultado[y][x] = Complejo.producto(new Complejo(-1, 0), fueraDi);
-
-			Complejo diagonal = resultado[x][x];
-			double real = diagonal.getReal();
-			double complejo = diagonal.getImag();
-			real += G;
-			complejo += B + Y_medio;
-
-			resultado[x][x] = new Complejo(real, complejo);
-
-			diagonal = resultado[y][y];
-			real = diagonal.getReal();
-			complejo = diagonal.getImag();
-			real += G;
-			complejo += B + Y_medio;
-
-			resultado[y][y] = new Complejo(real, complejo);
-		}
-
-		for (int i = 0; i < conexiones1.size(); i++) {
-
-			Transformador trafo = conexiones1.get(i);
-
-			int x = barras.indexOf(conexiones1.get(i).getBarra1());
-			int y = barras.indexOf(conexiones1.get(i).getBarra2());
-
-			if (trafo.isHasTap()) {
-
-				Complejo a = Complejo.polar2Cartesiano(trafo.getMagTab(), trafo.getAngtab());
-				Complejo a_conj = Complejo.conjugado(a);
-
-				double reactancia = -1 / trafo.getimpedanciaLineaZ1();
-
-				Complejo Y_trafo = new Complejo(0.0, reactancia);
-
-				resultado[y][y] = Complejo.suma(resultado[y][y], Complejo.cociente(Y_trafo, a));
-
-				double magnitud_a_squared = 1 / a.getReal() * a.getReal() + a.getImag() * a.getImag();
-
-				resultado[x][x] = Complejo.suma(resultado[x][x],
-						Complejo.producto(new Complejo(magnitud_a_squared, 0), Y_trafo));
-
-				resultado[y][x] = Complejo.producto(new Complejo(-1, 0), Complejo.cociente(Y_trafo, a));
-
-				resultado[x][y] = Complejo.producto(new Complejo(-1, 0), Complejo.cociente(Y_trafo, a_conj));
-
-				continue;
-
-			} else {
-
-				double B = -conexiones1.get(i).getimpedanciaLineaZ1()
-						/ (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
-								+ conexiones1.get(i).getimpedanciaLineaZ1()
-										* conexiones1.get(i).getimpedanciaLineaZ1());
-				double G = conexiones1.get(i).getResitencia()
-						/ (conexiones1.get(i).getResitencia() * conexiones1.get(i).getResitencia()
-								+ conexiones1.get(i).getimpedanciaLineaZ1()
-										* conexiones1.get(i).getimpedanciaLineaZ1());
-
-				Complejo fueraDi = new Complejo(G, B);
-
-				resultado[x][y] = Complejo.producto(new Complejo(-1, 0), fueraDi);
-
-				resultado[y][x] = Complejo.producto(new Complejo(-1, 0), fueraDi);
-
-				Complejo diagonal = resultado[x][x];
-				double real = diagonal.getReal();
-				double complejo = diagonal.getImag();
-				real += G;
-				complejo += B;
-
-				resultado[x][x] = new Complejo(real, complejo);
-
-				diagonal = resultado[y][y];
-				real = diagonal.getReal();
-				complejo = diagonal.getImag();
-				real += G;
-				complejo += B;
-
-				resultado[y][y] = new Complejo(real, complejo);
-
-			}
-		}
-
-		for (int i = 0; i < bancos.size(); i++) {
-
-			int b = barras.indexOf(bancos.get(i).getBarra());
-
-			resultado[b][b] = Complejo.suma(resultado[b][b],
-					new Complejo(0, bancos.get(i).getPotenciaReactiva() / SPController.BASE_SISTEMA));
-
-		}
-
-		return resultado;
-
-	}
-
-	class WeightEdeges2 {
-
-		protected Complejo weight;
-
-		public WeightEdeges2(int u, int v, Complejo weight) {
-			this.weight = weight;
-
-		}
-
-		public Complejo getWeight() {
-			return weight;
-		}
-
-	}
-
-	public void imprimirGrafo(List<List<Edges>> bordes, List<Barras> vertices) {
-
-		for (int i = 0; i < vertices.size(); i++) {
-			System.out.print("Barra " + vertices.get(i).getNombreBarra() + " : ");
-			for (int j = 0; j < bordes.get(i).size(); j++) {
-
-				System.out
-						.print("(Barra " + bordes.get(i).get(j).getU() + " , " + " Barra " + bordes.get(i).get(j).getV()
-								+ " , " + ((WeightEdeges) bordes.get(i).get(j)).getWeight() + " )");
-
-			}
-			System.out.println();
-		}
-
-	}
-
-	public void imprimir(double[][] resultado) {
-
-		for (int i = 0; i < resultado.length; i++) {
-			for (int j = 0; j < resultado.length; j++) {
-
-				System.out.print(resultado[i][j] + " ");
-			}
-			System.out.println();
-		}
-
-	}
-
-	// --- HANDLERS FOR TOOLS ---
-
-	private void handleGeneradorCreation(double x, double y) {
-		Barras b = getContainingVertex(x, y);
-		if (b != null) {
-			if (!corGenerador.contains(b.getXbarra())) {
-				b.setxCoorG(x);
-				b.setyCoorG(y);
-
-				Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
-
-				conexiongene.add(gene);
-				b.setBarraPV(true);
-				b.setBarraPQ(false);
-				b.setGenerador(gene);
-				objetosCreados.add(gene);
-
-				corGenerador.add(b.getXbarra());
-				repaint();
-			}
-		}
-	}
-
-	private void handleCargaCreation(double x, double y) {
-		Barras b = getContainingVertex(x, y);
-		if (b != null) {
-			if (!corCarga.contains(b.getXbarra())) {
-				b.setCoordenadasCarga(new Point2D(x, y));
-				Carga carga = new Carga(new Point2D(x, y), b, nombreCarga);
-				cargas.add(carga);
-				objetosCreados.add(carga);
-				if (b.isBarraPV()) {
-					b.setBarraPQ(false);
-				} else {
-					b.setBarraPQ(true);
-				}
-				b.setCarga(carga);
-				corCarga.add(b.getXbarra());
-				repaint();
-			}
-		}
-	}
-
-	private void handleBancoCreation(double x, double y) {
-		Barras b = getContainingVertex(x, y);
-		if (b != null) {
-			if (!corBanco.contains(b.getXbarra())) {
-				b.setCoordenadasBanco(new Point2D(x, y));
-				Bancos banco = new Bancos(new Point2D(x, y), b, nombreBanco);
-				bancos.add(banco);
-				objetosCreados.add(banco);
-				b.setBanco(banco);
-				corBanco.add(b.getXbarra());
-				repaint();
-			}
-		}
-	}
-
-	private void handleCompensadorCreation(double x, double y) {
-		Barras b = getContainingVertex(x, y);
-		if (b != null) {
-			if (!corCompensador.contains(b.getXbarra())) {
-				b.setCoordenadaCompensador(new Point2D(x, y));
-				CompensadorEstatico cp = new CompensadorEstatico(new Point2D(x, y), b, nombreCompensador);
-				b.setBarraPV(true);
-				b.setBarraPQ(false);
-				compensadores.add(cp);
-				objetosCreados.add(cp);
-				b.setCompensador(cp);
-				corCompensador.add(b.getXbarra());
-				repaint();
-			}
-		}
-	}
-
-	private void handleLineaCreation(double x, double y) {
-		handleConnectionCreation(x, y, false);
-	}
-
-	private void handleTrafoCreation(double x, double y) {
-		handleConnectionCreation(x, y, true);
-	}
-
-	private void handleConnectionCreation(double x, double y, boolean isTrafo) {
-		Barras b = getContainingVertex(x, y);
-
-		if (!isLineOn) {
-			if (b != null) {
-				path = new Path();
-				path.getElements().add(new MoveTo(x, y));
-				ultimoPunto = new Point2D(x, y);
-				startB = b;
-				endOfLineX = x;
-				isLineOn = true;
-			}
-		} else {
-			if (b != null) {
-				if (!sonIguales(b, startB)) {
-					int one = barras.indexOf(startB);
-					int other = barras.indexOf(b);
-
-					if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one)) {
-						path.getElements().add(new LineTo(x, y));
-
-						if (isTrafo) {
-							Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
-							conexiones1.add(t);
-							objetosCreados.add(t);
-						} else {
-							Lineas l = new Lineas(startB, b, 1, 1, 1, path);
-							conexiones.add(l);
-							objetosCreados.add(l);
-						}
-						listaBarras[one].add(other);
-						listaBarras[other].add(one);
-					}
-
-					isLineOn = false;
-					repaint();
-					poliactual = null;
-					path = null;
-				}
-			} else {
-				if (!barraMuycerca(x, y)) {
-					if (path != null) {
-						path.getElements().add(new LineTo(x, y));
-						ultimoPunto = new Point2D(x, y);
-						repaint();
-					}
-				}
-			}
-		}
-	}
-
+          isLineOn = false;
+          repaint();
+          poliactual = null;
+          path = null;
+        }
+      } else {
+        if (!barraMuycerca(x, y)) {
+          if (path != null) {
+            path.getElements().add(new LineTo(x, y));
+            ultimoPunto = new Point2D(x, y);
+            repaint();
+          }
+        }
+      }
+    }
+  }
 }

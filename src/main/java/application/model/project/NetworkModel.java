@@ -14,241 +14,246 @@ import proyectoSistemasDePotencia.Transformador;
 
 public class NetworkModel {
 
-    private static NetworkModel instance;
-    private final ObjectProperty<Object> seleccionActual = new SimpleObjectProperty<>();
+  private static NetworkModel instance;
+  private final ObjectProperty<Object> seleccionActual = new SimpleObjectProperty<>();
 
-    // ObservableList es clave: lanza eventos cuando se modifica la lista
-    private final ObservableList<Barras> barras = FXCollections.observableArrayList();
-    private final ObservableList<Lineas> lineas = FXCollections.observableArrayList();
-    private final ObservableList<Transformador> transformadores = FXCollections.observableArrayList();
-    private final ObservableList<Generadores> generadores = FXCollections.observableArrayList();
-    private final ObservableList<Carga> cargas = FXCollections.observableArrayList();
-    private final ObservableList<Bancos> bancos = FXCollections.observableArrayList();
-    private final ObservableList<CompensadorEstatico> compensadores = FXCollections.observableArrayList();
+  // ObservableList es clave: lanza eventos cuando se modifica la lista
+  private final ObservableList<Barras> barras = FXCollections.observableArrayList();
+  private final ObservableList<Lineas> lineas = FXCollections.observableArrayList();
+  private final ObservableList<Transformador> transformadores = FXCollections.observableArrayList();
+  private final ObservableList<Generadores> generadores = FXCollections.observableArrayList();
+  private final ObservableList<Carga> cargas = FXCollections.observableArrayList();
+  private final ObservableList<Bancos> bancos = FXCollections.observableArrayList();
+  private final ObservableList<CompensadorEstatico> compensadores =
+      FXCollections.observableArrayList();
 
-    private NetworkModel() {
-        // Inicialización privada (Singleton)
-        barras.add(new Barras("Tierra"));
+  private NetworkModel() {
+    // Inicialización privada (Singleton)
+    barras.add(new Barras("Tierra"));
 
-        // Listeners para recomputar nombres
-        barras.addListener(
-                (javafx.collections.ListChangeListener.Change<? extends Barras> c) -> recomputeLogicalNames());
-        lineas.addListener(
-                (javafx.collections.ListChangeListener.Change<? extends Lineas> c) -> recomputeLogicalNames());
-        transformadores.addListener(
-                (javafx.collections.ListChangeListener.Change<? extends Transformador> c) -> recomputeLogicalNames());
-        generadores.addListener(
-                (javafx.collections.ListChangeListener.Change<? extends Generadores> c) -> recomputeLogicalNames());
+    // Listeners para recomputar nombres
+    barras.addListener(
+        (javafx.collections.ListChangeListener.Change<? extends Barras> c) ->
+            recomputeLogicalNames());
+    lineas.addListener(
+        (javafx.collections.ListChangeListener.Change<? extends Lineas> c) ->
+            recomputeLogicalNames());
+    transformadores.addListener(
+        (javafx.collections.ListChangeListener.Change<? extends Transformador> c) ->
+            recomputeLogicalNames());
+    generadores.addListener(
+        (javafx.collections.ListChangeListener.Change<? extends Generadores> c) ->
+            recomputeLogicalNames());
+  }
+
+  private void recomputeLogicalNames() {
+    // 1. Barras (Skip index 0 which is "Tierra")
+    for (int i = 1; i < barras.size(); i++) {
+      barras.get(i).setNombreBarra("Bus " + i);
     }
 
-    private void recomputeLogicalNames() {
-        // 1. Barras (Skip index 0 which is "Tierra")
-        for (int i = 1; i < barras.size(); i++) {
-            barras.get(i).setNombreBarra("Bus " + i);
+    // 2. Lineas
+    for (int i = 0; i < lineas.size(); i++) {
+      lineas.get(i).setNombreLinea("Line " + (i + 1));
+    }
+
+    // 3. Transformadores
+    for (int i = 0; i < transformadores.size(); i++) {
+      transformadores.get(i).setNombreLinea("Trafo " + (i + 1));
+    }
+
+    // 4. Generadores
+    for (int i = 0; i < generadores.size(); i++) {
+      generadores.get(i).setNombreGenerador("Gen " + (i + 1));
+    }
+  }
+
+  public static NetworkModel getInstance() {
+    if (instance == null) {
+      instance = new NetworkModel();
+    }
+    return instance;
+  }
+
+  public ObservableList<Barras> getBarras() {
+    return barras;
+  }
+
+  public ObservableList<Lineas> getLineas() {
+    return lineas;
+  }
+
+  public ObservableList<Transformador> getTransformadores() {
+    return transformadores;
+  }
+
+  public ObservableList<Generadores> getGeneradores() {
+    return generadores;
+  }
+
+  public ObservableList<Carga> getCargas() {
+    return cargas;
+  }
+
+  public ObservableList<Bancos> getBancos() {
+    return bancos;
+  }
+
+  public ObservableList<CompensadorEstatico> getCompensadores() {
+    return compensadores;
+  }
+
+  public void addBarra(Barras barra) {
+    if (!barras.contains(barra)) {
+      this.barras.add(barra);
+      System.out.println("Modelo: Barra agregada -> " + barra.getNombreBarra());
+    }
+  }
+
+  public void addLinea(Lineas linea) {
+    if (!lineas.contains(linea)) {
+      this.lineas.add(linea);
+      System.out.println("Modelo: Línea agregada -> " + linea.getNombreLinea());
+    }
+  }
+
+  public void removeBarra(Barras barra) {
+    if (barras.contains(barra)) {
+      // Cascade Delete: Remover objetos dependientes
+
+      // 1. Lineas
+      // Usamos una copia para evitar ConcurrentModificationException
+      java.util.List<Lineas> lineasToRemove = new java.util.ArrayList<>();
+      for (Lineas l : lineas) {
+        if (l.getBarra1() == barra || l.getBarra2() == barra) {
+          lineasToRemove.add(l);
         }
+      }
+      lineas.removeAll(lineasToRemove);
 
-        // 2. Lineas
-        for (int i = 0; i < lineas.size(); i++) {
-            lineas.get(i).setNombreLinea("Line " + (i + 1));
+      // 2. Transformadores
+      java.util.List<Transformador> trafosToRemove = new java.util.ArrayList<>();
+      for (Transformador t : transformadores) {
+        if (t.getBarra1() == barra || t.getBarra2() == barra) {
+          trafosToRemove.add(t);
         }
+      }
+      transformadores.removeAll(trafosToRemove);
 
-        // 3. Transformadores
-        for (int i = 0; i < transformadores.size(); i++) {
-            transformadores.get(i).setNombreLinea("Trafo " + (i + 1));
+      // 3. Generadores
+      java.util.List<Generadores> gensToRemove = new java.util.ArrayList<>();
+      for (Generadores g : generadores) {
+        if (g.getBarra() == barra) {
+          gensToRemove.add(g);
         }
+      }
+      generadores.removeAll(gensToRemove);
 
-        // 4. Generadores
-        for (int i = 0; i < generadores.size(); i++) {
-            generadores.get(i).setNombreGenerador("Gen " + (i + 1));
+      // 4. Cargas
+      java.util.List<Carga> cargasToRemove = new java.util.ArrayList<>();
+      for (Carga c : cargas) {
+        if (c.getBarra() == barra) {
+          cargasToRemove.add(c);
         }
-    }
+      }
+      cargas.removeAll(cargasToRemove);
 
-    public static NetworkModel getInstance() {
-        if (instance == null) {
-            instance = new NetworkModel();
+      // 5. Bancos
+      java.util.List<Bancos> bancosToRemove = new java.util.ArrayList<>();
+      for (Bancos b : bancos) {
+        if (b.getBarra() == barra) {
+          bancosToRemove.add(b);
         }
-        return instance;
-    }
+      }
+      bancos.removeAll(bancosToRemove);
 
-    public ObservableList<Barras> getBarras() {
-        return barras;
-    }
-
-    public ObservableList<Lineas> getLineas() {
-        return lineas;
-    }
-
-    public ObservableList<Transformador> getTransformadores() {
-        return transformadores;
-    }
-
-    public ObservableList<Generadores> getGeneradores() {
-        return generadores;
-    }
-
-    public ObservableList<Carga> getCargas() {
-        return cargas;
-    }
-
-    public ObservableList<Bancos> getBancos() {
-        return bancos;
-    }
-
-    public ObservableList<CompensadorEstatico> getCompensadores() {
-        return compensadores;
-    }
-
-    public void addBarra(Barras barra) {
-        if (!barras.contains(barra)) {
-            this.barras.add(barra);
-            System.out.println("Modelo: Barra agregada -> " + barra.getNombreBarra());
+      // 6. Compensadores
+      java.util.List<CompensadorEstatico> compsToRemove = new java.util.ArrayList<>();
+      for (CompensadorEstatico c : compensadores) {
+        if (c.getBarra() == barra) {
+          compsToRemove.add(c);
         }
+      }
+      compensadores.removeAll(compsToRemove);
+
+      // Finalmente, remover la barra
+      this.barras.remove(barra);
+      System.out.println("Modelo: Barra eliminada -> " + barra.getNombreBarra());
     }
+  }
 
-    public void addLinea(Lineas linea) {
-        if (!lineas.contains(linea)) {
-            this.lineas.add(linea);
-            System.out.println("Modelo: Línea agregada -> " + linea.getNombreLinea());
-        }
+  public void removeLinea(Lineas linea) {
+    if (lineas.contains(linea)) {
+      this.lineas.remove(linea);
+      System.out.println("Modelo: Línea eliminada -> " + linea.getNombreLinea());
     }
+  }
 
-    public void removeBarra(Barras barra) {
-        if (barras.contains(barra)) {
-            // Cascade Delete: Remover objetos dependientes
-
-            // 1. Lineas
-            // Usamos una copia para evitar ConcurrentModificationException
-            java.util.List<Lineas> lineasToRemove = new java.util.ArrayList<>();
-            for (Lineas l : lineas) {
-                if (l.getBarra1() == barra || l.getBarra2() == barra) {
-                    lineasToRemove.add(l);
-                }
-            }
-            lineas.removeAll(lineasToRemove);
-
-            // 2. Transformadores
-            java.util.List<Transformador> trafosToRemove = new java.util.ArrayList<>();
-            for (Transformador t : transformadores) {
-                if (t.getBarra1() == barra || t.getBarra2() == barra) {
-                    trafosToRemove.add(t);
-                }
-            }
-            transformadores.removeAll(trafosToRemove);
-
-            // 3. Generadores
-            java.util.List<Generadores> gensToRemove = new java.util.ArrayList<>();
-            for (Generadores g : generadores) {
-                if (g.getBarra() == barra) {
-                    gensToRemove.add(g);
-                }
-            }
-            generadores.removeAll(gensToRemove);
-
-            // 4. Cargas
-            java.util.List<Carga> cargasToRemove = new java.util.ArrayList<>();
-            for (Carga c : cargas) {
-                if (c.getBarra() == barra) {
-                    cargasToRemove.add(c);
-                }
-            }
-            cargas.removeAll(cargasToRemove);
-
-            // 5. Bancos
-            java.util.List<Bancos> bancosToRemove = new java.util.ArrayList<>();
-            for (Bancos b : bancos) {
-                if (b.getBarra() == barra) {
-                    bancosToRemove.add(b);
-                }
-            }
-            bancos.removeAll(bancosToRemove);
-
-            // 6. Compensadores
-            java.util.List<CompensadorEstatico> compsToRemove = new java.util.ArrayList<>();
-            for (CompensadorEstatico c : compensadores) {
-                if (c.getBarra() == barra) {
-                    compsToRemove.add(c);
-                }
-            }
-            compensadores.removeAll(compsToRemove);
-
-            // Finalmente, remover la barra
-            this.barras.remove(barra);
-            System.out.println("Modelo: Barra eliminada -> " + barra.getNombreBarra());
-        }
+  public void addTransformador(Transformador trafo) {
+    if (!transformadores.contains(trafo)) {
+      this.transformadores.add(trafo);
     }
+  }
 
-    public void removeLinea(Lineas linea) {
-        if (lineas.contains(linea)) {
-            this.lineas.remove(linea);
-            System.out.println("Modelo: Línea eliminada -> " + linea.getNombreLinea());
-        }
-    }
+  public void removeTransformador(Transformador trafo) {
+    this.transformadores.remove(trafo);
+  }
 
-    public void addTransformador(Transformador trafo) {
-        if (!transformadores.contains(trafo)) {
-            this.transformadores.add(trafo);
-        }
+  public void addGenerador(Generadores generador) {
+    if (!generadores.contains(generador)) {
+      this.generadores.add(generador);
     }
+  }
 
-    public void removeTransformador(Transformador trafo) {
-        this.transformadores.remove(trafo);
-    }
+  public void removeGenerador(Generadores generador) {
+    this.generadores.remove(generador);
+  }
 
-    public void addGenerador(Generadores generador) {
-        if (!generadores.contains(generador)) {
-            this.generadores.add(generador);
-        }
+  public void addCarga(Carga carga) {
+    if (!cargas.contains(carga)) {
+      this.cargas.add(carga);
     }
+  }
 
-    public void removeGenerador(Generadores generador) {
-        this.generadores.remove(generador);
-    }
+  public void removeCarga(Carga carga) {
+    this.cargas.remove(carga);
+  }
 
-    public void addCarga(Carga carga) {
-        if (!cargas.contains(carga)) {
-            this.cargas.add(carga);
-        }
+  public void addBanco(Bancos banco) {
+    if (!bancos.contains(banco)) {
+      this.bancos.add(banco);
     }
+  }
 
-    public void removeCarga(Carga carga) {
-        this.cargas.remove(carga);
-    }
+  public void removeBanco(Bancos banco) {
+    this.bancos.remove(banco);
+  }
 
-    public void addBanco(Bancos banco) {
-        if (!bancos.contains(banco)) {
-            this.bancos.add(banco);
-        }
+  public void addCompensador(CompensadorEstatico compensador) {
+    if (!compensadores.contains(compensador)) {
+      this.compensadores.add(compensador);
     }
+  }
 
-    public void removeBanco(Bancos banco) {
-        this.bancos.remove(banco);
-    }
+  public void removeCompensador(CompensadorEstatico compensador) {
+    this.compensadores.remove(compensador);
+  }
 
-    public void addCompensador(CompensadorEstatico compensador) {
-        if (!compensadores.contains(compensador)) {
-            this.compensadores.add(compensador);
-        }
-    }
+  // Método opcional útil: Limpiar todo el proyecto
+  public void clearAll() {
+    this.barras.clear();
+    // Aquí limpiarías también líneas, generadores, etc.
+  }
 
-    public void removeCompensador(CompensadorEstatico compensador) {
-        this.compensadores.remove(compensador);
-    }
+  public ObjectProperty<Object> seleccionActualProperty() {
+    return seleccionActual;
+  }
 
-    // Método opcional útil: Limpiar todo el proyecto
-    public void clearAll() {
-        this.barras.clear();
-        // Aquí limpiarías también líneas, generadores, etc.
-    }
+  public void setSeleccionActual(Object obj) {
+    this.seleccionActual.set(obj);
+  }
 
-    public ObjectProperty<Object> seleccionActualProperty() {
-        return seleccionActual;
-    }
-
-    public void setSeleccionActual(Object obj) {
-        this.seleccionActual.set(obj);
-    }
-
-    public Object getSeleccionActual() {
-        return seleccionActual.get();
-    }
+  public Object getSeleccionActual() {
+    return seleccionActual.get();
+  }
 }

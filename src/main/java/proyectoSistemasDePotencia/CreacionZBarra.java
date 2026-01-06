@@ -5,350 +5,329 @@ import java.util.List;
 
 public class CreacionZBarra {
 
-	private ArrayList<ArrayList<Double>> contruccionZBarra = new ArrayList<>();
-	private List<Barras> barras;
-	private double[][] zBarra;
-	private Lineas elementoFallado;
+  private ArrayList<ArrayList<Double>> contruccionZBarra = new ArrayList<>();
+  private List<Barras> barras;
+  private double[][] zBarra;
+  private Lineas elementoFallado;
 
-	public CreacionZBarra() {
+  public CreacionZBarra() {}
 
-	}
+  public CreacionZBarra(List<Barras> barras, double[][] zBarra, Lineas elementoFallado) {
 
-	public CreacionZBarra(List<Barras> barras, double[][] zBarra, Lineas elementoFallado) {
+    this.barras = barras;
+    this.zBarra = zBarra;
+    this.elementoFallado = elementoFallado;
+  }
 
-		this.barras = barras;
-		this.zBarra = zBarra;
-		this.elementoFallado = elementoFallado;
+  public double[][] inserccionABarraExistente(double[][] zBarra) {
 
-	}
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-	public double[][] inserccionABarraExistente(double[][] zBarra) {
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+    int b1 = barras.indexOf(elementoFallado.getBarra1());
+    int b2 = barras.indexOf(elementoFallado.getBarra2());
 
-				matrizCambiante[i][j] = zBarra[i][j];
+    int barra = Math.min(b1, b2);
 
-			}
-		}
+    double ZkkZb = zBarra[barra - 1][barra - 1] + elementoFallado.getimpedanciaLineaZ1() / 2;
 
-		int b1 = barras.indexOf(elementoFallado.getBarra1());
-		int b2 = barras.indexOf(elementoFallado.getBarra2());
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = ZkkZb;
 
-		int barra = Math.min(b1, b2);
+    for (int i = 0; i < zBarra.length; i++) {
 
-		double ZkkZb = zBarra[barra - 1][barra - 1] + elementoFallado.getimpedanciaLineaZ1() / 2;
+      matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1];
+    }
 
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = ZkkZb;
+    return matrizCambiante;
+  }
 
-		for (int i = 0; i < zBarra.length; i++) {
+  public double[][] inserccionABarraExistente0(double[][] zBarra) {
 
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1];
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-		}
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-		return matrizCambiante;
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-	}
+    int b1 = barras.indexOf(elementoFallado.getBarra1());
+    int b2 = barras.indexOf(elementoFallado.getBarra2());
 
-	public double[][] inserccionABarraExistente0(double[][] zBarra) {
+    int barra = Math.min(b1, b2);
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+    double ZkkZb = zBarra[barra - 1][barra - 1] + elementoFallado.getimpedanciaLineaZ0() / 2;
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = ZkkZb;
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+    for (int i = 0; i < zBarra.length; i++) {
 
-				matrizCambiante[i][j] = zBarra[i][j];
+      matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1];
+    }
 
-			}
-		}
+    return matrizCambiante;
+  }
 
-		int b1 = barras.indexOf(elementoFallado.getBarra1());
-		int b2 = barras.indexOf(elementoFallado.getBarra2());
+  public double[][] inserccionABarraExistente2(double[][] zBarra) {
 
-		int barra = Math.min(b1, b2);
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-		double ZkkZb = zBarra[barra - 1][barra - 1] + elementoFallado.getimpedanciaLineaZ0() / 2;
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = ZkkZb;
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-		for (int i = 0; i < zBarra.length; i++) {
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1];
+    int b1 = barras.indexOf(elementoFallado.getBarra1());
+    int b2 = barras.indexOf(elementoFallado.getBarra2());
 
-		}
+    int barra = Math.min(b1, b2);
 
-		return matrizCambiante;
+    double ZkkZb = zBarra[barra - 1][barra - 1] + elementoFallado.getimpedanciaLineaZ2() / 2;
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = ZkkZb;
 
-	}
+    for (int i = 0; i < zBarra.length; i++) {
 
-	public double[][] inserccionABarraExistente2(double[][] zBarra) {
+      matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1];
+    }
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+    return matrizCambiante;
+  }
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+  public double[][] inserccionEntreBarras(double[][] zBarra) {
 
-				matrizCambiante[i][j] = zBarra[i][j];
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-			}
-		}
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-		int b1 = barras.indexOf(elementoFallado.getBarra1());
-		int b2 = barras.indexOf(elementoFallado.getBarra2());
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-		int barra = Math.min(b1, b2);
+    int b1 = barras.indexOf(elementoFallado.getBarra1());
+    int b2 = barras.indexOf(elementoFallado.getBarra2());
 
-		double ZkkZb = zBarra[barra - 1][barra - 1] + elementoFallado.getimpedanciaLineaZ2() / 2;
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = ZkkZb;
+    int barra = Math.max(b1, b2);
 
-		for (int i = 0; i < zBarra.length; i++) {
+    double zThevenin =
+        zBarra[zBarra.length - 1][zBarra.length - 1]
+            + zBarra[barra - 1][barra - 1]
+            - 2 * zBarra[barra - 1][zBarra.length - 1];
 
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1];
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] =
+        zThevenin + elementoFallado.getimpedanciaLineaZ1() / 2;
 
-		}
+    for (int i = 0; i < zBarra.length; i++) {
 
-		return matrizCambiante;
+      matrizCambiante[i][matrizCambiante.length - 1] =
+          zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] =
+          zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+    }
 
-	}
+    double[][] matrizReducida = reduccionKron(matrizCambiante);
 
-	public double[][] inserccionEntreBarras(double[][] zBarra) {
+    return matrizReducida;
+  }
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+  public double[][] inserccionEntreBarras0(double[][] zBarra) {
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-				matrizCambiante[i][j] = zBarra[i][j];
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-			}
-		}
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-		int b1 = barras.indexOf(elementoFallado.getBarra1());
-		int b2 = barras.indexOf(elementoFallado.getBarra2());
+    int b1 = barras.indexOf(elementoFallado.getBarra1());
+    int b2 = barras.indexOf(elementoFallado.getBarra2());
 
-		int barra = Math.max(b1, b2);
+    int barra = Math.max(b1, b2);
 
-		double zThevenin = zBarra[zBarra.length - 1][zBarra.length - 1] + zBarra[barra - 1][barra - 1]
-				- 2 * zBarra[barra - 1][zBarra.length - 1];
+    double zThevenin =
+        zBarra[zBarra.length - 1][zBarra.length - 1]
+            + zBarra[barra - 1][barra - 1]
+            - 2 * zBarra[barra - 1][zBarra.length - 1];
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] =
+        zThevenin + elementoFallado.getimpedanciaLineaZ0() / 2;
 
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = zThevenin
-				+ elementoFallado.getimpedanciaLineaZ1() / 2;
+    for (int i = 0; i < zBarra.length; i++) {
 
-		for (int i = 0; i < zBarra.length; i++) {
+      matrizCambiante[i][matrizCambiante.length - 1] =
+          zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] =
+          zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+    }
 
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+    double[][] matrizReducida = reduccionKron(matrizCambiante);
 
-		}
+    return matrizReducida;
+  }
 
-		double[][] matrizReducida = reduccionKron(matrizCambiante);
+  public double[][] inserccionEntreBarras2(double[][] zBarra) {
 
-		return matrizReducida;
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-	}
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-	public double[][] inserccionEntreBarras0(double[][] zBarra) {
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+    int b1 = barras.indexOf(elementoFallado.getBarra1());
+    int b2 = barras.indexOf(elementoFallado.getBarra2());
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+    int barra = Math.max(b1, b2);
 
-				matrizCambiante[i][j] = zBarra[i][j];
+    double zThevenin =
+        zBarra[zBarra.length - 1][zBarra.length - 1]
+            + zBarra[barra - 1][barra - 1]
+            - 2 * zBarra[barra - 1][zBarra.length - 1];
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] =
+        zThevenin + elementoFallado.getimpedanciaLineaZ2() / 2;
 
-			}
-		}
+    for (int i = 0; i < zBarra.length; i++) {
 
-		int b1 = barras.indexOf(elementoFallado.getBarra1());
-		int b2 = barras.indexOf(elementoFallado.getBarra2());
+      matrizCambiante[i][matrizCambiante.length - 1] =
+          zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] =
+          zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+    }
 
-		int barra = Math.max(b1, b2);
+    double[][] matrizReducida = reduccionKron(matrizCambiante);
 
-		double zThevenin = zBarra[zBarra.length - 1][zBarra.length - 1] + zBarra[barra - 1][barra - 1]
-				- 2 * zBarra[barra - 1][zBarra.length - 1];
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = zThevenin
-				+ elementoFallado.getimpedanciaLineaZ0() / 2;
+    return matrizReducida;
+  }
 
-		for (int i = 0; i < zBarra.length; i++) {
+  public double[][] inserccionEntreBarras(double[][] zBarra, int barra1, int barra2) {
 
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+    int b1 = Math.min(barra1, barra2);
+    int b2 = Math.max(barra1, barra2);
 
-		}
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-		double[][] matrizReducida = reduccionKron(matrizCambiante);
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-		return matrizReducida;
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-	}
+    double zThevenin = zBarra[b1 - 1][b1 - 1] + zBarra[b2 - 1][b2 - 1] - 2 * zBarra[b1 - 1][b2 - 1];
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] =
+        zThevenin - elementoFallado.getimpedanciaLineaZ1();
 
-	public double[][] inserccionEntreBarras2(double[][] zBarra) {
+    for (int i = 0; i < zBarra.length; i++) {
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+      matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
+    }
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+    double[][] matrizReducida = reduccionKron(matrizCambiante);
 
-				matrizCambiante[i][j] = zBarra[i][j];
+    return matrizReducida;
+  }
 
-			}
-		}
+  public double[][] inserccionEntreBarras0(double[][] zBarra, int barra1, int barra2) {
 
-		int b1 = barras.indexOf(elementoFallado.getBarra1());
-		int b2 = barras.indexOf(elementoFallado.getBarra2());
+    int b1 = Math.min(barra1, barra2);
+    int b2 = Math.max(barra1, barra2);
 
-		int barra = Math.max(b1, b2);
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-		double zThevenin = zBarra[zBarra.length - 1][zBarra.length - 1] + zBarra[barra - 1][barra - 1]
-				- 2 * zBarra[barra - 1][zBarra.length - 1];
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = zThevenin
-				+ elementoFallado.getimpedanciaLineaZ2() / 2;
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-		for (int i = 0; i < zBarra.length; i++) {
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][barra - 1] - zBarra[i][zBarra.length - 1];
+    double zThevenin = zBarra[b1 - 1][b1 - 1] + zBarra[b2 - 1][b2 - 1] - 2 * zBarra[b1 - 1][b2 - 1];
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] =
+        zThevenin - elementoFallado.getimpedanciaLineaZ0();
 
-		}
+    for (int i = 0; i < zBarra.length; i++) {
 
-		double[][] matrizReducida = reduccionKron(matrizCambiante);
+      matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
+    }
 
-		return matrizReducida;
-	}
+    double[][] matrizReducida = reduccionKron(matrizCambiante);
 
-	public double[][] inserccionEntreBarras(double[][] zBarra, int barra1, int barra2) {
+    return matrizReducida;
+  }
 
-		int b1 = Math.min(barra1, barra2);
-		int b2 = Math.max(barra1, barra2);
+  public double[][] inserccionEntreBarras2(double[][] zBarra, int barra1, int barra2) {
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+    int b1 = Math.min(barra1, barra2);
+    int b2 = Math.max(barra1, barra2);
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+    double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
 
-				matrizCambiante[i][j] = zBarra[i][j];
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-			}
-		}
+        matrizCambiante[i][j] = zBarra[i][j];
+      }
+    }
 
-		double zThevenin = zBarra[b1 - 1][b1 - 1] + zBarra[b2 - 1][b2 - 1] - 2 * zBarra[b1 - 1][b2 - 1];
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = zThevenin
-				- elementoFallado.getimpedanciaLineaZ1();
+    double zThevenin = zBarra[b1 - 1][b1 - 1] + zBarra[b2 - 1][b2 - 1] - 2 * zBarra[b1 - 1][b2 - 1];
+    matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] =
+        zThevenin - elementoFallado.getimpedanciaLineaZ2();
 
-		for (int i = 0; i < zBarra.length; i++) {
+    for (int i = 0; i < zBarra.length; i++) {
 
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
+      matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
+      matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
+    }
 
-		}
+    double[][] matrizReducida = reduccionKron(matrizCambiante);
 
-		double[][] matrizReducida = reduccionKron(matrizCambiante);
+    return matrizReducida;
+  }
 
-		return matrizReducida;
+  public double[][] reduccionKron(double[][] zBarra) {
 
-	}
+    double[][] zBarraNueva = new double[zBarra.length - 1][zBarra.length - 1];
 
-	public double[][] inserccionEntreBarras0(double[][] zBarra, int barra1, int barra2) {
+    for (int i = 0; i < zBarraNueva.length; i++) {
 
-		int b1 = Math.min(barra1, barra2);
-		int b2 = Math.max(barra1, barra2);
+      for (int j = 0; j < zBarraNueva.length; j++) {
 
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
+        zBarraNueva[i][j] = zBarra[i][j];
 
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
+        double aa = zBarra[zBarra.length - 1][j];
+        double bb = zBarra[i][zBarra.length - 1];
+        zBarraNueva[i][j] =
+            zBarraNueva[i][j] - (aa * bb / zBarra[zBarra.length - 1][zBarra.length - 1]);
+      }
+    }
 
-				matrizCambiante[i][j] = zBarra[i][j];
+    return zBarraNueva;
+  }
 
-			}
-		}
+  public void print(double[][] zBarra) {
 
-		double zThevenin = zBarra[b1 - 1][b1 - 1] + zBarra[b2 - 1][b2 - 1] - 2 * zBarra[b1 - 1][b2 - 1];
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = zThevenin
-				- elementoFallado.getimpedanciaLineaZ0();
+    for (int i = 0; i < zBarra.length; i++) {
+      for (int j = 0; j < zBarra.length; j++) {
 
-		for (int i = 0; i < zBarra.length; i++) {
-
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
-
-		}
-
-		double[][] matrizReducida = reduccionKron(matrizCambiante);
-
-		return matrizReducida;
-
-	}
-
-	public double[][] inserccionEntreBarras2(double[][] zBarra, int barra1, int barra2) {
-
-		int b1 = Math.min(barra1, barra2);
-		int b2 = Math.max(barra1, barra2);
-
-		double[][] matrizCambiante = new double[zBarra.length + 1][zBarra.length + 1];
-
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
-
-				matrizCambiante[i][j] = zBarra[i][j];
-
-			}
-		}
-
-		double zThevenin = zBarra[b1 - 1][b1 - 1] + zBarra[b2 - 1][b2 - 1] - 2 * zBarra[b1 - 1][b2 - 1];
-		matrizCambiante[matrizCambiante.length - 1][matrizCambiante.length - 1] = zThevenin
-				- elementoFallado.getimpedanciaLineaZ2();
-
-		for (int i = 0; i < zBarra.length; i++) {
-
-			matrizCambiante[i][matrizCambiante.length - 1] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
-			matrizCambiante[matrizCambiante.length - 1][i] = zBarra[i][b1 - 1] - zBarra[i][b2 - 1];
-
-		}
-
-		double[][] matrizReducida = reduccionKron(matrizCambiante);
-
-		return matrizReducida;
-
-	}
-
-	public double[][] reduccionKron(double[][] zBarra) {
-
-		double[][] zBarraNueva = new double[zBarra.length - 1][zBarra.length - 1];
-
-		for (int i = 0; i < zBarraNueva.length; i++) {
-
-			for (int j = 0; j < zBarraNueva.length; j++) {
-
-				zBarraNueva[i][j] = zBarra[i][j];
-
-				double aa = zBarra[zBarra.length - 1][j];
-				double bb = zBarra[i][zBarra.length - 1];
-				zBarraNueva[i][j] = zBarraNueva[i][j] - (aa * bb / zBarra[zBarra.length - 1][zBarra.length - 1]);
-
-			}
-		}
-
-		return zBarraNueva;
-
-	}
-
-	public void print(double[][] zBarra) {
-
-		for (int i = 0; i < zBarra.length; i++) {
-			for (int j = 0; j < zBarra.length; j++) {
-
-				System.out.print(zBarra[i][j] + "  ");
-
-			}
-			System.out.println();
-		}
-
-	}
-
+        System.out.print(zBarra[i][j] + "  ");
+      }
+      System.out.println();
+    }
+  }
 }

@@ -5,275 +5,267 @@ import java.beans.PropertyChangeSupport;
 
 public class Generadores {
 
-	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+  private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		this.pcs.addPropertyChangeListener(listener);
-	}
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.addPropertyChangeListener(listener);
+  }
 
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		this.pcs.removePropertyChangeListener(listener);
-	}
+  public void removePropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.removePropertyChangeListener(listener);
+  }
 
-	private String nombrePersonalizado;
+  private String nombrePersonalizado;
 
-	private String nombreGenerador;
-	private double impedanciaZ0;
-	private double impedanciaZ1;
-	private double impedanciaZ2;
-	private Barras barra;
-	private String aterrizamiento = "Y-ATERRIZADO";
-	private double impedanciaAterrizamiento;
-	public static final String conexion1 = "Y-ATERRIZADO";
-	public static final String conexion2 = "Y";
-	public double corrienteFaseA;
-	public double corrienteFaseB;
-	public double corrienteFaseC;
-	public double anguloCorrienteFaseA;
-	public double anguloCorrienteFaseB;
-	public double anguloCorrienteFaseC;
-	public static final String LEFT = "LEFT";
-	public static final String RIGHT = "RIGHT";
-	public static final String ARRIBA = "ARRIBA";
-	public static final String ABAJO = "ABAJO";
-	private String orientacion = "LEFT";
-	private double XCenter;
-	private double YCenter;
-	private double MWSalida = 0.000;
-	private double MVarSalida = 0.000;
-	private double MWSalidaMin = 0.000;
-	private double MWSalidaMax = 1000.000;
-	private double MVarSalidaMin = -9900.000;
-	private double MVarSalidaMax = 9900.000;
+  private String nombreGenerador;
+  private double impedanciaZ0;
+  private double impedanciaZ1;
+  private double impedanciaZ2;
+  private Barras barra;
+  private String aterrizamiento = "Y-ATERRIZADO";
+  private double impedanciaAterrizamiento;
+  public static final String conexion1 = "Y-ATERRIZADO";
+  public static final String conexion2 = "Y";
+  public double corrienteFaseA;
+  public double corrienteFaseB;
+  public double corrienteFaseC;
+  public double anguloCorrienteFaseA;
+  public double anguloCorrienteFaseB;
+  public double anguloCorrienteFaseC;
+  public static final String LEFT = "LEFT";
+  public static final String RIGHT = "RIGHT";
+  public static final String ARRIBA = "ARRIBA";
+  public static final String ABAJO = "ABAJO";
+  private String orientacion = "LEFT";
+  private double XCenter;
+  private double YCenter;
+  private double MWSalida = 0.000;
+  private double MVarSalida = 0.000;
+  private double MWSalidaMin = 0.000;
+  private double MWSalidaMax = 1000.000;
+  private double MVarSalidaMin = -9900.000;
+  private double MVarSalidaMax = 9900.000;
 
-	public double getMWSalida() {
-		return MWSalida;
-	}
+  public double getMWSalida() {
+    return MWSalida;
+  }
 
-	public void setMWSalida(double mWSalida) {
+  public void setMWSalida(double mWSalida) {
 
-		if (mWSalida < 0) {
-			MWSalida = 0.0000;
-		}
+    if (mWSalida < 0) {
+      MWSalida = 0.0000;
+    } else if (mWSalida > MWSalidaMax) {
+      MWSalida = MWSalidaMax;
+    } else MWSalida = mWSalida;
+  }
 
-		else if (mWSalida > MWSalidaMax) {
-			MWSalida = MWSalidaMax;
-		}
+  public double getMVarSalida() {
+    return MVarSalida;
+  }
 
-		else
-			MWSalida = mWSalida;
+  public void setMVarSalida(double mVarSalida) {
 
-	}
+    if (mVarSalida > MVarSalidaMax) {
+      MVarSalida = MVarSalidaMax;
+    } else if (mVarSalida < MVarSalidaMin) {
+      MVarSalida = MVarSalidaMin;
+    } else MVarSalida = mVarSalida;
+  }
 
-	public double getMVarSalida() {
-		return MVarSalida;
-	}
+  public double getMWSalidaMin() {
+    return MWSalidaMin;
+  }
 
-	public void setMVarSalida(double mVarSalida) {
+  public void setMWSalidaMin(double mWSalidaMin) {
 
-		if (mVarSalida > MVarSalidaMax) {
-			MVarSalida = MVarSalidaMax;
-		} else if (mVarSalida < MVarSalidaMin) {
-			MVarSalida = MVarSalidaMin;
-		} else
-			MVarSalida = mVarSalida;
-	}
+    if (mWSalidaMin < 0) {
+      MWSalidaMin = 0.0000;
+    } else MWSalidaMin = mWSalidaMin;
+  }
 
-	public double getMWSalidaMin() {
-		return MWSalidaMin;
-	}
+  public double getMWSalidaMax() {
+    return MWSalidaMax;
+  }
 
-	public void setMWSalidaMin(double mWSalidaMin) {
+  public void setMWSalidaMax(double mWSalidaMax) {
+    if (mWSalidaMax < 0) {
+      MWSalidaMax = 0.0000;
+    } else MWSalidaMax = mWSalidaMax;
+  }
 
-		if (mWSalidaMin < 0) {
-			MWSalidaMin = 0.0000;
-		} else
-			MWSalidaMin = mWSalidaMin;
-	}
+  public double getMVarSalidaMin() {
+    return MVarSalidaMin;
+  }
 
-	public double getMWSalidaMax() {
-		return MWSalidaMax;
-	}
+  public void setMVarSalidaMin(double mVarSalidaMin) {
+    MVarSalidaMin = mVarSalidaMin;
+  }
 
-	public void setMWSalidaMax(double mWSalidaMax) {
-		if (mWSalidaMax < 0) {
-			MWSalidaMax = 0.0000;
-		} else
-			MWSalidaMax = mWSalidaMax;
-	}
+  public double getMVarSalidaMax() {
+    return MVarSalidaMax;
+  }
 
-	public double getMVarSalidaMin() {
-		return MVarSalidaMin;
-	}
+  public void setMVarSalidaMax(double mVarSalidaMax) {
+    MVarSalidaMax = mVarSalidaMax;
+  }
 
-	public void setMVarSalidaMin(double mVarSalidaMin) {
-		MVarSalidaMin = mVarSalidaMin;
-	}
+  public double getXCenter() {
+    return XCenter;
+  }
 
-	public double getMVarSalidaMax() {
-		return MVarSalidaMax;
-	}
+  public void setXCenter(double xCenter) {
+    XCenter = xCenter;
+  }
 
-	public void setMVarSalidaMax(double mVarSalidaMax) {
-		MVarSalidaMax = mVarSalidaMax;
-	}
+  public double getYCenter() {
+    return YCenter;
+  }
 
-	public double getXCenter() {
-		return XCenter;
-	}
+  public void setYCenter(double yCenter) {
+    YCenter = yCenter;
+  }
 
-	public void setXCenter(double xCenter) {
-		XCenter = xCenter;
-	}
+  public String getOrientacion() {
+    return orientacion;
+  }
 
-	public double getYCenter() {
-		return YCenter;
-	}
+  public void setOrientacion(String orientacion) {
+    this.orientacion = orientacion;
+  }
 
-	public void setYCenter(double yCenter) {
-		YCenter = yCenter;
-	}
+  public Generadores() {}
 
-	public String getOrientacion() {
-		return orientacion;
-	}
+  public Generadores(
+      String nombreGenerador,
+      double impedanciaZ0,
+      double impedanciaZ1,
+      double impedanciaZ2,
+      Barras barra) {
+    super();
+    this.nombreGenerador = nombreGenerador;
+    this.impedanciaZ0 = impedanciaZ0;
+    this.impedanciaZ1 = impedanciaZ1;
+    this.impedanciaZ2 = impedanciaZ2;
+    this.barra = barra;
+  }
 
-	public void setOrientacion(String orientacion) {
-		this.orientacion = orientacion;
-	}
+  public String getNombreGenerador() {
+    return nombrePersonalizado != null ? nombrePersonalizado : nombreGenerador;
+  }
 
-	public Generadores() {
+  public String getNombreLogico() {
+    return nombreGenerador;
+  }
 
-	}
+  public void setNombrePersonalizado(String nombrePersonalizado) {
+    String old = this.nombrePersonalizado;
+    this.nombrePersonalizado = nombrePersonalizado;
+    this.pcs.firePropertyChange("nombrePersonalizado", old, nombrePersonalizado);
+  }
 
-	public Generadores(String nombreGenerador, double impedanciaZ0, double impedanciaZ1, double impedanciaZ2,
-			Barras barra) {
-		super();
-		this.nombreGenerador = nombreGenerador;
-		this.impedanciaZ0 = impedanciaZ0;
-		this.impedanciaZ1 = impedanciaZ1;
-		this.impedanciaZ2 = impedanciaZ2;
-		this.barra = barra;
-	}
+  public String getNombrePersonalizado() {
+    return nombrePersonalizado;
+  }
 
-	public String getNombreGenerador() {
-		return nombrePersonalizado != null ? nombrePersonalizado : nombreGenerador;
-	}
+  public void setAterrizamiento(String aterrizamiento) {
+    this.aterrizamiento = aterrizamiento;
+  }
 
-	public String getNombreLogico() {
-		return nombreGenerador;
-	}
+  public String getAterrizamiento() {
+    return aterrizamiento;
+  }
 
-	public void setNombrePersonalizado(String nombrePersonalizado) {
-		String old = this.nombrePersonalizado;
-		this.nombrePersonalizado = nombrePersonalizado;
-		this.pcs.firePropertyChange("nombrePersonalizado", old, nombrePersonalizado);
-	}
+  public void setNombreGenerador(String nombreGenerador) {
+    String old = this.nombreGenerador;
+    this.nombreGenerador = nombreGenerador;
+    this.pcs.firePropertyChange("nombreGenerador", old, nombreGenerador);
+  }
 
-	public String getNombrePersonalizado() {
-		return nombrePersonalizado;
-	}
+  public void setimpedanciaZ0(double impedanciaZ0) {
+    this.impedanciaZ0 = impedanciaZ0;
+  }
 
-	public void setAterrizamiento(String aterrizamiento) {
-		this.aterrizamiento = aterrizamiento;
-	}
+  public void setimpedanciaZ1(double impedanciaZ1) {
+    this.impedanciaZ1 = impedanciaZ1;
+  }
 
-	public String getAterrizamiento() {
-		return aterrizamiento;
-	}
+  public void setimpedanciaZ2(double impedanciaZ2) {
+    this.impedanciaZ2 = impedanciaZ2;
+  }
 
-	public void setNombreGenerador(String nombreGenerador) {
-		String old = this.nombreGenerador;
-		this.nombreGenerador = nombreGenerador;
-		this.pcs.firePropertyChange("nombreGenerador", old, nombreGenerador);
-	}
+  public double getImpedanciaAterrizamiento() {
+    return impedanciaAterrizamiento;
+  }
 
-	public void setimpedanciaZ0(double impedanciaZ0) {
-		this.impedanciaZ0 = impedanciaZ0;
-	}
+  public void setImpedanciaAterrizamiento(double impedancia) {
+    this.impedanciaAterrizamiento = 3 * impedancia;
+  }
 
-	public void setimpedanciaZ1(double impedanciaZ1) {
-		this.impedanciaZ1 = impedanciaZ1;
-	}
+  public double getImpedanciaZ0() {
+    return impedanciaZ0;
+  }
 
-	public void setimpedanciaZ2(double impedanciaZ2) {
-		this.impedanciaZ2 = impedanciaZ2;
-	}
+  public double getImpedanciaZ1() {
+    return impedanciaZ1;
+  }
 
-	public double getImpedanciaAterrizamiento() {
-		return impedanciaAterrizamiento;
-	}
+  public double getImpedanciaZ2() {
+    return impedanciaZ2;
+  }
 
-	public void setImpedanciaAterrizamiento(double impedancia) {
-		this.impedanciaAterrizamiento = 3 * impedancia;
-	}
+  public Barras getBarra() {
+    return barra;
+  }
 
-	public double getImpedanciaZ0() {
-		return impedanciaZ0;
-	}
+  public void setBarra(Barras barra) {
+    this.barra = barra;
+  }
 
-	public double getImpedanciaZ1() {
-		return impedanciaZ1;
-	}
+  public double getCorrienteFaseA() {
+    return corrienteFaseA;
+  }
 
-	public double getImpedanciaZ2() {
-		return impedanciaZ2;
-	}
+  public void setCorrienteFaseA(double corrienteFaseA) {
+    this.corrienteFaseA = corrienteFaseA;
+  }
 
-	public Barras getBarra() {
-		return barra;
-	}
+  public double getCorrienteFaseB() {
+    return corrienteFaseB;
+  }
 
-	public void setBarra(Barras barra) {
-		this.barra = barra;
-	}
+  public void setCorrienteFaseB(double corrienteFaseB) {
+    this.corrienteFaseB = corrienteFaseB;
+  }
 
-	public double getCorrienteFaseA() {
-		return corrienteFaseA;
-	}
+  public double getCorrienteFaseC() {
+    return corrienteFaseC;
+  }
 
-	public void setCorrienteFaseA(double corrienteFaseA) {
-		this.corrienteFaseA = corrienteFaseA;
-	}
+  public void setCorrienteFaseC(double corrienteFaseC) {
+    this.corrienteFaseC = corrienteFaseC;
+  }
 
-	public double getCorrienteFaseB() {
-		return corrienteFaseB;
-	}
+  public double getAnguloCorrienteFaseA() {
+    return anguloCorrienteFaseA;
+  }
 
-	public void setCorrienteFaseB(double corrienteFaseB) {
-		this.corrienteFaseB = corrienteFaseB;
-	}
+  public void setAnguloCorrienteFaseA(double anguloCorrienteFaseA) {
+    this.anguloCorrienteFaseA = anguloCorrienteFaseA;
+  }
 
-	public double getCorrienteFaseC() {
-		return corrienteFaseC;
-	}
+  public double getAnguloCorrienteFaseB() {
+    return anguloCorrienteFaseB;
+  }
 
-	public void setCorrienteFaseC(double corrienteFaseC) {
-		this.corrienteFaseC = corrienteFaseC;
-	}
+  public void setAnguloCorrienteFaseB(double anguloCorrienteFaseB) {
+    this.anguloCorrienteFaseB = anguloCorrienteFaseB;
+  }
 
-	public double getAnguloCorrienteFaseA() {
-		return anguloCorrienteFaseA;
-	}
+  public double getAnguloCorrienteFaseC() {
+    return anguloCorrienteFaseC;
+  }
 
-	public void setAnguloCorrienteFaseA(double anguloCorrienteFaseA) {
-		this.anguloCorrienteFaseA = anguloCorrienteFaseA;
-	}
-
-	public double getAnguloCorrienteFaseB() {
-		return anguloCorrienteFaseB;
-	}
-
-	public void setAnguloCorrienteFaseB(double anguloCorrienteFaseB) {
-		this.anguloCorrienteFaseB = anguloCorrienteFaseB;
-	}
-
-	public double getAnguloCorrienteFaseC() {
-		return anguloCorrienteFaseC;
-	}
-
-	public void setAnguloCorrienteFaseC(double anguloCorrienteFaseC) {
-		this.anguloCorrienteFaseC = anguloCorrienteFaseC;
-	}
-
+  public void setAnguloCorrienteFaseC(double anguloCorrienteFaseC) {
+    this.anguloCorrienteFaseC = anguloCorrienteFaseC;
+  }
 }

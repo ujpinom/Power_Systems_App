@@ -3,177 +3,189 @@ package proyectoSistemasDePotencia;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.scene.shape.Line;
-
 public class FallaTrifasica {
 
-	private double[][] zBarra;
-	private String elementoFallado;
-	private double corrientePuntoFalla;
-	private int columnaElementoFallado;
-	private List<Barras> barras;
-	private List<Lineas> linea;
-	private List<Transformador> trafo;
-	private ArrayList<Double> vectorVoltajesFalla = new ArrayList<>();
-	private List<Generadores> generador;
+  private double[][] zBarra;
+  private String elementoFallado;
+  private double corrientePuntoFalla;
+  private int columnaElementoFallado;
+  private List<Barras> barras;
+  private List<Lineas> linea;
+  private List<Transformador> trafo;
+  private ArrayList<Double> vectorVoltajesFalla = new ArrayList<>();
+  private List<Generadores> generador;
 
-	public FallaTrifasica(double[][] zBarra, String elementoFallado, List<Barras> barras,
-			List<Lineas> lineas, List<Transformador> trafo, List<Generadores> generador) {
+  public FallaTrifasica(
+      double[][] zBarra,
+      String elementoFallado,
+      List<Barras> barras,
+      List<Lineas> lineas,
+      List<Transformador> trafo,
+      List<Generadores> generador) {
 
-		super();
-		this.zBarra = zBarra;
-		this.elementoFallado = elementoFallado;
-		this.barras = barras;
-		this.linea = lineas;
-		this.trafo = trafo;
-		this.generador = generador;
-		calculoFallas();
+    super();
+    this.zBarra = zBarra;
+    this.elementoFallado = elementoFallado;
+    this.barras = barras;
+    this.linea = lineas;
+    this.trafo = trafo;
+    this.generador = generador;
+    calculoFallas();
+  }
 
-	}
+  private void calculoFallas() {
 
-	private void calculoFallas() {
+    char b = getElementoFallado().charAt(1);
 
-		char b = getElementoFallado().charAt(1);
+    columnaElementoFallado = Integer.parseInt(Character.toString(b));
 
-		columnaElementoFallado = Integer.parseInt(Character.toString(b));
+    setCorrienteFallaElementoFallado();
 
-		setCorrienteFallaElementoFallado();
+    setVectorVoltajesFalla();
 
-		setVectorVoltajesFalla();
+    setCorrientesDeLinea();
+  }
 
-		setCorrientesDeLinea();
+  public void setVectorVoltajesFalla() {
+    char b = getElementoFallado().charAt(1);
 
-	}
+    Barras barraFallada = barras.get(Integer.parseInt(Character.toString(b)));
 
-	public void setVectorVoltajesFalla() {
-		char b = getElementoFallado().charAt(1);
+    for (int i = 0; i < zBarra.length; i++) {
 
-		Barras barraFallada = barras.get(Integer.parseInt(Character.toString(b)));
+      double elemento =
+          barraFallada.getVoltajePrefalla()
+              - (zBarra[i][columnaElementoFallado - 1]
+                      / (zBarra[columnaElementoFallado - 1][columnaElementoFallado - 1]
+                          + barraFallada.getImpedanciaFalla()))
+                  * barraFallada.getVoltajePrefalla();
 
-		for (int i = 0; i < zBarra.length; i++) {
+      vectorVoltajesFalla.add(elemento);
 
-			double elemento = barraFallada.getVoltajePrefalla() - (zBarra[i][columnaElementoFallado - 1] /
-					(zBarra[columnaElementoFallado - 1][columnaElementoFallado - 1]
-							+ barraFallada.getImpedanciaFalla()))
-					* barraFallada.getVoltajePrefalla();
+      barras.get(i + 1).setVoltajePosFallaFaseA(vectorVoltajesFalla.get(i));
+      barras.get(i + 1).setVoltajePosFallaFaseB(vectorVoltajesFalla.get(i));
+      barras.get(i + 1).setVoltajePosFallaFaseC(vectorVoltajesFalla.get(i));
 
-			vectorVoltajesFalla.add(elemento);
+      barras.get(i + 1).setAnguloVoltajeFaseA(0);
+      barras.get(i + 1).setAnguloVoltajeFaseB(-120);
+      barras.get(i + 1).setAnguloVoltajeFaseC(120);
+    }
+  }
 
-			barras.get(i + 1).setVoltajePosFallaFaseA(vectorVoltajesFalla.get(i));
-			barras.get(i + 1).setVoltajePosFallaFaseB(vectorVoltajesFalla.get(i));
-			barras.get(i + 1).setVoltajePosFallaFaseC(vectorVoltajesFalla.get(i));
+  public void setCorrientesDeLinea() {
 
-			barras.get(i + 1).setAnguloVoltajeFaseA(0);
-			barras.get(i + 1).setAnguloVoltajeFaseB(-120);
-			barras.get(i + 1).setAnguloVoltajeFaseC(120);
+    double anguloImpedancia = -90;
 
-		}
+    for (int i = 0; i < linea.size(); i++) {
 
-	}
+      double vFaseABarra1 = linea.get(i).getBarra1().getVoltajePosFallaFaseA();
+      double vFaseABarra2 = linea.get(i).getBarra2().getVoltajePosFallaFaseA();
 
-	public void setCorrientesDeLinea() {
+      double aFaseABarra1 = linea.get(i).getBarra1().getAnguloVoltajeFaseA();
+      double aFaseBBarra1 = linea.get(i).getBarra1().getAnguloVoltajeFaseB();
+      double aFaseCBarra1 = linea.get(i).getBarra1().getAnguloVoltajeFaseC();
 
-		double anguloImpedancia = -90;
+      linea.get(i).setAnguloCorrienteFaseA(aFaseABarra1 + anguloImpedancia);
+      linea.get(i).setAnguloCorrienteFaseB(aFaseBBarra1 + anguloImpedancia);
+      linea.get(i).setAnguloCorrienteFaseC(aFaseCBarra1 + anguloImpedancia);
 
-		for (int i = 0; i < linea.size(); i++) {
+      double corrienteFalla =
+          Math.abs(vFaseABarra1 - vFaseABarra2) / linea.get(i).getimpedanciaLineaZ1();
 
-			double vFaseABarra1 = linea.get(i).getBarra1().getVoltajePosFallaFaseA();
-			double vFaseABarra2 = linea.get(i).getBarra2().getVoltajePosFallaFaseA();
+      linea.get(i).setCorrienteFallaFaseA(corrienteFalla);
+      linea.get(i).setCorrienteFallaFaseB(corrienteFalla);
+      linea.get(i).setCorrienteFallaFaseC(corrienteFalla);
+    }
 
-			double aFaseABarra1 = linea.get(i).getBarra1().getAnguloVoltajeFaseA();
-			double aFaseBBarra1 = linea.get(i).getBarra1().getAnguloVoltajeFaseB();
-			double aFaseCBarra1 = linea.get(i).getBarra1().getAnguloVoltajeFaseC();
+    for (int i = 0; i < trafo.size(); i++) {
 
-			linea.get(i).setAnguloCorrienteFaseA(aFaseABarra1 + anguloImpedancia);
-			linea.get(i).setAnguloCorrienteFaseB(aFaseBBarra1 + anguloImpedancia);
-			linea.get(i).setAnguloCorrienteFaseC(aFaseCBarra1 + anguloImpedancia);
+      double vFaseABarra1 = trafo.get(i).getBarra1().getVoltajePosFallaFaseA();
+      double vFaseABarra2 = trafo.get(i).getBarra2().getVoltajePosFallaFaseA();
 
-			double corrienteFalla = Math.abs(vFaseABarra1 - vFaseABarra2) / linea.get(i).getimpedanciaLineaZ1();
+      double aFaseABarra1 = trafo.get(i).getBarra1().getAnguloVoltajeFaseA();
+      double aFaseBBarra1 = trafo.get(i).getBarra1().getAnguloVoltajeFaseB();
+      double aFaseCBarra1 = trafo.get(i).getBarra1().getAnguloVoltajeFaseC();
 
-			linea.get(i).setCorrienteFallaFaseA(corrienteFalla);
-			linea.get(i).setCorrienteFallaFaseB(corrienteFalla);
-			linea.get(i).setCorrienteFallaFaseC(corrienteFalla);
+      trafo.get(i).setAnguloCorrienteFaseA(aFaseABarra1 + anguloImpedancia);
+      trafo.get(i).setAnguloCorrienteFaseB(aFaseBBarra1 + anguloImpedancia);
+      trafo.get(i).setAnguloCorrienteFaseC(aFaseCBarra1 + anguloImpedancia);
 
-		}
+      double corrienteFalla =
+          Math.abs(vFaseABarra1 - vFaseABarra2) / trafo.get(i).getimpedanciaLineaZ1();
 
-		for (int i = 0; i < trafo.size(); i++) {
+      trafo.get(i).setCorrienteFallaFaseA(corrienteFalla);
+      trafo.get(i).setCorrienteFallaFaseB(corrienteFalla);
+      trafo.get(i).setCorrienteFallaFaseC(corrienteFalla);
+    }
 
-			double vFaseABarra1 = trafo.get(i).getBarra1().getVoltajePosFallaFaseA();
-			double vFaseABarra2 = trafo.get(i).getBarra2().getVoltajePosFallaFaseA();
+    for (int i = 0; i < generador.size(); i++) {
 
-			double aFaseABarra1 = trafo.get(i).getBarra1().getAnguloVoltajeFaseA();
-			double aFaseBBarra1 = trafo.get(i).getBarra1().getAnguloVoltajeFaseB();
-			double aFaseCBarra1 = trafo.get(i).getBarra1().getAnguloVoltajeFaseC();
+      generador
+          .get(i)
+          .setCorrienteFaseA(
+              (generador.get(i).getBarra().getVoltajePrefalla()
+                      - generador.get(i).getBarra().getVoltajePosFallaFaseA())
+                  / (generador.get(i).getImpedanciaZ1()));
 
-			trafo.get(i).setAnguloCorrienteFaseA(aFaseABarra1 + anguloImpedancia);
-			trafo.get(i).setAnguloCorrienteFaseB(aFaseBBarra1 + anguloImpedancia);
-			trafo.get(i).setAnguloCorrienteFaseC(aFaseCBarra1 + anguloImpedancia);
+      generador
+          .get(i)
+          .setCorrienteFaseB(
+              (generador.get(i).getBarra().getVoltajePrefalla()
+                      - generador.get(i).getBarra().getVoltajePosFallaFaseB())
+                  / (generador.get(i).getImpedanciaZ1()));
 
-			double corrienteFalla = Math.abs(vFaseABarra1 - vFaseABarra2) / trafo.get(i).getimpedanciaLineaZ1();
+      generador
+          .get(i)
+          .setCorrienteFaseC(
+              (generador.get(i).getBarra().getVoltajePrefalla()
+                      - generador.get(i).getBarra().getVoltajePosFallaFaseC())
+                  / (generador.get(i).getImpedanciaZ1()));
 
-			trafo.get(i).setCorrienteFallaFaseA(corrienteFalla);
-			trafo.get(i).setCorrienteFallaFaseB(corrienteFalla);
-			trafo.get(i).setCorrienteFallaFaseC(corrienteFalla);
+      generador.get(i).setAnguloCorrienteFaseA(-90);
+      generador.get(i).setAnguloCorrienteFaseB(-210);
+      generador.get(i).setAnguloCorrienteFaseC(30);
+    }
+  }
 
-		}
+  public void setCorrienteFallaElementoFallado() {
 
-		for (int i = 0; i < generador.size(); i++) {
+    char b = getElementoFallado().charAt(1);
 
-			generador.get(i).setCorrienteFaseA((generador.get(i).getBarra().getVoltajePrefalla() -
-					generador.get(i).getBarra().getVoltajePosFallaFaseA()) / (generador.get(i).getImpedanciaZ1()));
+    Barras barraFallada = barras.get(Integer.parseInt(Character.toString(b)));
 
-			generador.get(i).setCorrienteFaseB((generador.get(i).getBarra().getVoltajePrefalla() -
-					generador.get(i).getBarra().getVoltajePosFallaFaseB()) / (generador.get(i).getImpedanciaZ1()));
+    corrientePuntoFalla =
+        (-1)
+            * barraFallada.getVoltajePrefalla()
+            / (zBarra[columnaElementoFallado - 1][columnaElementoFallado - 1]
+                + barraFallada.getImpedanciaFalla());
 
-			generador.get(i).setCorrienteFaseC((generador.get(i).getBarra().getVoltajePrefalla() -
-					generador.get(i).getBarra().getVoltajePosFallaFaseC()) / (generador.get(i).getImpedanciaZ1()));
+    barraFallada.setAngCorrientePuntoFallaFaseA(-90);
+    barraFallada.setAngCorrientePuntoFallaFaseB(-210);
+    barraFallada.setAngCorrientePuntoFallaFaseC(30);
 
-			generador.get(i).setAnguloCorrienteFaseA(-90);
-			generador.get(i).setAnguloCorrienteFaseB(-210);
-			generador.get(i).setAnguloCorrienteFaseC(30);
+    barraFallada.setMagcorrientePuntoFallaFaseA((-1) * corrientePuntoFalla);
+    barraFallada.setMagcorrientePuntoFallaFaseB((-1) * corrientePuntoFalla);
+    barraFallada.setMagcorrientePuntoFallaFaseC((-1) * corrientePuntoFalla);
+  }
 
-		}
+  public double getCorrientePuntoFallado() {
 
-	}
+    return corrientePuntoFalla;
+  }
 
-	public void setCorrienteFallaElementoFallado() {
+  public double[][] getzBarra() {
+    return zBarra;
+  }
 
-		char b = getElementoFallado().charAt(1);
+  public void setzBarra(double[][] zBarra) {
+    this.zBarra = zBarra;
+  }
 
-		Barras barraFallada = barras.get(Integer.parseInt(Character.toString(b)));
+  public String getElementoFallado() {
+    return elementoFallado;
+  }
 
-		corrientePuntoFalla = (-1) * barraFallada.getVoltajePrefalla()
-				/ (zBarra[columnaElementoFallado - 1][columnaElementoFallado - 1] + barraFallada.getImpedanciaFalla());
-
-		barraFallada.setAngCorrientePuntoFallaFaseA(-90);
-		barraFallada.setAngCorrientePuntoFallaFaseB(-210);
-		barraFallada.setAngCorrientePuntoFallaFaseC(30);
-
-		barraFallada.setMagcorrientePuntoFallaFaseA((-1) * corrientePuntoFalla);
-		barraFallada.setMagcorrientePuntoFallaFaseB((-1) * corrientePuntoFalla);
-		barraFallada.setMagcorrientePuntoFallaFaseC((-1) * corrientePuntoFalla);
-
-	}
-
-	public double getCorrientePuntoFallado() {
-
-		return corrientePuntoFalla;
-	}
-
-	public double[][] getzBarra() {
-		return zBarra;
-	}
-
-	public void setzBarra(double[][] zBarra) {
-		this.zBarra = zBarra;
-	}
-
-	public String getElementoFallado() {
-		return elementoFallado;
-	}
-
-	public void setElementoFallado(String elementoFallado) {
-		this.elementoFallado = elementoFallado;
-	}
-
+  public void setElementoFallado(String elementoFallado) {
+    this.elementoFallado = elementoFallado;
+  }
 }

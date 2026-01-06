@@ -11,105 +11,111 @@ import proyectoSistemasDePotencia.Barras;
 
 public class BusShape extends NetworkShape<Barras> {
 
-    private final Rectangle cuerpoBarra;
-    private final Paint colorBase;
-    private boolean isSelected = false;
+  private final Rectangle cuerpoBarra;
+  private final Paint colorBase;
+  private boolean isSelected = false;
 
-    public BusShape(Barras barra) {
-        super(barra); // Pasa el modelo al padre
-        enableDrag();
+  public BusShape(Barras barra) {
+    super(barra); // Pasa el modelo al padre
+    enableDrag();
 
-        // Determinar el color base según el tipo de barra
-        if (barra.isBarraCompensacion()) {
-            this.colorBase = Color.BLUE;
-        } else {
-            this.colorBase = Color.BLACK;
-        }
+    // Determinar el color base según el tipo de barra
+    if (barra.isBarraCompensacion()) {
+      this.colorBase = Color.BLUE;
+    } else {
+      this.colorBase = Color.BLACK;
+    }
 
-        // Cuerpo de la barra (6x60)
-        this.cuerpoBarra = new Rectangle(0, 0, 6, 60);
-        this.cuerpoBarra.setFill(colorBase);
-        this.cuerpoBarra.setStroke(Color.TRANSPARENT);
+    // Cuerpo de la barra (6x60)
+    this.cuerpoBarra = new Rectangle(0, 0, 6, 60);
+    this.cuerpoBarra.setFill(colorBase);
+    this.cuerpoBarra.setStroke(Color.TRANSPARENT);
 
-        // Añadir forma principal
-        this.getChildren().add(cuerpoBarra);
+    // Añadir forma principal
+    this.getChildren().add(cuerpoBarra);
 
-        // Crear etiqueta usando el método del padre
-        // Posición: X=10, Y=-15
-        createLabel(barra.getNombreBarra(), 10, -15);
+    // Crear etiqueta usando el método del padre
+    // Posición: X=10, Y=-15
+    createLabel(barra.getNombreBarra(), 10, -15);
 
-        // Posicionar el Grupo en el Canvas
-        this.setLayoutX(barra.getXbarra());
-        this.setLayoutY(barra.getYbarra());
+    // Posicionar el Grupo en el Canvas
+    this.setLayoutX(barra.getXbarra());
+    this.setLayoutY(barra.getYbarra());
 
-        this.setUserData(barra);
+    this.setUserData(barra);
 
-        // --- Suscripción a cambios del Modelo (Observer Pattern) ---
-        model.addPropertyChangeListener(evt -> {
-            String prop = evt.getPropertyName();
-            if ("nombrePersonalizado".equals(prop) || "nombreBarra".equals(prop)) {
-                javafx.application.Platform.runLater(() -> updateLabelText(model.getNombreBarra()));
-            }
+    // --- Suscripción a cambios del Modelo (Observer Pattern) ---
+    model.addPropertyChangeListener(
+        evt -> {
+          String prop = evt.getPropertyName();
+          if ("nombrePersonalizado".equals(prop) || "nombreBarra".equals(prop)) {
+            javafx.application.Platform.runLater(() -> updateLabelText(model.getNombreBarra()));
+          }
         });
-    }
+  }
 
-    @Override
-    protected void fillContextMenu(javafx.scene.control.ContextMenu menu) {
-        MenuItem itemRotar = new MenuItem("Rotar 90°");
-        itemRotar.setOnAction(e -> this.setRotate(this.getRotate() + 90));
+  @Override
+  protected void fillContextMenu(javafx.scene.control.ContextMenu menu) {
+    MenuItem itemRotar = new MenuItem("Rotar 90°");
+    itemRotar.setOnAction(e -> this.setRotate(this.getRotate() + 90));
 
-        MenuItem itemRenombrar = new MenuItem("Cambiar Nombre");
-        itemRenombrar.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog(model.getNombreBarra());
-            dialog.setTitle("Renombrar Barra");
-            dialog.setHeaderText("Ingrese el nuevo ID:");
-            dialog.showAndWait().ifPresent(nuevoNombre -> {
-                model.setNombrePersonalizado(nuevoNombre);
-                updateLabelText(nuevoNombre);
-            });
+    MenuItem itemRenombrar = new MenuItem("Cambiar Nombre");
+    itemRenombrar.setOnAction(
+        e -> {
+          TextInputDialog dialog = new TextInputDialog(model.getNombreBarra());
+          dialog.setTitle("Renombrar Barra");
+          dialog.setHeaderText("Ingrese el nuevo ID:");
+          dialog
+              .showAndWait()
+              .ifPresent(
+                  nuevoNombre -> {
+                    model.setNombrePersonalizado(nuevoNombre);
+                    updateLabelText(nuevoNombre);
+                  });
         });
 
-        MenuItem itemEliminar = new MenuItem("Eliminar");
-        itemEliminar.setOnAction(e -> {
-            NetworkModel.getInstance().removeBarra(model);
+    MenuItem itemEliminar = new MenuItem("Eliminar");
+    itemEliminar.setOnAction(
+        e -> {
+          NetworkModel.getInstance().removeBarra(model);
         });
 
-        menu.getItems().addAll(itemRenombrar, itemRotar, itemEliminar);
-    }
+    menu.getItems().addAll(itemRenombrar, itemRotar, itemEliminar);
+  }
 
-    @Override
-    public void setSeleccionado(boolean seleccionado) {
-        this.isSelected = seleccionado;
-        if (seleccionado) {
-            applySelectionEffect();
-        } else {
-            // Restaurar estado normal
-            this.cuerpoBarra.setFill(colorBase);
-            this.setEffect(null);
-        }
+  @Override
+  public void setSeleccionado(boolean seleccionado) {
+    this.isSelected = seleccionado;
+    if (seleccionado) {
+      applySelectionEffect();
+    } else {
+      // Restaurar estado normal
+      this.cuerpoBarra.setFill(colorBase);
+      this.setEffect(null);
     }
+  }
 
-    @Override
-    protected boolean isSelected() {
-        return isSelected;
-    }
+  @Override
+  protected boolean isSelected() {
+    return isSelected;
+  }
 
-    @Override
-    protected void applySelectionEffect() {
-        this.cuerpoBarra.setFill(Color.RED);
-        // Sombra cyan brillante para indicar selección
-        this.setEffect(new DropShadow(15, Color.CYAN));
-    }
+  @Override
+  protected void applySelectionEffect() {
+    this.cuerpoBarra.setFill(Color.RED);
+    // Sombra cyan brillante para indicar selección
+    this.setEffect(new DropShadow(15, Color.CYAN));
+  }
 
-    @Override
-    protected void updateModelCoordinates(double x, double y) {
-        model.setXbarra(x);
-        model.setYbarra(y);
+  @Override
+  protected void updateModelCoordinates(double x, double y) {
+    model.setXbarra(x);
+    model.setYbarra(y);
 
-        // Actualizar coordenadas gráficas secundarias si es necesario
-        // (Por ejemplo, puntos de conexión para líneas)
-        model.setPuntoMedioBarra(new javafx.geometry.Point2D(x + 3, y + 30));
-        model.setxCoorG(x + 3);
-        model.setyCoorG(y + 30);
-    }
+    // Actualizar coordenadas gráficas secundarias si es necesario
+    // (Por ejemplo, puntos de conexión para líneas)
+    model.setPuntoMedioBarra(new javafx.geometry.Point2D(x + 3, y + 30));
+    model.setxCoorG(x + 3);
+    model.setyCoorG(y + 30);
+  }
 }

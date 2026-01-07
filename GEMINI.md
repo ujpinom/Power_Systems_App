@@ -95,10 +95,29 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 
 ---
 
-## 7. Próximos Pasos Sugeridos
+## 7. Fase 4: Despacho de Eventos y Gestión de Estado (Undo/Clear)
+
+### A. Despacho Universal de Eventos (`NetworkChangeListener`)
+- [x] **Arquitectura Observer Decoupled:** Creación de la interfaz `NetworkChangeListener` para desacoplar el Modelo de la Vista.
+- [x] **Dispatcher Centralizado:** `NetworkModel` actúa como el único emisor de eventos de red. Cualquier adición o eliminación de componentes (Barras, Líneas, etc.) notifica automáticamente a todos los observadores registrados.
+- [x] **Sincronización Automática de Canvas:** `DiagramManager` ahora implementa `NetworkChangeListener`, eliminando la necesidad de listeners manuales por cada lista y garantizando que el lienzo siempre refleje el estado exacto del modelo.
+
+### B. Sistema de Deshacer (Undo) Profesional
+- [x] **Historial Centralizado:** El stack de acciones (`creationHistory`) se movió del controlador al `NetworkModel`.
+- [x] **Tracking Nativo:** Los eventos del dispatcher alimentan el historial de forma automática. Si un elemento se agrega al modelo (vía canvas, formulario o scripts), se registra para deshacer sin intervención manual del programador.
+- [x] **Acción de Deshacer Genérica:** `undoLastAction()` en el modelo gestiona la eliminación lógica y el desapilado, mientras que el dispatcher se encarga de que la UI reaccione eliminando el componente visual.
+
+### C. Ciclo de Vida del Proyecto (Clear All)
+- [x] **Limpieza del Modelo:** Implementación de `NetworkModel.clearAll()` que resetea todas las colecciones y el historial de deshacer.
+- [x] **Confirmación de Seguridad:** Integración de un diálogo de alerta (`AlertType.CONFIRMATION`) en `SPController` para prevenir la pérdida accidental de datos.
+- [x] **Reset de Estado UI:** El proceso de limpieza ahora restaura el zoom al 100%, deselecciona elementos y resetea las herramientas a modo edición.
+
+---
+
+## 8. Próximos Pasos Sugeridos
 
 1.  **Líneas Inteligentes (Dynamic Binding):** Implementar el redibujado automático de las líneas al arrastrar las barras conectadas. Aprovechar el `PropertyChangeSupport` del modelo para actualizar las coordenadas de inicio/fin (`startX`, `startY`, `endX`, `endY`) mediante bindings reactivos.
 2.  **Suite de Formularios Modernos:** Completar la migración de los formularios de edición (`LineForm`, `TrafoForm`, `GenForm`) utilizando el nuevo sistema de formularios reactivos que se sincronizan en tiempo real con el modelo.
 3.  **Visualización Pro de Resultados:** Vincular el motor de Newton-Raphson y cálculos de fallas con las `TableView` del panel inferior. Incluir anotaciones gráficas sobre el lienzo (etiquetas flotantes con voltajes p.u. y ángulos de fase).
 4.  **Persistencia y Exportación:** Implementar la carga/guardado en formato JSON o XML para persistencia de proyectos complejos, y exportación de reportes de resultados en formato PDF/Excel.
-5.  **Sistema de Deshacer/Rehacer (Undo/Redo):** Implementar un gestor de comandos para permitir revertir acciones de edición (moverse, borrar, crear), aprovechando que el `NetworkModel` es ahora el único punto de control.
+5.  **Sistema de Rehacer (Redo):** Extender el sistema de gestión de estado para soportar la restauración de acciones deshechas mediante un segundo stack de comandos.

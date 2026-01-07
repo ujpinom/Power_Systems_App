@@ -194,9 +194,6 @@ public class SPController implements Initializable {
   private int NUMERO_ITERACIONES =
       50; // numero de iteraciones para el problema de flujo de potencia.
 
-  private LinkedList<Object> objetosCreados =
-      new LinkedList<>(); // Almacena todos los objectos creados para llevar
-  // un record de ellos;
   private LinkedList<Object> restablecerElementos = new LinkedList<>();
 
   private String metodoFlujoPotencia = "Seidel";
@@ -215,6 +212,7 @@ public class SPController implements Initializable {
     scrollContainer.setHvalue(0.5);
     scrollContainer.setVvalue(0.5);
     this.networkModel = NetworkModel.getInstance();
+
     this.diagramManager = new DiagramManager(areaDibujo);
     this.propertiesPanel = new PropertiesPanel();
     rightPanelContainer.getChildren().clear();
@@ -454,7 +452,9 @@ public class SPController implements Initializable {
   }
 
   @FXML
-  private void borrarUltimoElemento(ActionEvent e) {}
+  private void borrarUltimoElemento(ActionEvent e) {
+    NetworkModel.getInstance().undoLastAction();
+  }
 
   @FXML
   private void limpiarArea(ActionEvent e) {

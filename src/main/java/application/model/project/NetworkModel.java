@@ -1,8 +1,12 @@
 package application.model.project;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import proyectoSistemasDePotencia.Bancos;
 import proyectoSistemasDePotencia.Barras;
@@ -27,6 +31,12 @@ public class NetworkModel {
   private final ObservableList<CompensadorEstatico> compensadores =
       FXCollections.observableArrayList();
 
+  // Historial de creación para deshacer
+  private final Stack<Object> creationHistory = new Stack<>();
+
+  // Lista de observadores externos (DiagramManager, etc.)
+  private final List<NetworkChangeListener> listeners = new ArrayList<>();
+
   private NetworkModel() {
     // Inicialización privada (Singleton)
     barras.add(new Barras("Tierra"));
@@ -44,6 +54,29 @@ public class NetworkModel {
     generadores.addListener(
         (javafx.collections.ListChangeListener.Change<? extends Generadores> c) ->
             recomputeLogicalNames());
+
+    // Inicializar listeners para el historial de deshacer y despacho visual
+    initUniversalDispatcher();
+  }
+
+  public void addChangeListener(NetworkChangeListener l) {
+    if (!listeners.contains(l)) listeners.add(l);
+  }
+
+  public void removeChangeListener(NetworkChangeListener l) {
+    listeners.remove(l);
+  }
+
+  private void notifyAdded(Object element) {
+    for (NetworkChangeListener l : listeners) {
+      l.onAdded(element);
+    }
+  }
+
+  private void notifyRemoved(Object element) {
+    for (NetworkChangeListener l : listeners) {
+      l.onRemoved(element);
+    }
   }
 
   private void recomputeLogicalNames() {
@@ -249,9 +282,162 @@ public class NetworkModel {
     this.bancos.clear();
     this.compensadores.clear();
 
+    // Limpiar historial
+    this.creationHistory.clear();
+
     // Re-agregar bus tierra si es necesario para el sistema
     this.barras.add(new Barras("Tierra"));
     System.out.println("Modelo: Proyecto limpiado completamente.");
+  }
+
+  public void undoLastAction() {
+    if (!creationHistory.isEmpty()) {
+      Object ultimo = creationHistory.pop();
+
+      if (ultimo instanceof Barras) {
+        removeBarra((Barras) ultimo);
+      } else if (ultimo instanceof Lineas) {
+        removeLinea((Lineas) ultimo);
+      } else if (ultimo instanceof Transformador) {
+        removeTransformador((Transformador) ultimo);
+      } else if (ultimo instanceof Generadores) {
+        removeGenerador((Generadores) ultimo);
+      } else if (ultimo instanceof Carga) {
+        removeCarga((Carga) ultimo);
+      } else if (ultimo instanceof Bancos) {
+        removeBanco((Bancos) ultimo);
+      } else if (ultimo instanceof CompensadorEstatico) {
+        removeCompensador((CompensadorEstatico) ultimo);
+      }
+      System.out.println("Modelo: Deshacer -> Elemento eliminado.");
+    } else {
+      System.out.println("Modelo: Historial de deshacer vacío.");
+    }
+  }
+
+  private void initUniversalDispatcher() {
+    // 1. Barras
+    barras.addListener(
+        (ListChangeListener<Barras>)
+            c -> {
+              while (c.next()) {
+                if (c.wasAdded()) {
+                  for (Barras b : c.getAddedSubList()) {
+                    // Historial (Skip Tierra)
+                    if (!b.getNombreBarra().equalsIgnoreCase("Tierra")) {
+                      creationHistory.push(b);
+                    }
+                    // Visual/Externo
+                    notifyAdded(b);
+                  }
+                }
+                if (c.wasRemoved()) {
+                  for (Barras b : c.getRemoved()) notifyRemoved(b);
+                }
+              }
+            });
+
+    // 2. Líneas
+    lineas.addListener(
+        (ListChangeListener<Lineas>)
+            c -> {
+              while (c.next()) {
+                if (c.wasAdded()) {
+                  for (Lineas l : c.getAddedSubList()) {
+                    creationHistory.push(l);
+                    notifyAdded(l);
+                  }
+                }
+                if (c.wasRemoved()) {
+                  for (Lineas l : c.getRemoved()) notifyRemoved(l);
+                }
+              }
+            });
+
+    // 3. Transformadores
+    transformadores.addListener(
+        (ListChangeListener<Transformador>)
+            c -> {
+              while (c.next()) {
+                if (c.wasAdded()) {
+                  for (Transformador t : c.getAddedSubList()) {
+                    creationHistory.push(t);
+                    notifyAdded(t);
+                  }
+                }
+                if (c.wasRemoved()) {
+                  for (Transformador t : c.getRemoved()) notifyRemoved(t);
+                }
+              }
+            });
+
+    // 4. Generadores
+    generadores.addListener(
+        (ListChangeListener<Generadores>)
+            c -> {
+              while (c.next()) {
+                if (c.wasAdded()) {
+                  for (Generadores g : c.getAddedSubList()) {
+                    creationHistory.push(g);
+                    notifyAdded(g);
+                  }
+                }
+                if (c.wasRemoved()) {
+                  for (Generadores g : c.getRemoved()) notifyRemoved(g);
+                }
+              }
+            });
+
+    // 5. Cargas
+    cargas.addListener(
+        (ListChangeListener<Carga>)
+            c -> {
+              while (c.next()) {
+                if (c.wasAdded()) {
+                  for (Carga car : c.getAddedSubList()) {
+                    creationHistory.push(car);
+                    notifyAdded(car);
+                  }
+                }
+                if (c.wasRemoved()) {
+                  for (Carga car : c.getRemoved()) notifyRemoved(car);
+                }
+              }
+            });
+
+    // 6. Bancos
+    bancos.addListener(
+        (ListChangeListener<Bancos>)
+            c -> {
+              while (c.next()) {
+                if (c.wasAdded()) {
+                  for (Bancos b : c.getAddedSubList()) {
+                    creationHistory.push(b);
+                    notifyAdded(b);
+                  }
+                }
+                if (c.wasRemoved()) {
+                  for (Bancos b : c.getRemoved()) notifyRemoved(b);
+                }
+              }
+            });
+
+    // 7. Compensadores
+    compensadores.addListener(
+        (ListChangeListener<CompensadorEstatico>)
+            c -> {
+              while (c.next()) {
+                if (c.wasAdded()) {
+                  for (CompensadorEstatico ce : c.getAddedSubList()) {
+                    creationHistory.push(ce);
+                    notifyAdded(ce);
+                  }
+                }
+                if (c.wasRemoved()) {
+                  for (CompensadorEstatico ce : c.getRemoved()) notifyRemoved(ce);
+                }
+              }
+            });
   }
 
   public ObjectProperty<Object> seleccionActualProperty() {

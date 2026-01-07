@@ -1,10 +1,10 @@
 package application.view.canvas;
 
+import application.model.project.NetworkChangeListener;
 import application.model.project.NetworkModel;
 import application.view.shapes.BusShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.NetworkShape;
-import javafx.collections.ListChangeListener;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
@@ -13,7 +13,7 @@ import javafx.scene.shape.StrokeLineCap;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Lineas;
 
-public class DiagramManager {
+public class DiagramManager implements NetworkChangeListener {
   private final AnchorPane canvas;
   private final NetworkModel model;
 
@@ -29,7 +29,9 @@ public class DiagramManager {
   public DiagramManager(AnchorPane canvas) {
     this.canvas = canvas;
     this.model = NetworkModel.getInstance();
-    initModelListener();
+
+    // Registrarse como observador universal
+    this.model.addChangeListener(this);
 
     // Manejo de clic en fondo vacío
     this.canvas.addEventHandler(
@@ -59,38 +61,22 @@ public class DiagramManager {
         });
   }
 
-  private void initModelListener() {
-    // Listener para BARRAS
-    model
-        .getBarras()
-        .addListener(
-            (ListChangeListener<Barras>)
-                c -> {
-                  while (c.next()) {
-                    if (c.wasAdded()) {
-                      for (Barras b : c.getAddedSubList()) agregarBarraVisual(b);
-                    }
-                    if (c.wasRemoved()) {
-                      for (Barras b : c.getRemoved()) removerBarraVisual(b);
-                    }
-                  }
-                });
+  @Override
+  public void onAdded(Object element) {
+    if (element instanceof Barras) {
+      agregarBarraVisual((Barras) element);
+    } else if (element instanceof Lineas) {
+      agregarLineaVisual((Lineas) element);
+    }
+  }
 
-    // Listener para LÍNEAS
-    model
-        .getLineas()
-        .addListener(
-            (ListChangeListener<Lineas>)
-                c -> {
-                  while (c.next()) {
-                    if (c.wasAdded()) {
-                      for (Lineas l : c.getAddedSubList()) agregarLineaVisual(l);
-                    }
-                    if (c.wasRemoved()) {
-                      for (Lineas l : c.getRemoved()) removerLineaVisual(l);
-                    }
-                  }
-                });
+  @Override
+  public void onRemoved(Object element) {
+    if (element instanceof Barras) {
+      removerBarraVisual((Barras) element);
+    } else if (element instanceof Lineas) {
+      removerLineaVisual((Lineas) element);
+    }
   }
 
   // --- Control de Modo ---

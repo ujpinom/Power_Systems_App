@@ -12,7 +12,6 @@ import grafos.MyGraph;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -44,21 +43,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
-import javafx.scene.shape.PathElement;
 import javafx.scene.shape.Polyline;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
 import javafx.stage.Stage;
 import javax.swing.JOptionPane;
@@ -67,7 +53,6 @@ import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Carga;
 import proyectoSistemasDePotencia.CompensadorEstatico;
 import proyectoSistemasDePotencia.Complejo;
-import proyectoSistemasDePotencia.DibujarCarga;
 import proyectoSistemasDePotencia.ExcepcionDivideCero;
 import proyectoSistemasDePotencia.FallaAsimetricaLineas;
 import proyectoSistemasDePotencia.FallaAsimetricas;
@@ -465,16 +450,10 @@ public class SPController implements Initializable {
   }
 
   @FXML
-  private void borrarUltimoElemento(ActionEvent e) {
-
-    borrarUltimoElemento();
-  }
+  private void borrarUltimoElemento(ActionEvent e) {}
 
   @FXML
-  private void limpiarArea(ActionEvent e) {
-
-    limpiarArea();
-  }
+  private void limpiarArea(ActionEvent e) {}
 
   @FXML
   private void ejecutar(ActionEvent e) throws ExcepcionDivideCero {
@@ -796,114 +775,6 @@ public class SPController implements Initializable {
 
     zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
   }
-
-  private StackPane nodoSeleccionadoVisual = null;
-
-  private void dibujarPOly() {
-
-    if (isLineOn && currentTool == ToolType.LINEA) {
-      Line perro = new Line();
-
-      perro.setStartX(ultimoPunto.getX());
-
-      perro.setStartY(ultimoPunto.getY());
-
-      perro.setEndX(endOfLineX);
-
-      perro.setEndY(endOfLineY);
-
-      areaDibujo.getChildren().addAll(perro, path);
-    }
-
-    int cont = 0;
-    for (Lineas l : conexiones) {
-
-      l.setNombreLinea(nombreLinea + (++cont));
-      MoveTo mt =
-          new MoveTo(
-              l.getBarra1().getPuntoMedioBarra().getX(), l.getBarra1().getPuntoMedioBarra().getY());
-
-      LineTo lt =
-          new LineTo(
-              l.getBarra2().getPuntoMedioBarra().getX(), l.getBarra2().getPuntoMedioBarra().getY());
-
-      ObservableList<PathElement> pt = l.getPath().getElements();
-
-      Path path = new Path();
-      path.setStrokeWidth(1.5);
-      path.setStroke(Color.GREEN);
-      path.getElements().add(mt);
-
-      for (int i = 1; i < pt.size() - 1; i++) {
-
-        path.getElements().add(pt.get(i));
-      }
-
-      path.getElements().add(lt);
-
-      double puntoMedioX = 0.0;
-      double puntoMedioY;
-
-      if (path.getElements().size() == 2) {
-        MoveTo m1 = (MoveTo) path.getElements().get(0);
-        LineTo m2 = (LineTo) path.getElements().get(1);
-
-        double m1X = m1.getX();
-        double m1Y = m1.getY();
-        double m2X = m2.getX();
-        double m2Y = m2.getY();
-
-        puntoMedioX = Math.abs(m1X + m2X) / 2;
-        puntoMedioY = Math.abs(m1Y + m2Y) / 2;
-      } else {
-
-        LineTo m1 = (LineTo) path.getElements().get(1);
-        LineTo m2 = (LineTo) path.getElements().get(2);
-        double m1X = m1.getX();
-        double m1Y = m1.getY();
-        double m2X = m2.getX();
-        double m2Y = m2.getY();
-
-        puntoMedioX = Math.abs(m1X + m2X) / 2;
-        puntoMedioY = Math.abs(m1Y + m2Y) / 2;
-      }
-
-      l.setPuntomedio(new Point2D(puntoMedioX, puntoMedioY));
-
-      Rectangle rec = new Rectangle();
-      rec.setX(puntoMedioX - 15);
-      rec.setY(puntoMedioY - 15);
-      rec.setWidth(30);
-      rec.setHeight(30);
-      rec.setStroke(Color.RED);
-      rec.setFill(Color.WHITE);
-
-      Text textLinea = new Text(l.getNombreLinea());
-      textLinea.setStrokeWidth(1);
-      textLinea.setStroke(Color.RED);
-
-      textLinea.setX(puntoMedioX - 3);
-      textLinea.setY(puntoMedioY + 2);
-
-      areaDibujo.getChildren().addAll(path, rec, textLinea);
-    }
-  }
-
-  public void repaint() {
-
-    areaDibujo.getChildren().clear();
-    dibujarBarra();
-    dibujarLineas();
-    dibujarGenerador();
-    dibujarFalla();
-    dibujarCarga();
-    dibujarCompensador();
-    dibujarBanco();
-    dibujarPOly();
-    coorFalla.clear();
-    posBarra.clear();
-  }
-
   // --- LÓGICA DE CREACIÓN DE OBJETOS ---
 
   private boolean validarProximidad(double x, double y) {
@@ -957,19 +828,14 @@ public class SPController implements Initializable {
           System.out.println("Modo Selección: Click en " + x + ", " + y);
           break;
         case TRANSFORMADOR:
-          handleTrafoCreation(x, y);
           break;
         case GENERADOR:
-          handleGeneradorCreation(x, y);
           break;
         case CARGA:
-          handleCargaCreation(x, y);
           break;
         case BANCO:
-          handleBancoCreation(x, y);
           break;
         case COMPENSADOR:
-          handleCompensadorCreation(x, y);
           break;
         default:
           break;
@@ -981,224 +847,14 @@ public class SPController implements Initializable {
   @FXML
   private void dragEvent(MouseEvent e) {
     areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
-    if (currentTool.equals(ToolType.NONE)) {
-
-      lista = areaDibujo.getChildren();
-
-      double x = e.getX();
-      double y = e.getY();
-
-      Node tipoElemento = tipoElemento(x, y);
-
-      if (tipoElemento instanceof Ellipse) {
-
-        Barras temp = new Barras();
-
-        for (int i = 1; i < barras.size(); i++) {
-
-          Barras b = barras.get(i);
-
-          if (b.getEllipse().equals(((Ellipse) tipoElemento))) {
-
-            temp = b;
-            break;
-          }
-        }
-
-        ((Ellipse) tipoElemento).setCenterX(x);
-        ((Ellipse) tipoElemento).setCenterY(y);
-
-        temp.setNombreBarraX(((Ellipse) tipoElemento).getCenterX());
-        temp.setNombreBarraY(((Ellipse) tipoElemento).getCenterY());
-
-        repaint();
-
-        return;
-      } else if (tipoElemento instanceof Circle && ((Circle) tipoElemento).getRadius() == 14) {
-
-        Barras b =
-            getContainingVertex(
-                ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY());
-
-        ((Circle) tipoElemento).setCenterX(x);
-        ((Circle) tipoElemento).setCenterY(y);
-
-        b.setXbarra(((Circle) tipoElemento).getCenterX() - b.getAncho() / 2);
-        b.setYbarra(((Circle) tipoElemento).getCenterY() - b.getLargo() / 2);
-
-        b.setxCoorG(b.getXbarra() + b.getAncho() / 2);
-        b.setyCoorG(b.getYbarra() + b.getLargo() / 2);
-
-        repaint();
-        return;
-      }
-
-      if (tipoElemento instanceof Text) {
-        if (((Text) tipoElemento).getText().equals("X")) {
-          coorFalla.add(0, x);
-          coorFalla.add(1, y);
-          repaint();
-          return;
-        }
-      }
-
-      if (tipoElemento instanceof Circle) {
-
-        double xcenter = ((Circle) tipoElemento).getCenterX();
-        double ycenter = ((Circle) tipoElemento).getCenterY();
-
-        boolean bandera1 = false;
-
-        for (int i = 0; i < cargas.size(); i++) {
-
-          double xcarga = cargas.get(i).getBarra().getCoordenadasCarga().getX();
-          double ycarga = cargas.get(i).getBarra().getCoordenadasCarga().getY();
-
-          if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
-
-            ((Circle) tipoElemento).setCenterX(x);
-            ((Circle) tipoElemento).setCenterY(y);
-
-            bandera1 = true;
-
-            Barras b = cargas.get(i).getBarra();
-
-            b.setCoordenadasCarga(
-                new Point2D(
-                    ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY()));
-
-            repaint();
-            return;
-          }
-        }
-
-        for (int i = 0; i < bancos.size(); i++) {
-
-          double xcarga = bancos.get(i).getBarra().getCoordenadasBanco().getX();
-          double ycarga = bancos.get(i).getBarra().getCoordenadasBanco().getY();
-
-          if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
-
-            ((Circle) tipoElemento).setCenterX(x);
-            ((Circle) tipoElemento).setCenterY(y);
-
-            bandera1 = true;
-
-            Barras b = bancos.get(i).getBarra();
-
-            b.setCoordenadasBanco(
-                new Point2D(
-                    ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY()));
-
-            repaint();
-            return;
-          }
-        }
-
-        for (int i = 0; i < compensadores.size(); i++) {
-
-          double xcarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getX();
-          double ycarga = compensadores.get(i).getBarra().getCoordenadaCompensador().getY();
-
-          if (((Circle) tipoElemento).contains(xcarga, ycarga)) {
-
-            ((Circle) tipoElemento).setCenterX(x);
-            ((Circle) tipoElemento).setCenterY(y);
-
-            bandera1 = true;
-
-            Barras b = compensadores.get(i).getBarra();
-
-            b.setCoordenadaCompensador(
-                new Point2D(
-                    ((Circle) tipoElemento).getCenterX(), ((Circle) tipoElemento).getCenterY()));
-
-            repaint();
-            return;
-          }
-        }
-      }
-    }
   }
 
   @FXML
   private void mouseEvent(MouseEvent e) {
     areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
-    lista = areaDibujo.getChildren();
-
-    double x = e.getX();
-    double y = e.getY();
-    infoPosiMouse.setText(String.format("X=%.3f   Y=%.3f", x, y));
-    Node tipoElemento = tipoElemento(x, y);
-
-    if (((currentTool == ToolType.LINEA || currentTool == ToolType.TRANSFORMADOR)) && isLineOn) {
-
-      endOfLineX = e.getX();
-      endOfLineY = e.getY();
-      repaint();
-    }
   }
 
   @FXML private TextField MVAbase;
-
-  public double longitudLinea(Barras b1, Barras b2) {
-
-    return Math.sqrt(
-        (b1.getXbarra() - b2.getXbarra()) * (b1.getXbarra() - b2.getXbarra())
-            + (b1.getYbarra() - b2.getYbarra()) * (b1.getYbarra() - b2.getYbarra()));
-  }
-
-  public double longitudLinea(double x1, double y1, double x2, double y2) {
-
-    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-  }
-
-  public void removeGeneradorAdyacente(Barras b) {
-
-    for (int i = 0; i < conexiongene.size(); i++) {
-
-      if (conexiongene.get(i).getBarra() == b) {
-        conexiongene.remove(i--);
-      }
-    }
-  }
-
-  public void removeCargaAdyacente(Barras b) {
-
-    for (int i = 0; i < cargas.size(); i++) {
-
-      if (cargas.get(i).getBarra() == b) {
-        cargas.remove(i--);
-      }
-    }
-  }
-
-  public void removerBancoAdyacente(Barras b) {
-
-    for (int i = 0; i < bancos.size(); i++) {
-
-      if (bancos.get(i).getBarra() == b) {
-        bancos.remove(i--);
-      }
-    }
-  }
-
-  public void removeAdjacentEdges(Barras b) {
-
-    for (int i = 0; i < conexiones.size(); i++) {
-
-      if (conexiones.get(i).getBarra1() == b || conexiones.get(i).getBarra2() == b) {
-        conexiones.remove(i--);
-      }
-    }
-
-    for (int i = 0; i < conexiones1.size(); i++) {
-
-      if (conexiones1.get(i).getBarra1() == b || conexiones1.get(i).getBarra2() == b) {
-        conexiones1.remove(i--);
-      }
-    }
-  }
 
   public Node tipoElemento(double x, double y) {
 
@@ -1210,683 +866,6 @@ public class SPController implements Initializable {
     }
 
     return null;
-  }
-
-  public Circle getCirculo(double x, double y) {
-
-    for (Node list : lista) {
-
-      if (list instanceof Circle) {
-
-        if (((Circle) list).contains(x, y)) {
-          return (Circle) list;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  public boolean sonIguales(Barras barra1, Barras barra2) {
-
-    if (barra1.getXbarra() == barra2.getXbarra() && barra1.getYbarra() == barra2.getYbarra()) {
-
-      return true;
-    } else {
-
-      return false;
-    }
-  }
-
-  public Barras getContainingVertex(double x, double y) {
-
-    for (int i = 0; i < barras.size(); i++) {
-
-      if (dentroBarra(barras.get(i), x, y)) {
-
-        return barras.get(i);
-      }
-    }
-
-    return null;
-  }
-
-  public boolean dentroBarra(Barras barra, double x, double y) {
-
-    if (barra.getOrientacion().equals("V")) {
-
-      if (x >= barra.getXbarra()
-          && x <= barra.getXbarra() + barra.getAncho()
-          && y >= barra.getYbarra()
-          && y <= barra.getYbarra() + barra.getLargo()) {
-
-        return true;
-      } else {
-
-        return false;
-      }
-
-    } else {
-
-      if (x >= barra.getXbarra()
-          && x <= barra.getXbarra() + barra.getAncho()
-          && y >= barra.getYbarra()
-          && y <= barra.getYbarra() + barra.getLargo()) {
-
-        return true;
-      } else {
-        return false;
-      }
-    }
-  }
-
-  public boolean barraMuycerca(double x, double y) {
-
-    for (int i = 1; i < barras.size(); i++) {
-
-      if (obtenerDistancia(
-              x,
-              y,
-              barras.get(i).getPuntoMedioBarra().getX(),
-              barras.get(i).getPuntoMedioBarra().getY())
-          && barras.get(i).getOrientacion().equals("V")) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  public boolean obtenerDistancia(double x1, double y1, double x2, double y2) {
-
-    if (Math.abs(x1 - x2) < 10 + 5 && Math.abs(y1 - y2) < 70 + 10) {
-
-      return true;
-
-    } else {
-
-      return false;
-    }
-  }
-
-  public void limpiarArea() {
-
-    for (int i = 0; i < listaBarras.length; i++) {
-
-      listaBarras[i].clear();
-    }
-
-    conexiones.clear();
-    conexiones1.clear();
-    conexiongene.clear();
-    barras.clear();
-    cargas.clear();
-    bancos.clear();
-    distanciasLineas.clear();
-    corGenerador.clear();
-    corCarga.clear();
-    corBanco.clear();
-    posBarra.clear();
-    objetosCreados.clear();
-    restablecerElementos.clear();
-    repaint();
-    barras.add(new Barras("Tierra"));
-    tipoElementoFallado = null;
-  }
-
-  public void borrarUltimoElemento() {
-
-    Object elemento = objetosCreados.pollLast();
-    if (elemento != null) restablecerElementos.add(elemento);
-
-    if (elemento instanceof Barras && elemento != null && barras.size() > 1) {
-
-      Barras b = ((Barras) elemento);
-
-      if (b.isBarraCompensacion()) {
-        barraCompensacion = null;
-      }
-
-      int indexBarrab = barras.indexOf(b);
-
-      for (int i : listaBarras[indexBarrab]) {
-
-        listaBarras[i].remove(listaBarras[i].indexOf(indexBarrab));
-      }
-
-      listaBarras[indexBarrab].clear();
-
-      barras.remove(b);
-      repaint();
-
-    } else if (elemento instanceof Lineas
-        && !(elemento instanceof Transformador)
-        && elemento != null
-        && conexiones.size() > 0) {
-
-      int one = barras.indexOf(conexiones.get(conexiones.size() - 1).getBarra1());
-      int other = barras.indexOf(conexiones.get(conexiones.size() - 1).getBarra2());
-
-      listaBarras[one].remove(listaBarras[one].indexOf(other));
-      listaBarras[other].remove(listaBarras[other].indexOf(one));
-      conexiones.remove(conexiones.size() - 1);
-      distanciasLineas.clear();
-      repaint();
-
-    } else if (elemento instanceof Generadores && elemento != null && conexiongene.size() > 0) {
-
-      Barras b = conexiongene.get(conexiongene.size() - 1).getBarra();
-      if (!b.containsCompensador()) {
-        b.setBarraPQ(true);
-        b.setBarraPV(false);
-      }
-
-      b.setGenerador(null);
-      conexiongene.remove(conexiongene.size() - 1);
-      corGenerador.clear();
-
-      repaint();
-    } else if (elemento instanceof CompensadorEstatico
-        && elemento != null
-        && compensadores.size() > 0) {
-
-      Barras b = compensadores.get(compensadores.size() - 1).getBarra();
-      if (!b.containsGenerador()) {
-        b.setBarraPQ(true);
-        b.setBarraPV(false);
-      }
-      b.setCompensador(null);
-      compensadores.remove(compensadores.size() - 1);
-      corCompensador.clear();
-
-      repaint();
-    } else if ((elemento instanceof Transformador)
-        && (elemento instanceof Lineas)
-        && elemento != null
-        && conexiones1.size() > 0) {
-
-      int one = barras.indexOf(conexiones1.get(conexiones1.size() - 1).getBarra1());
-      int other = barras.indexOf(conexiones1.get(conexiones1.size() - 1).getBarra2());
-
-      listaBarras[one].remove(listaBarras[one].indexOf(other));
-      listaBarras[other].remove(listaBarras[other].indexOf(one));
-
-      conexiones1.remove(conexiones1.size() - 1);
-      distanciasLineas.clear();
-      repaint();
-    } else if (elemento instanceof Carga && elemento != null && cargas.size() > 0) {
-      Barras b = cargas.get(cargas.size() - 1).getBarra();
-      b.setCarga(null);
-      cargas.remove(cargas.size() - 1);
-      corCarga.clear();
-      repaint();
-    } else if (elemento instanceof Bancos && elemento != null && bancos.size() > 0) {
-      Barras b = bancos.get(bancos.size() - 1).getBarra();
-      b.setBanco(null);
-      bancos.remove(bancos.size() - 1);
-      corBanco.clear();
-      repaint();
-    }
-  }
-
-  public void dibujarBarra() {
-
-    for (int i = 0; i < barras.size(); i++) {
-
-      if (barras.get(i).getOrientacion().equals("H")) {
-
-        posBarra.add(barras.get(i).getXbarra());
-
-        Collections.sort(posBarra);
-        Rectangle barra = new Rectangle();
-
-        if (barras.get(i).isBarraCompensacion()) {
-
-          barra.setFill(Color.BLUE);
-
-        } else {
-          barra.setFill(Color.BLACK);
-        }
-
-        barra.setX(barras.get(i).getXbarra());
-        barra.setY(barras.get(i).getYbarra());
-        barra.setWidth(barras.get(i).getAncho());
-
-        barra.setHeight(barras.get(i).getLargo());
-
-        double xMedio = barras.get(i).getXbarra() + barras.get(i).getAncho() / 2;
-        double yMedio = barras.get(i).getYbarra() + barras.get(i).getLargo() / 2;
-
-        barras.get(i).setPuntoMedioBarra(new Point2D(xMedio, yMedio));
-        // barra.setRotate(-90);
-
-        Circle circulo = new Circle();
-        circulo.setRadius(radioCirculo);
-        circulo.setCenterX(barras.get(i).getXbarra() + barras.get(i).getAncho() / 2);
-        circulo.setCenterY(barras.get(i).getYbarra() + barras.get(i).getLargo() / 2);
-        circulo.setVisible(false);
-
-        Text nbarra = new Text();
-
-        if (barras.get(i).getNombrePersonalizado() == null) {
-          String nombre = barras.get(i).getNombreBarra();
-
-          nbarra.setText(nombre);
-          // if(!nombreBarras.contains(nombre))
-          // nombreBarras.put(nombre, barras.get(i));
-          // else {
-          // nombre=nombre+i;
-          // nombreBarras.put(nombre, barras.get(i));
-          //
-          // }
-        } else {
-
-          String nombre = barras.get(i).getNombrePersonalizado();
-          nbarra.setText(nombre);
-          // if(!nombreBarras.contains(nombre))
-          // nombreBarras.put(nombre, barras.get(i));
-          // else {
-          // nombre=nombre+i;
-          // nombreBarras.put(nombre, barras.get(i));
-          //
-          // }
-
-        }
-
-        nbarra.setStroke(Color.ORANGE);
-        nbarra.setStrokeWidth(1);
-
-        nbarra.setStyle("-fx-font: 12 arial;");
-
-        nbarra.setX(barras.get(i).getNombreBarraX());
-        nbarra.setY(barras.get(i).getNombreBarraY());
-
-        Ellipse ellipse = new Ellipse();
-
-        ellipse.setCenterX(barras.get(i).getNombreBarraX() + nbarra.getText().length() * 3);
-        ellipse.setCenterY(barras.get(i).getNombreBarraY());
-        ellipse.setRadiusX(nbarra.getText().length() * 6);
-        ellipse.setRadiusY(8);
-        ellipse.setVisible(false);
-
-        barras.get(i).setEllipse(ellipse);
-
-        areaDibujo.getChildren().addAll(barra, ellipse, nbarra, circulo);
-
-      } else if (barras.get(i).getOrientacion().equals("V")) {
-
-        posBarra.add(barras.get(i).getXbarra());
-        Collections.sort(posBarra);
-        if (i == 0) {
-          continue;
-        } else {
-
-          double xMedio = barras.get(i).getXbarra() + barras.get(i).getAncho() / 2;
-          double yMedio = barras.get(i).getYbarra() + barras.get(i).getLargo() / 2;
-
-          barras.get(i).setPuntoMedioBarra(new Point2D(xMedio, yMedio));
-
-          Rectangle barra = new Rectangle();
-
-          if (barras.get(i).isBarraCompensacion()) {
-
-            barra.setFill(Color.BLUE);
-
-          } else {
-            barra.setFill(Color.BLACK);
-          }
-
-          barra.setX(barras.get(i).getXbarra());
-          barra.setY(barras.get(i).getYbarra());
-          barra.setWidth(barras.get(i).getAncho());
-          barra.setHeight(barras.get(i).getLargo());
-
-          Circle circulo = new Circle();
-          circulo.setRadius(radioCirculo);
-          circulo.setCenterX(barras.get(i).getXbarra() + barras.get(i).getAncho() / 2);
-          circulo.setCenterY(barras.get(i).getYbarra() + barras.get(i).getLargo() / 2);
-          circulo.setVisible(false);
-
-          Text nbarra = new Text();
-
-          if (barras.get(i).getNombrePersonalizado() == null) {
-
-            String nombre = barras.get(i).getNombreBarra();
-
-            nbarra.setText(nombre);
-            // if(!nombreBarras.contains(nombre))
-            // nombreBarras.put(nombre, barras.get(i));
-            // else {
-            // nombre=nombre+i;
-            // nombreBarras.put(nombre, barras.get(i));
-            //
-            // }
-          } else {
-            String nombre = barras.get(i).getNombrePersonalizado();
-            nbarra.setText(nombre);
-            // if(!nombreBarras.contains(nombre))
-            // nombreBarras.put(nombre, barras.get(i));
-            // else {
-            // nombre=nombre+i;
-            // nombreBarras.put(nombre, barras.get(i));
-            //
-            // }
-
-          }
-          nbarra.setStroke(Color.ORANGE);
-          nbarra.setStrokeWidth(1);
-
-          nbarra.setStyle("-fx-font: 12 arial;");
-          nbarra.setX(barras.get(i).getNombreBarraX());
-          nbarra.setY(barras.get(i).getNombreBarraY());
-
-          Ellipse ellipse = new Ellipse();
-
-          ellipse.setCenterX(barras.get(i).getNombreBarraX() + nbarra.getText().length() * 3);
-          ellipse.setCenterY(barras.get(i).getNombreBarraY());
-          ellipse.setRadiusX(nbarra.getText().length() * 6);
-          ellipse.setRadiusY(8);
-          ellipse.setVisible(false);
-          barras.get(i).setEllipse(ellipse);
-          areaDibujo.getChildren().addAll(barra, ellipse, nbarra, circulo);
-        }
-      }
-    }
-  }
-
-  public void dibujarFalla() {
-
-    if (coorFalla.size() > 0) {
-
-      Text ubicarFalla = new Text("X");
-      ubicarFalla.setFont(Font.font("Courier", FontWeight.BOLD, FontPosture.ITALIC, 25));
-
-      ubicarFalla.setFill(Color.RED);
-      ubicarFalla.setX(coorFalla.get(0));
-      ubicarFalla.setY(coorFalla.get(1));
-      areaDibujo.getChildren().add(ubicarFalla);
-    }
-  }
-
-  public void dibujarCarga() {
-
-    for (int i = 0; i < cargas.size(); i++) {
-
-      corCarga.add(cargas.get(i).getBarra().getXbarra());
-      cargas.get(i).setNombreCarga(nombreCarga + (i + 1));
-
-      areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(cargas.get(i), "C"));
-      areaDibujo.getChildren().add(DibujarCarga.nombreCargaBanco(cargas.get(i), "C"));
-    }
-  }
-
-  public void dibujarBanco() {
-
-    for (int i = 0; i < bancos.size(); i++) {
-
-      corBanco.add(bancos.get(i).getBarra().getXbarra());
-      bancos.get(i).setNombreCarga(nombreBanco + (i + 1));
-
-      areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(bancos.get(i), "B"));
-      areaDibujo
-          .getChildren()
-          .add(DibujarCarga.nombreCargaBanco(bancos.get(i), "E")); // Modificar el metodos
-      // para establecer el
-      // nombre
-
-    }
-  }
-
-  public void dibujarCompensador() {
-
-    for (int i = 0; i < compensadores.size(); i++) {
-
-      corCompensador.add(compensadores.get(i).getBarra().getXbarra());
-      compensadores.get(i).setNombreCompensador(nombreCompensador + (i + 1));
-
-      areaDibujo.getChildren().addAll(DibujarCarga.dibujarCargaBanco(compensadores.get(i), "E"));
-    }
-  }
-
-  public void dibujarGenerador() {
-
-    for (int i = 0; i < conexiongene.size(); i++) {
-      corGenerador.add(conexiongene.get(i).getBarra().getXbarra());
-
-      conexiongene.get(i).setNombreGenerador(nombreGenerador + (i + 1));
-      if (conexiongene.get(i).getOrientacion().equals(Generadores.RIGHT)) {
-
-        Line lineg =
-            new Line(
-                conexiongene.get(i).getBarra().getxCoorG(),
-                conexiongene.get(i).getBarra().getyCoorG(),
-                conexiongene.get(i).getBarra().getxCoorG() + 20,
-                conexiongene.get(i).getBarra().getyCoorG());
-
-        lineg.setStrokeWidth(4);
-
-        Circle cirg = new Circle();
-        cirg.setRadius(20);
-        cirg.setCenterX(lineg.getEndX() + 20);
-        cirg.setCenterY(lineg.getEndY());
-        cirg.setFill(Color.WHITE);
-        cirg.setStroke(Color.BLACK);
-
-        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
-        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
-
-        nombreg.setFill(Color.BLUE);
-        nombreg.setX(cirg.getCenterX() - 3);
-        nombreg.setY(cirg.getCenterY() - 25);
-
-        arc1.setFill(Color.WHITE);
-        arc1.setStroke(Color.BLACK);
-        arc2.setFill(Color.WHITE);
-        arc2.setStroke(Color.BLACK);
-
-        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
-
-      } else if (conexiongene.get(i).getOrientacion().equals(Generadores.LEFT)) {
-
-        Line lineg =
-            new Line(
-                conexiongene.get(i).getBarra().getxCoorG(),
-                conexiongene.get(i).getBarra().getyCoorG(),
-                conexiongene.get(i).getBarra().getxCoorG() - 10,
-                conexiongene.get(i).getBarra().getyCoorG());
-
-        lineg.setStrokeWidth(4);
-
-        Circle cirg = new Circle();
-        cirg.setRadius(20);
-        cirg.setCenterX(lineg.getEndX() - 20);
-        cirg.setCenterY(lineg.getEndY());
-        cirg.setFill(Color.WHITE);
-        cirg.setStroke(Color.BLACK);
-
-        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
-
-        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
-        nombreg.setFill(Color.BLUE);
-        nombreg.setX(cirg.getCenterX() - 3);
-        nombreg.setY(cirg.getCenterY() - 25);
-
-        arc1.setFill(Color.WHITE);
-        arc1.setStroke(Color.BLACK);
-        arc2.setFill(Color.WHITE);
-        arc2.setStroke(Color.BLACK);
-
-        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
-      } else if (conexiongene.get(i).getOrientacion().equals(Generadores.ARRIBA)) {
-
-        Line lineg =
-            new Line(
-                conexiongene.get(i).getBarra().getXbarra()
-                    + conexiongene.get(i).getBarra().getAncho() / 2,
-                conexiongene.get(i).getBarra().getYbarra()
-                    + conexiongene.get(i).getBarra().getLargo() / 2,
-                conexiongene.get(i).getBarra().getXbarra()
-                    + conexiongene.get(i).getBarra().getAncho() / 2,
-                (conexiongene.get(i).getBarra().getYbarra()
-                        + conexiongene.get(i).getBarra().getLargo() / 2)
-                    - 10);
-
-        lineg.setStrokeWidth(4);
-
-        Circle cirg = new Circle();
-        cirg.setRadius(20);
-        cirg.setCenterX(lineg.getEndX());
-        cirg.setCenterY(lineg.getEndY() - 20);
-
-        conexiongene.get(i).setXCenter(lineg.getEndX());
-        conexiongene.get(i).setYCenter(lineg.getEndY() - 20);
-
-        cirg.setFill(Color.WHITE);
-        cirg.setStroke(Color.BLACK);
-
-        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
-
-        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
-        nombreg.setFill(Color.BLUE);
-        nombreg.setX(cirg.getCenterX() - 3);
-        nombreg.setY(cirg.getCenterY() - 25);
-
-        arc1.setFill(Color.WHITE);
-        arc1.setStroke(Color.BLACK);
-        arc2.setFill(Color.WHITE);
-        arc2.setStroke(Color.BLACK);
-        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
-
-      } else if (conexiongene.get(i).getOrientacion().equals(Generadores.ABAJO)) {
-
-        Line lineg =
-            new Line(
-                conexiongene.get(i).getBarra().getXbarra()
-                    + conexiongene.get(i).getBarra().getAncho() / 2,
-                conexiongene.get(i).getBarra().getYbarra()
-                    + conexiongene.get(i).getBarra().getLargo() / 2,
-                conexiongene.get(i).getBarra().getXbarra()
-                    + conexiongene.get(i).getBarra().getAncho() / 2,
-                (conexiongene.get(i).getBarra().getYbarra()
-                        + conexiongene.get(i).getBarra().getLargo() / 2)
-                    + 10);
-
-        lineg.setStrokeWidth(4);
-        Circle cirg = new Circle();
-
-        cirg.setRadius(20);
-        cirg.setCenterX(lineg.getEndX());
-        cirg.setCenterY(lineg.getEndY() + 20);
-
-        conexiongene.get(i).setXCenter(lineg.getEndX());
-        conexiongene.get(i).setYCenter(lineg.getEndY() + 20);
-
-        cirg.setFill(Color.WHITE);
-        cirg.setStroke(Color.BLACK);
-
-        Arc arc1 = new Arc(cirg.getCenterX() - 9, cirg.getCenterY(), 9, 9, 0, 180);
-        Arc arc2 = new Arc(cirg.getCenterX() + 9, cirg.getCenterY(), 9, 9, 180, 180);
-
-        Text nombreg = new Text(conexiongene.get(i).getNombreGenerador());
-
-        nombreg.setFill(Color.BLUE);
-        nombreg.setX(cirg.getCenterX() - 3);
-        nombreg.setY(cirg.getCenterY() + 30);
-
-        arc1.setFill(Color.WHITE);
-        arc1.setStroke(Color.BLACK);
-        arc2.setFill(Color.WHITE);
-        arc2.setStroke(Color.BLACK);
-
-        areaDibujo.getChildren().addAll(lineg, cirg, arc1, arc2, nombreg);
-      }
-    }
-  }
-
-  public void dibujarLineas() {
-
-    if (isLineOn && currentTool == ToolType.TRANSFORMADOR) {
-
-      Line linea =
-          new Line(
-              startB.getXbarra() + startB.getAncho() / 2,
-              startB.getYbarra() + startB.getLargo() / 2,
-              endOfLineX,
-              endOfLineY);
-      linea.setStroke(Color.RED);
-      linea.setStrokeWidth(2);
-      areaDibujo.getChildren().add(linea);
-    }
-
-    for (int i = 0; i < conexiones1.size(); i++) {
-
-      Line linea =
-          new Line(
-              conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX(),
-              conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY(),
-              conexiones1.get(i).getBarra2().getPuntoMedioBarra().getX(),
-              conexiones1.get(i).getBarra2().getPuntoMedioBarra().getY());
-      linea.setStrokeWidth(1);
-      double pe =
-          longitudLinea(linea.getStartX(), linea.getStartY(), linea.getEndX(), linea.getEndY());
-      distanciasLineas.add(pe);
-
-      conexiones1.get(i).setNombreLinea(nombreTrafo + (i + 1));
-      double puntoMedioX =
-          Math.abs(
-                  conexiones1.get(i).getBarra1().getPuntoMedioBarra().getX()
-                      + conexiones1.get(i).getBarra2().getPuntoMedioBarra().getX())
-              / 2;
-
-      double puntoMedioY =
-          Math.abs(
-                  conexiones1.get(i).getBarra1().getPuntoMedioBarra().getY()
-                      + conexiones1.get(i).getBarra2().getPuntoMedioBarra().getY())
-              / 2;
-
-      conexiones1.get(i).setPuntoMedio(new Point2D(puntoMedioX, puntoMedioY));
-      Circle cc1 = new Circle();
-      Circle cc2 = new Circle();
-
-      cc1.setRadius(15);
-      cc1.setCenterX(puntoMedioX - 5);
-      cc1.setCenterY(puntoMedioY);
-      cc1.setStroke(Color.GREEN);
-      cc1.setFill(Color.WHITE);
-      cc2.setRadius(15);
-      cc2.setCenterX(puntoMedioX + 5);
-      cc2.setCenterY(puntoMedioY);
-      cc2.setStroke(Color.RED);
-      cc2.setFill(Color.WHITE);
-
-      ;
-
-      linea.setStroke(Color.BLACK);
-      linea.setStrokeWidth(2);
-
-      areaDibujo.getChildren().add(linea);
-      areaDibujo.getChildren().addAll(cc1, cc2);
-
-      Text textLinea = new Text(conexiones1.get(i).getNombreLinea());
-      textLinea.setStroke(Color.BLACK);
-      textLinea.setStrokeWidth(1);
-
-      if (conexiones1.get(i).isHasTap()) {
-        textLinea.setStroke(Color.BLUE);
-      }
-
-      if (conexiones1.get(i).isHasTap() && conexiones1.get(i).getAngtab() != 0) {
-        textLinea.setStroke(Color.GREEN);
-      }
-
-      textLinea.setX(puntoMedioX);
-      textLinea.setY(puntoMedioY);
-
-      areaDibujo.getChildren().addAll(textLinea);
-    }
   }
 
   public MyGraph<Barras> getGraph() {
@@ -2554,135 +1533,77 @@ public class SPController implements Initializable {
 
   // --- HANDLERS FOR TOOLS ---
 
-  private void handleGeneradorCreation(double x, double y) {
-    Barras b = getContainingVertex(x, y);
-    if (b != null) {
-      if (!corGenerador.contains(b.getXbarra())) {
-        b.setxCoorG(x);
-        b.setyCoorG(y);
+  // private void handleGeneradorCreation(double x, double y) {
+  // Barras b = getContainingVertex(x, y);
+  // if (b != null) {
+  // if (!corGenerador.contains(b.getXbarra())) {
+  // b.setxCoorG(x);
+  // b.setyCoorG(y);
 
-        Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
+  // Generadores gene = new Generadores(nombreGenerador, 1, 1, 1, b);
 
-        conexiongene.add(gene);
-        b.setBarraPV(true);
-        b.setBarraPQ(false);
-        b.setGenerador(gene);
-        objetosCreados.add(gene);
+  // conexiongene.add(gene);
+  // b.setBarraPV(true);
+  // b.setBarraPQ(false);
+  // b.setGenerador(gene);
+  // objetosCreados.add(gene);
 
-        corGenerador.add(b.getXbarra());
-        repaint();
-      }
-    }
-  }
+  // corGenerador.add(b.getXbarra());
+  // repaint();
+  // }
+  // }
+  // }
 
-  private void handleCargaCreation(double x, double y) {
-    Barras b = getContainingVertex(x, y);
-    if (b != null) {
-      if (!corCarga.contains(b.getXbarra())) {
-        b.setCoordenadasCarga(new Point2D(x, y));
-        Carga carga = new Carga(new Point2D(x, y), b, nombreCarga);
-        cargas.add(carga);
-        objetosCreados.add(carga);
-        if (b.isBarraPV()) {
-          b.setBarraPQ(false);
-        } else {
-          b.setBarraPQ(true);
-        }
-        b.setCarga(carga);
-        corCarga.add(b.getXbarra());
-        repaint();
-      }
-    }
-  }
+  // private void handleCargaCreation(double x, double y) {
+  // Barras b = getContainingVertex(x, y);
+  // if (b != null) {
+  // if (!corCarga.contains(b.getXbarra())) {
+  // b.setCoordenadasCarga(new Point2D(x, y));
+  // Carga carga = new Carga(new Point2D(x, y), b, nombreCarga);
+  // cargas.add(carga);
+  // objetosCreados.add(carga);
+  // if (b.isBarraPV()) {
+  // b.setBarraPQ(false);
+  // } else {
+  // b.setBarraPQ(true);
+  // }
+  // b.setCarga(carga);
+  // corCarga.add(b.getXbarra());
+  // repaint();
+  // }
+  // }
+  // }
 
-  private void handleBancoCreation(double x, double y) {
-    Barras b = getContainingVertex(x, y);
-    if (b != null) {
-      if (!corBanco.contains(b.getXbarra())) {
-        b.setCoordenadasBanco(new Point2D(x, y));
-        Bancos banco = new Bancos(new Point2D(x, y), b, nombreBanco);
-        bancos.add(banco);
-        objetosCreados.add(banco);
-        b.setBanco(banco);
-        corBanco.add(b.getXbarra());
-        repaint();
-      }
-    }
-  }
+  // private void handleBancoCreation(double x, double y) {
+  // Barras b = getContainingVertex(x, y);
+  // if (b != null) {
+  // if (!corBanco.contains(b.getXbarra())) {
+  // b.setCoordenadasBanco(new Point2D(x, y));
+  // Bancos banco = new Bancos(new Point2D(x, y), b, nombreBanco);
+  // bancos.add(banco);
+  // objetosCreados.add(banco);
+  // b.setBanco(banco);
+  // corBanco.add(b.getXbarra());
+  // repaint();
+  // }
+  // }
+  // }
 
-  private void handleCompensadorCreation(double x, double y) {
-    Barras b = getContainingVertex(x, y);
-    if (b != null) {
-      if (!corCompensador.contains(b.getXbarra())) {
-        b.setCoordenadaCompensador(new Point2D(x, y));
-        CompensadorEstatico cp = new CompensadorEstatico(new Point2D(x, y), b, nombreCompensador);
-        b.setBarraPV(true);
-        b.setBarraPQ(false);
-        compensadores.add(cp);
-        objetosCreados.add(cp);
-        b.setCompensador(cp);
-        corCompensador.add(b.getXbarra());
-        repaint();
-      }
-    }
-  }
-
-  private void handleLineaCreation(double x, double y) {
-    handleConnectionCreation(x, y, false);
-  }
-
-  private void handleTrafoCreation(double x, double y) {
-    handleConnectionCreation(x, y, true);
-  }
-
-  private void handleConnectionCreation(double x, double y, boolean isTrafo) {
-    Barras b = getContainingVertex(x, y);
-
-    if (!isLineOn) {
-      if (b != null) {
-        path = new Path();
-        path.getElements().add(new MoveTo(x, y));
-        ultimoPunto = new Point2D(x, y);
-        startB = b;
-        endOfLineX = x;
-        isLineOn = true;
-      }
-    } else {
-      if (b != null) {
-        if (!sonIguales(b, startB)) {
-          int one = barras.indexOf(startB);
-          int other = barras.indexOf(b);
-
-          if (!listaBarras[one].contains(other) && !listaBarras[other].contains(one)) {
-            path.getElements().add(new LineTo(x, y));
-
-            if (isTrafo) {
-              Transformador t = new Transformador(startB, b, 1, 1, 1, new Path());
-              conexiones1.add(t);
-              objetosCreados.add(t);
-            } else {
-              Lineas l = new Lineas(startB, b, 1, 1, 1, path);
-              conexiones.add(l);
-              objetosCreados.add(l);
-            }
-            listaBarras[one].add(other);
-            listaBarras[other].add(one);
-          }
-
-          isLineOn = false;
-          repaint();
-          poliactual = null;
-          path = null;
-        }
-      } else {
-        if (!barraMuycerca(x, y)) {
-          if (path != null) {
-            path.getElements().add(new LineTo(x, y));
-            ultimoPunto = new Point2D(x, y);
-            repaint();
-          }
-        }
-      }
-    }
-  }
+  // private void handleCompensadorCreation(double x, double y) {
+  // Barras b = getContainingVertex(x, y);
+  // if (b != null) {
+  // if (!corCompensador.contains(b.getXbarra())) {
+  // b.setCoordenadaCompensador(new Point2D(x, y));
+  // CompensadorEstatico cp = new CompensadorEstatico(new Point2D(x, y), b,
+  // nombreCompensador);
+  // b.setBarraPV(true);
+  // b.setBarraPQ(false);
+  // compensadores.add(cp);
+  // objetosCreados.add(cp);
+  // b.setCompensador(cp);
+  // corCompensador.add(b.getXbarra());
+  // repaint();
+  // }
+  // }
+  // }
 }

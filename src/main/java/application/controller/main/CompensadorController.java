@@ -73,8 +73,6 @@ public class CompensadorController implements Initializable {
     }
 
     stage.close();
-
-    sp.repaint();
   }
 
   @FXML

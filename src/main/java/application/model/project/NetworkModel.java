@@ -242,7 +242,16 @@ public class NetworkModel {
   // Método opcional útil: Limpiar todo el proyecto
   public void clearAll() {
     this.barras.clear();
-    // Aquí limpiarías también líneas, generadores, etc.
+    this.lineas.clear();
+    this.transformadores.clear();
+    this.generadores.clear();
+    this.cargas.clear();
+    this.bancos.clear();
+    this.compensadores.clear();
+
+    // Re-agregar bus tierra si es necesario para el sistema
+    this.barras.add(new Barras("Tierra"));
+    System.out.println("Modelo: Proyecto limpiado completamente.");
   }
 
   public ObjectProperty<Object> seleccionActualProperty() {

@@ -14,6 +14,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -26,7 +27,10 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -453,7 +457,34 @@ public class SPController implements Initializable {
   private void borrarUltimoElemento(ActionEvent e) {}
 
   @FXML
-  private void limpiarArea(ActionEvent e) {}
+  private void limpiarArea(ActionEvent e) {
+    // Mostrar advertencia antes de proceder
+    Alert alert = new Alert(AlertType.CONFIRMATION);
+    alert.setTitle("Confirmar Limpieza");
+    alert.setHeaderText("¿Estás seguro de que deseas limpiar el área?");
+    alert.setContentText("Esta acción eliminará todos los elementos y no se puede deshacer.");
+
+    Optional<ButtonType> result = alert.showAndWait();
+    if (result.isPresent() && result.get() == ButtonType.OK) {
+      // 1. Limpiar el modelo (Esto disparará los listeners de DiagramManager)
+      NetworkModel.getInstance().clearAll();
+
+      // 2. Resetear herramienta y selección
+      currentTool = ToolType.NONE;
+      infoElemento.setText("Elemento: Edición");
+      diagramManager.deseleccionarTodo();
+      diagramManager.setConnectionMode(false);
+
+      // 3. Resetear Zoom a 100%
+      if (currentScale != 1.0) {
+        updateZoom(1.0 / currentScale);
+      }
+
+      System.out.println("Controller: Area de dibujo limpiada.");
+    } else {
+      System.out.println("Controller: Limpieza cancelada por el usuario.");
+    }
+  }
 
   @FXML
   private void ejecutar(ActionEvent e) throws ExcepcionDivideCero {

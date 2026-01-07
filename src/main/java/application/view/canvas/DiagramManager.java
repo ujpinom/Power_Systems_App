@@ -102,6 +102,11 @@ public class DiagramManager {
   }
 
   private void agregarBarraVisual(Barras barra) {
+    // Evitar pintar la barra de "Tierra" (Bus 0) que es solo lógica
+    if ("Tierra".equalsIgnoreCase(barra.getNombreBarra())) {
+      return;
+    }
+
     BusShape shape = new BusShape(barra);
     shape.setOnMouseClicked(
         e -> {

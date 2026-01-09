@@ -52,7 +52,7 @@ public abstract class NetworkShape<T> extends Group {
 
     // Opcional: Fondo semitransparente para la etiqueta para mejorar lectura
     this.label.setStyle(
-        "-fx-background-color: rgba(255, 255, 255, 0.7); -fx-background-radius: 3; -fx-padding: 0 2 0 2;");
+        "-fx-background-color: rgba(68, 64, 64, 0.7); -fx-background-radius: 3; -fx-padding: 0 2 0 2;");
 
     this.getChildren().add(label);
   }

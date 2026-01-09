@@ -19,6 +19,7 @@ public class Barras {
 
   private boolean barraFromPV2PQ =
       false; // Indica si la barra fue cambiada de barra PV a PQ debido a violaciones de
+
   // limites de potencia reactiva del
   // generador.
 
@@ -99,6 +100,7 @@ public class Barras {
   // la soluciÃ³n del problemas de flujos de potencia.
   private double
       flowPowerImagCalculada; //// Potencia calculada para las barras de compensaciÃ³n y PV luego de
+
   // obtener
   //// la soluciÃ³n del problemas de flujos de potencia.
 

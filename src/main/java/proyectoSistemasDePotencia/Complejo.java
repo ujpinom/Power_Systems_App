@@ -39,6 +39,7 @@ public class Complejo implements Comparable<Complejo> {
 
     return angulo * 180 / Math.PI;
   }
+
   // suma de dos números complejos
   public static Complejo suma(Complejo c1, Complejo c2) {
 
@@ -77,6 +78,7 @@ public class Complejo implements Comparable<Complejo> {
     double y = c1.real * c2.imag + c1.imag * c2.real;
     return new Complejo(x, y);
   }
+
   // producto de un complejo por un número real
   public static Complejo producto(Complejo c, double d) {
 
@@ -84,6 +86,7 @@ public class Complejo implements Comparable<Complejo> {
     double y = c.imag * d;
     return new Complejo(x, y);
   }
+
   // producto de un número real  por un complejo
   public static Complejo producto(double d, Complejo c) {
 
@@ -91,6 +94,7 @@ public class Complejo implements Comparable<Complejo> {
     double y = c.imag * d;
     return new Complejo(x, y);
   }
+
   // cociente de dos números complejos
   // excepción cuando el complejo denominador es cero
   public static Complejo cociente(Complejo c1, Complejo c2) throws ExcepcionDivideCero {
@@ -129,12 +133,14 @@ public class Complejo implements Comparable<Complejo> {
     double y = Math.sin(c.imag) * Math.exp(c.real);
     return new Complejo(x, y);
   }
+
   // raíz cuadrada de un número positivo o negativo
   public static Complejo csqrt(double d) {
 
     if (d >= 0) return new Complejo(Math.sqrt(d), 0);
     return new Complejo(0, Math.sqrt(-d));
   }
+
   // función auxiliar  para la potencia de un número complejo
   private static double potencia(double base, int exponente) {
 
@@ -145,6 +151,7 @@ public class Complejo implements Comparable<Complejo> {
     }
     return resultado;
   }
+
   // función auxiliar para la potencia de un número complejo
   private static double combinatorio(int m, int n) {
 
@@ -159,6 +166,7 @@ public class Complejo implements Comparable<Complejo> {
     }
     return (double) num / den;
   }
+
   // potencia de un número complejo
   public static Complejo potencia(Complejo c, int exponente) {
 
@@ -182,6 +190,7 @@ public class Complejo implements Comparable<Complejo> {
     }
     return new Complejo(x, y);
   }
+
   // traduce un número complejo a un string
   public String toString() {
     if (imag > 0)

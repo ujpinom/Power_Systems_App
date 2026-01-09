@@ -17,6 +17,7 @@ public class FallaLineaALinea {
   private Complejo corrientePuntoFalla2;
   private ArrayList<Double> vectorVoltajesSecuencia1 = new ArrayList<>();
   private ArrayList<Double> vectorVoltajesSecuencia2 = new ArrayList<>();
+
   // private String [] conexionesBarras;
   // private List<List<Edges>> adyacencias;
 

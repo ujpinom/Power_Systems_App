@@ -806,6 +806,7 @@ public class SPController implements Initializable {
 
     zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
   }
+
   // --- LÓGICA DE CREACIÓN DE OBJETOS ---
 
   private boolean validarProximidad(double x, double y) {
@@ -883,6 +884,9 @@ public class SPController implements Initializable {
   @FXML
   private void mouseEvent(MouseEvent e) {
     areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    double x = e.getX();
+    double y = e.getY();
+    infoPosiMouse.setText(String.format("X=%.3f   Y=%.3f", x, y));
   }
 
   @FXML private TextField MVAbase;

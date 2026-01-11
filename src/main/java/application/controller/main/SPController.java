@@ -111,6 +111,8 @@ public class SPController implements Initializable {
 
   @FXML private Button undo1;
 
+  @FXML private Button redo1;
+
   @FXML private ToggleButton banco;
 
   @FXML private ToggleButton generador;
@@ -454,6 +456,11 @@ public class SPController implements Initializable {
   @FXML
   private void borrarUltimoElemento(ActionEvent e) {
     NetworkModel.getInstance().undoLastAction();
+  }
+
+  @FXML
+  private void rehacerUltimoElemento(ActionEvent e) {
+    NetworkModel.getInstance().redoLastAction();
   }
 
   @FXML

@@ -31,8 +31,13 @@ public class NetworkModel {
   private final ObservableList<CompensadorEstatico> compensadores =
       FXCollections.observableArrayList();
 
-  // Historial de creación para deshacer
+  // Historial de creación para deshacer/rehacer
   private final Stack<Object> creationHistory = new Stack<>();
+  private final Stack<Object> redoHistory = new Stack<>();
+
+  // Bandera para evitar que acciones internas (Undo/Redo) limpien el stack de
+  // rehacer
+  private boolean isProcessingInternalAction = false;
 
   // Lista de observadores externos (DiagramManager, etc.)
   private final List<NetworkChangeListener> listeners = new ArrayList<>();
@@ -284,6 +289,7 @@ public class NetworkModel {
 
     // Limpiar historial
     this.creationHistory.clear();
+    this.redoHistory.clear();
 
     // Re-agregar bus tierra si es necesario para el sistema
     this.barras.add(new Barras("Tierra"));
@@ -292,26 +298,62 @@ public class NetworkModel {
 
   public void undoLastAction() {
     if (!creationHistory.isEmpty()) {
-      Object ultimo = creationHistory.pop();
+      isProcessingInternalAction = true;
+      try {
+        Object ultimo = creationHistory.pop();
+        redoHistory.push(ultimo); // Guardar en rehacer
 
-      if (ultimo instanceof Barras) {
-        removeBarra((Barras) ultimo);
-      } else if (ultimo instanceof Lineas) {
-        removeLinea((Lineas) ultimo);
-      } else if (ultimo instanceof Transformador) {
-        removeTransformador((Transformador) ultimo);
-      } else if (ultimo instanceof Generadores) {
-        removeGenerador((Generadores) ultimo);
-      } else if (ultimo instanceof Carga) {
-        removeCarga((Carga) ultimo);
-      } else if (ultimo instanceof Bancos) {
-        removeBanco((Bancos) ultimo);
-      } else if (ultimo instanceof CompensadorEstatico) {
-        removeCompensador((CompensadorEstatico) ultimo);
+        if (ultimo instanceof Barras) {
+          removeBarra((Barras) ultimo);
+        } else if (ultimo instanceof Lineas) {
+          removeLinea((Lineas) ultimo);
+        } else if (ultimo instanceof Transformador) {
+          removeTransformador((Transformador) ultimo);
+        } else if (ultimo instanceof Generadores) {
+          removeGenerador((Generadores) ultimo);
+        } else if (ultimo instanceof Carga) {
+          removeCarga((Carga) ultimo);
+        } else if (ultimo instanceof Bancos) {
+          removeBanco((Bancos) ultimo);
+        } else if (ultimo instanceof CompensadorEstatico) {
+          removeCompensador((CompensadorEstatico) ultimo);
+        }
+        System.out.println("Modelo: Deshacer -> Elemento movido a Redo.");
+      } finally {
+        isProcessingInternalAction = false;
       }
-      System.out.println("Modelo: Deshacer -> Elemento eliminado.");
     } else {
       System.out.println("Modelo: Historial de deshacer vacío.");
+    }
+  }
+
+  public void redoLastAction() {
+    if (!redoHistory.isEmpty()) {
+      isProcessingInternalAction = true;
+      try {
+        Object item = redoHistory.pop();
+
+        if (item instanceof Barras) {
+          addBarra((Barras) item);
+        } else if (item instanceof Lineas) {
+          addLinea((Lineas) item);
+        } else if (item instanceof Transformador) {
+          addTransformador((Transformador) item);
+        } else if (item instanceof Generadores) {
+          addGenerador((Generadores) item);
+        } else if (item instanceof Carga) {
+          addCarga((Carga) item);
+        } else if (item instanceof Bancos) {
+          addBanco((Bancos) item);
+        } else if (item instanceof CompensadorEstatico) {
+          addCompensador((CompensadorEstatico) item);
+        }
+        System.out.println("Modelo: Rehacer -> Elemento restaurado.");
+      } finally {
+        isProcessingInternalAction = false;
+      }
+    } else {
+      System.out.println("Modelo: Historial de rehacer vacío.");
     }
   }
 
@@ -325,6 +367,7 @@ public class NetworkModel {
                   for (Barras b : c.getAddedSubList()) {
                     // Historial (Skip Tierra)
                     if (!b.getNombreBarra().equalsIgnoreCase("Tierra")) {
+                      if (!isProcessingInternalAction) redoHistory.clear();
                       creationHistory.push(b);
                     }
                     // Visual/Externo
@@ -332,6 +375,7 @@ public class NetworkModel {
                   }
                 }
                 if (c.wasRemoved()) {
+                  if (!isProcessingInternalAction) redoHistory.clear();
                   for (Barras b : c.getRemoved()) notifyRemoved(b);
                 }
               }
@@ -344,11 +388,13 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Lineas l : c.getAddedSubList()) {
+                    if (!isProcessingInternalAction) redoHistory.clear();
                     creationHistory.push(l);
                     notifyAdded(l);
                   }
                 }
                 if (c.wasRemoved()) {
+                  if (!isProcessingInternalAction) redoHistory.clear();
                   for (Lineas l : c.getRemoved()) notifyRemoved(l);
                 }
               }
@@ -361,11 +407,13 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Transformador t : c.getAddedSubList()) {
+                    if (!isProcessingInternalAction) redoHistory.clear();
                     creationHistory.push(t);
                     notifyAdded(t);
                   }
                 }
                 if (c.wasRemoved()) {
+                  if (!isProcessingInternalAction) redoHistory.clear();
                   for (Transformador t : c.getRemoved()) notifyRemoved(t);
                 }
               }
@@ -378,11 +426,13 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Generadores g : c.getAddedSubList()) {
+                    if (!isProcessingInternalAction) redoHistory.clear();
                     creationHistory.push(g);
                     notifyAdded(g);
                   }
                 }
                 if (c.wasRemoved()) {
+                  if (!isProcessingInternalAction) redoHistory.clear();
                   for (Generadores g : c.getRemoved()) notifyRemoved(g);
                 }
               }
@@ -395,11 +445,13 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Carga car : c.getAddedSubList()) {
+                    if (!isProcessingInternalAction) redoHistory.clear();
                     creationHistory.push(car);
                     notifyAdded(car);
                   }
                 }
                 if (c.wasRemoved()) {
+                  if (!isProcessingInternalAction) redoHistory.clear();
                   for (Carga car : c.getRemoved()) notifyRemoved(car);
                 }
               }
@@ -412,11 +464,13 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Bancos b : c.getAddedSubList()) {
+                    if (!isProcessingInternalAction) redoHistory.clear();
                     creationHistory.push(b);
                     notifyAdded(b);
                   }
                 }
                 if (c.wasRemoved()) {
+                  if (!isProcessingInternalAction) redoHistory.clear();
                   for (Bancos b : c.getRemoved()) notifyRemoved(b);
                 }
               }
@@ -429,11 +483,13 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (CompensadorEstatico ce : c.getAddedSubList()) {
+                    if (!isProcessingInternalAction) redoHistory.clear();
                     creationHistory.push(ce);
                     notifyAdded(ce);
                   }
                 }
                 if (c.wasRemoved()) {
+                  if (!isProcessingInternalAction) redoHistory.clear();
                   for (CompensadorEstatico ce : c.getRemoved()) notifyRemoved(ce);
                 }
               }

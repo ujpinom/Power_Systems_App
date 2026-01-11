@@ -120,4 +120,4 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 2.  **Suite de Formularios Modernos:** Completar la migración de los formularios de edición (`LineForm`, `TrafoForm`, `GenForm`) utilizando el nuevo sistema de formularios reactivos que se sincronizan en tiempo real con el modelo.
 3.  **Visualización Pro de Resultados:** Vincular el motor de Newton-Raphson y cálculos de fallas con las `TableView` del panel inferior. Incluir anotaciones gráficas sobre el lienzo (etiquetas flotantes con voltajes p.u. y ángulos de fase).
 4.  **Persistencia y Exportación:** Implementar la carga/guardado en formato JSON o XML para persistencia de proyectos complejos, y exportación de reportes de resultados en formato PDF/Excel.
-5.  **Sistema de Rehacer (Redo):** Extender el sistema de gestión de estado para soportar la restauración de acciones deshechas mediante un segundo stack de comandos.
+- [x] **Sistema de Rehacer (Redo):** Extender el sistema de gestión de estado para soportar la restauración de acciones deshechas mediante un segundo stack de comandos.

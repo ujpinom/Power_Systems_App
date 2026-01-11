@@ -52,6 +52,14 @@
                               <tooltip><Tooltip text="Deshacer última acción" /></tooltip>
                           </Button>
 
+                          <Button fx:id="redo1" mnemonicParsing="false" onAction="#rehacerUltimoElemento" text="Rehacer" contentDisplay="TOP">
+                              <graphic>
+                                  <SVGPath content="M12 5 V1 L17 6 L12 11 V7 C8.69 7 6 9.69 6 13 C6 16.31 8.69 19 12 19 C15.31 19 18 16.31 18 13 H20 C20 17.42 16.42 21 12 21 C7.58 21 4 17.42 4 13 C4 8.58 7.58 5 12 5 Z" 
+                                           fill="#555555" scaleX="0.8" scaleY="0.8"/>
+                              </graphic>
+                              <tooltip><Tooltip text="Rehacer acción deshecha" /></tooltip>
+                          </Button>
+
                           <Button fx:id="undo" mnemonicParsing="false" onAction="#limpiarArea" text="Limpiar Todo" contentDisplay="TOP">
                               <graphic>
                                   <SVGPath content="M15 4 V3 H9 V4 H4 V6 H20 V4 H15 Z M6 8 V21 H18 V8 H6 Z" 

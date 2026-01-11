@@ -17,6 +17,21 @@ import proyectoSistemasDePotencia.Lineas;
 import proyectoSistemasDePotencia.Transformador;
 
 public class NetworkModel {
+  // Enum y Clase interna para el historial
+  private enum ActionType {
+    ADD,
+    REMOVE
+  }
+
+  private static class HistoryAction {
+    final Object element;
+    final ActionType type;
+
+    HistoryAction(Object element, ActionType type) {
+      this.element = element;
+      this.type = type;
+    }
+  }
 
   private static NetworkModel instance;
   private final ObjectProperty<Object> seleccionActual = new SimpleObjectProperty<>();
@@ -31,9 +46,9 @@ public class NetworkModel {
   private final ObservableList<CompensadorEstatico> compensadores =
       FXCollections.observableArrayList();
 
-  // Historial de creación para deshacer/rehacer
-  private final Stack<Object> creationHistory = new Stack<>();
-  private final Stack<Object> redoHistory = new Stack<>();
+  // Historial de creación para deshacer/rehacer con soporte para Eliminaciones
+  private final Stack<HistoryAction> creationHistory = new Stack<>();
+  private final Stack<HistoryAction> redoHistory = new Stack<>();
 
   // Bandera para evitar que acciones internas (Undo/Redo) limpien el stack de
   // rehacer
@@ -300,25 +315,20 @@ public class NetworkModel {
     if (!creationHistory.isEmpty()) {
       isProcessingInternalAction = true;
       try {
-        Object ultimo = creationHistory.pop();
-        redoHistory.push(ultimo); // Guardar en rehacer
+        HistoryAction action = creationHistory.pop();
+        Object element = action.element;
 
-        if (ultimo instanceof Barras) {
-          removeBarra((Barras) ultimo);
-        } else if (ultimo instanceof Lineas) {
-          removeLinea((Lineas) ultimo);
-        } else if (ultimo instanceof Transformador) {
-          removeTransformador((Transformador) ultimo);
-        } else if (ultimo instanceof Generadores) {
-          removeGenerador((Generadores) ultimo);
-        } else if (ultimo instanceof Carga) {
-          removeCarga((Carga) ultimo);
-        } else if (ultimo instanceof Bancos) {
-          removeBanco((Bancos) ultimo);
-        } else if (ultimo instanceof CompensadorEstatico) {
-          removeCompensador((CompensadorEstatico) ultimo);
+        if (action.type == ActionType.ADD) {
+          // Deshacer una adición -> Remover
+          redoHistory.push(new HistoryAction(element, ActionType.ADD));
+          performRemove(element);
+          System.out.println("Modelo: Undo (Add) -> Elemento removido.");
+        } else {
+          // Deshacer una eliminación -> Re-agregar
+          redoHistory.push(new HistoryAction(element, ActionType.REMOVE));
+          performAdd(element);
+          System.out.println("Modelo: Undo (Remove) -> Elemento restaurado.");
         }
-        System.out.println("Modelo: Deshacer -> Elemento movido a Redo.");
       } finally {
         isProcessingInternalAction = false;
       }
@@ -331,30 +341,47 @@ public class NetworkModel {
     if (!redoHistory.isEmpty()) {
       isProcessingInternalAction = true;
       try {
-        Object item = redoHistory.pop();
+        HistoryAction action = redoHistory.pop();
+        Object element = action.element;
 
-        if (item instanceof Barras) {
-          addBarra((Barras) item);
-        } else if (item instanceof Lineas) {
-          addLinea((Lineas) item);
-        } else if (item instanceof Transformador) {
-          addTransformador((Transformador) item);
-        } else if (item instanceof Generadores) {
-          addGenerador((Generadores) item);
-        } else if (item instanceof Carga) {
-          addCarga((Carga) item);
-        } else if (item instanceof Bancos) {
-          addBanco((Bancos) item);
-        } else if (item instanceof CompensadorEstatico) {
-          addCompensador((CompensadorEstatico) item);
+        if (action.type == ActionType.ADD) {
+          // Rehacer una adición -> Agregar
+          creationHistory.push(new HistoryAction(element, ActionType.ADD));
+          performAdd(element);
+          System.out.println("Modelo: Redo (Add) -> Elemento restaurado.");
+        } else {
+          // Rehacer una eliminación -> Remover
+          creationHistory.push(new HistoryAction(element, ActionType.REMOVE));
+          performRemove(element);
+          System.out.println("Modelo: Redo (Remove) -> Elemento removido.");
         }
-        System.out.println("Modelo: Rehacer -> Elemento restaurado.");
       } finally {
         isProcessingInternalAction = false;
       }
     } else {
       System.out.println("Modelo: Historial de rehacer vacío.");
     }
+  }
+
+  // Métodos auxiliares para evitar duplicar lógica de tipos en Undo/Redo
+  private void performAdd(Object item) {
+    if (item instanceof Barras) addBarra((Barras) item);
+    else if (item instanceof Lineas) addLinea((Lineas) item);
+    else if (item instanceof Transformador) addTransformador((Transformador) item);
+    else if (item instanceof Generadores) addGenerador((Generadores) item);
+    else if (item instanceof Carga) addCarga((Carga) item);
+    else if (item instanceof Bancos) addBanco((Bancos) item);
+    else if (item instanceof CompensadorEstatico) addCompensador((CompensadorEstatico) item);
+  }
+
+  private void performRemove(Object item) {
+    if (item instanceof Barras) removeBarra((Barras) item);
+    else if (item instanceof Lineas) removeLinea((Lineas) item);
+    else if (item instanceof Transformador) removeTransformador((Transformador) item);
+    else if (item instanceof Generadores) removeGenerador((Generadores) item);
+    else if (item instanceof Carga) removeCarga((Carga) item);
+    else if (item instanceof Bancos) removeBanco((Bancos) item);
+    else if (item instanceof CompensadorEstatico) removeCompensador((CompensadorEstatico) item);
   }
 
   private void initUniversalDispatcher() {
@@ -365,17 +392,21 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Barras b : c.getAddedSubList()) {
-                    // Historial (Skip Tierra)
-                    if (!b.getNombreBarra().equalsIgnoreCase("Tierra")) {
-                      if (!isProcessingInternalAction) redoHistory.clear();
-                      creationHistory.push(b);
+                    if (!b.getNombreBarra().equalsIgnoreCase("Tierra")
+                        && !isProcessingInternalAction) {
+                      redoHistory.clear();
+                      creationHistory.push(new HistoryAction(b, ActionType.ADD));
                     }
-                    // Visual/Externo
                     notifyAdded(b);
                   }
                 }
                 if (c.wasRemoved()) {
-                  if (!isProcessingInternalAction) redoHistory.clear();
+                  if (!isProcessingInternalAction) {
+                    redoHistory.clear();
+                    for (Barras b : c.getRemoved()) {
+                      creationHistory.push(new HistoryAction(b, ActionType.REMOVE));
+                    }
+                  }
                   for (Barras b : c.getRemoved()) notifyRemoved(b);
                 }
               }
@@ -388,13 +419,20 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Lineas l : c.getAddedSubList()) {
-                    if (!isProcessingInternalAction) redoHistory.clear();
-                    creationHistory.push(l);
+                    if (!isProcessingInternalAction) {
+                      redoHistory.clear();
+                      creationHistory.push(new HistoryAction(l, ActionType.ADD));
+                    }
                     notifyAdded(l);
                   }
                 }
                 if (c.wasRemoved()) {
-                  if (!isProcessingInternalAction) redoHistory.clear();
+                  if (!isProcessingInternalAction) {
+                    redoHistory.clear();
+                    for (Lineas l : c.getRemoved()) {
+                      creationHistory.push(new HistoryAction(l, ActionType.REMOVE));
+                    }
+                  }
                   for (Lineas l : c.getRemoved()) notifyRemoved(l);
                 }
               }
@@ -407,13 +445,20 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Transformador t : c.getAddedSubList()) {
-                    if (!isProcessingInternalAction) redoHistory.clear();
-                    creationHistory.push(t);
+                    if (!isProcessingInternalAction) {
+                      redoHistory.clear();
+                      creationHistory.push(new HistoryAction(t, ActionType.ADD));
+                    }
                     notifyAdded(t);
                   }
                 }
                 if (c.wasRemoved()) {
-                  if (!isProcessingInternalAction) redoHistory.clear();
+                  if (!isProcessingInternalAction) {
+                    redoHistory.clear();
+                    for (Transformador t : c.getRemoved()) {
+                      creationHistory.push(new HistoryAction(t, ActionType.REMOVE));
+                    }
+                  }
                   for (Transformador t : c.getRemoved()) notifyRemoved(t);
                 }
               }
@@ -426,13 +471,20 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Generadores g : c.getAddedSubList()) {
-                    if (!isProcessingInternalAction) redoHistory.clear();
-                    creationHistory.push(g);
+                    if (!isProcessingInternalAction) {
+                      redoHistory.clear();
+                      creationHistory.push(new HistoryAction(g, ActionType.ADD));
+                    }
                     notifyAdded(g);
                   }
                 }
                 if (c.wasRemoved()) {
-                  if (!isProcessingInternalAction) redoHistory.clear();
+                  if (!isProcessingInternalAction) {
+                    redoHistory.clear();
+                    for (Generadores g : c.getRemoved()) {
+                      creationHistory.push(new HistoryAction(g, ActionType.REMOVE));
+                    }
+                  }
                   for (Generadores g : c.getRemoved()) notifyRemoved(g);
                 }
               }
@@ -445,13 +497,20 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Carga car : c.getAddedSubList()) {
-                    if (!isProcessingInternalAction) redoHistory.clear();
-                    creationHistory.push(car);
+                    if (!isProcessingInternalAction) {
+                      redoHistory.clear();
+                      creationHistory.push(new HistoryAction(car, ActionType.ADD));
+                    }
                     notifyAdded(car);
                   }
                 }
                 if (c.wasRemoved()) {
-                  if (!isProcessingInternalAction) redoHistory.clear();
+                  if (!isProcessingInternalAction) {
+                    redoHistory.clear();
+                    for (Carga car : c.getRemoved()) {
+                      creationHistory.push(new HistoryAction(car, ActionType.REMOVE));
+                    }
+                  }
                   for (Carga car : c.getRemoved()) notifyRemoved(car);
                 }
               }
@@ -464,13 +523,20 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (Bancos b : c.getAddedSubList()) {
-                    if (!isProcessingInternalAction) redoHistory.clear();
-                    creationHistory.push(b);
+                    if (!isProcessingInternalAction) {
+                      redoHistory.clear();
+                      creationHistory.push(new HistoryAction(b, ActionType.ADD));
+                    }
                     notifyAdded(b);
                   }
                 }
                 if (c.wasRemoved()) {
-                  if (!isProcessingInternalAction) redoHistory.clear();
+                  if (!isProcessingInternalAction) {
+                    redoHistory.clear();
+                    for (Bancos b : c.getRemoved()) {
+                      creationHistory.push(new HistoryAction(b, ActionType.REMOVE));
+                    }
+                  }
                   for (Bancos b : c.getRemoved()) notifyRemoved(b);
                 }
               }
@@ -483,13 +549,20 @@ public class NetworkModel {
               while (c.next()) {
                 if (c.wasAdded()) {
                   for (CompensadorEstatico ce : c.getAddedSubList()) {
-                    if (!isProcessingInternalAction) redoHistory.clear();
-                    creationHistory.push(ce);
+                    if (!isProcessingInternalAction) {
+                      redoHistory.clear();
+                      creationHistory.push(new HistoryAction(ce, ActionType.ADD));
+                    }
                     notifyAdded(ce);
                   }
                 }
                 if (c.wasRemoved()) {
-                  if (!isProcessingInternalAction) redoHistory.clear();
+                  if (!isProcessingInternalAction) {
+                    redoHistory.clear();
+                    for (CompensadorEstatico ce : c.getRemoved()) {
+                      creationHistory.push(new HistoryAction(ce, ActionType.REMOVE));
+                    }
+                  }
                   for (CompensadorEstatico ce : c.getRemoved()) notifyRemoved(ce);
                 }
               }

@@ -121,3 +121,4 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 3.  **Visualización Pro de Resultados:** Vincular el motor de Newton-Raphson y cálculos de fallas con las `TableView` del panel inferior. Incluir anotaciones gráficas sobre el lienzo (etiquetas flotantes con voltajes p.u. y ángulos de fase).
 4.  **Persistencia y Exportación:** Implementar la carga/guardado en formato JSON o XML para persistencia de proyectos complejos, y exportación de reportes de resultados en formato PDF/Excel.
 - [x] **Sistema de Rehacer (Redo):** Extender el sistema de gestión de estado para soportar la restauración de acciones deshechas mediante un segundo stack de comandos.
+- [x] **Eliminaciones Manuales Deshacibles:** Refactorización a `HistoryAction` para permitir que el borrado manual vía menú contextual sea reversible y limpie el stack de Redo correctamente.

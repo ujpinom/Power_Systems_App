@@ -54,7 +54,45 @@ public abstract class NetworkShape<T> extends Group {
     this.label.setStyle(
         "-fx-background-color: rgba(68, 64, 64, 0.7); -fx-background-radius: 3; -fx-padding: 0 2 0 2;");
 
+    // Habilitar arrastre independiente para la etiqueta
+    enableLabelDrag(this.label);
+
     this.getChildren().add(label);
+  }
+
+  /** Variables para el arrastre específico de la etiqueta */
+  private double labelAnchorX, labelAnchorY;
+
+  /**
+   * Habilita el arrastre independiente para una etiqueta.
+   *
+   * @param lbl Etiqueta a la que se le añadirá la interactividad.
+   */
+  protected void enableLabelDrag(Label lbl) {
+    lbl.setCursor(Cursor.MOVE);
+
+    lbl.setOnMousePressed(
+        e -> {
+          labelAnchorX = e.getX();
+          labelAnchorY = e.getY();
+          lbl.toFront();
+          e.consume(); // Evita que se dispare el drag del componente principal
+        });
+
+    lbl.setOnMouseDragged(
+        e -> {
+          // Calcular nueva posición relativa al grupo
+          double newX = lbl.getLayoutX() + (e.getX() - labelAnchorX);
+          double newY = lbl.getLayoutY() + (e.getY() - labelAnchorY);
+
+          // Snap to Grid (5px para etiquetas permite más libertad que el de 10px)
+          newX = Math.round(newX / 5) * 5;
+          newY = Math.round(newY / 5) * 5;
+
+          lbl.setLayoutX(newX);
+          lbl.setLayoutY(newY);
+          e.consume();
+        });
   }
 
   public void updateLabelText(String newText) {

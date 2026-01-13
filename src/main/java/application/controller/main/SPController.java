@@ -817,7 +817,7 @@ public class SPController implements Initializable {
   // --- LÓGICA DE CREACIÓN DE OBJETOS ---
 
   private boolean validarProximidad(double x, double y) {
-    double radioMinimo = 50.0; // Distancia mínima en píxeles
+    double radioMinimo = 80.0; // Distancia mínima en píxeles
     for (Barras b : barras) {
       // Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene
       // coordenadas reales aún

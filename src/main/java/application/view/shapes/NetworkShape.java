@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 
@@ -24,9 +25,17 @@ public abstract class NetworkShape<T> extends Group {
   private double initialLayoutX, initialLayoutY;
   private boolean isDragging = false;
 
+  // Variables para Anchor Points
+  protected final javafx.collections.ObservableList<AnchorPoint> anchors =
+      javafx.collections.FXCollections.observableArrayList();
+  protected final Group anchorVisuals = new Group();
+
   public NetworkShape(T model) {
     this.model = model;
     this.setCursor(Cursor.HAND);
+
+    // Añadir grupo de visualización de anchors (siempre encima)
+    this.getChildren().add(anchorVisuals);
 
     // Inicializar animación de Hover (Zoom)
     hoverAnimation = new ScaleTransition(Duration.millis(200), this);
@@ -34,6 +43,16 @@ public abstract class NetworkShape<T> extends Group {
 
     // Inicializar el Menú Contextual
     initContextMenu();
+  }
+
+  public javafx.collections.ObservableList<AnchorPoint> getAnchors() {
+    return anchors;
+  }
+
+  protected void addAnchor(double x, double y) {
+    AnchorPoint anchor = new AnchorPoint(this, x, y);
+    anchors.add(anchor);
+    anchorVisuals.getChildren().add(anchor.getVisual());
   }
 
   /**
@@ -86,8 +105,12 @@ public abstract class NetworkShape<T> extends Group {
           double newY = lbl.getLayoutY() + (e.getY() - labelAnchorY);
 
           // Snap to Grid (5px para etiquetas permite más libertad que el de 10px)
-          newX = Math.round(newX / 5) * 5;
-          newY = Math.round(newY / 5) * 5;
+          newX =
+              Math.round(newX / ShapeConstants.LABEL_SNAP_GRID_SIZE)
+                  * ShapeConstants.LABEL_SNAP_GRID_SIZE;
+          newY =
+              Math.round(newY / ShapeConstants.LABEL_SNAP_GRID_SIZE)
+                  * ShapeConstants.LABEL_SNAP_GRID_SIZE;
 
           lbl.setLayoutX(newX);
           lbl.setLayoutY(newY);
@@ -107,12 +130,13 @@ public abstract class NetworkShape<T> extends Group {
         e -> {
           if (!isDragging) { // No animar si se está arrastrando
             if (isZoomOnHoverEnabled()) {
-              hoverAnimation.setToX(1.2);
-              hoverAnimation.setToY(1.2);
+              hoverAnimation.setToX(ShapeConstants.HOVER_SCALE);
+              hoverAnimation.setToY(ShapeConstants.HOVER_SCALE);
               hoverAnimation.playFromStart();
             }
             this.toFront();
-            this.setEffect(new DropShadow(15, Color.rgb(0, 0, 0, 0.3)));
+            this.setEffect(
+                new DropShadow(ShapeConstants.SELECTION_SHADOW_RADIUS, Color.rgb(0, 0, 0, 0.3)));
             onHoverEntered();
           }
         });
@@ -179,14 +203,17 @@ public abstract class NetworkShape<T> extends Group {
             double newY = initialLayoutY + deltaY;
 
             // Aplicar SNAP TO GRID (Cuadrícula de 10px para mayor precisión)
-            newX = Math.round(newX / 10) * 10;
-            newY = Math.round(newY / 10) * 10;
+            newX = Math.round(newX / ShapeConstants.SNAP_GRID_SIZE) * ShapeConstants.SNAP_GRID_SIZE;
+            newY = Math.round(newY / ShapeConstants.SNAP_GRID_SIZE) * ShapeConstants.SNAP_GRID_SIZE;
 
             this.setLayoutX(newX);
             this.setLayoutY(newY);
 
             // Actualizar modelo
             updateModelCoordinates(newX, newY);
+
+            // Forzar actualización de anchors
+            anchors.forEach(AnchorPoint::updateSceneCoordinates);
           }
         });
 
@@ -230,7 +257,17 @@ public abstract class NetworkShape<T> extends Group {
    * Método abstracto para establecer el estado de selección. Las subclases definen cómo se ven
    * cuando se seleccionan.
    */
-  public abstract void setSeleccionado(boolean seleccionado);
+  /**
+   * Método plantilla para la selección. Maneja la visibilidad de los anchors y delega los efectos
+   * visuales específicos a las subclases.
+   */
+  public void setSeleccionado(boolean seleccionado) {
+    // Mostrar u ocultar anchors visualmente
+    anchors.forEach(a -> a.setVisible(seleccionado));
+    internalSetSeleccionado(seleccionado);
+  }
+
+  protected abstract void internalSetSeleccionado(boolean seleccionado);
 
   public T getModel() {
     return model;
@@ -238,5 +275,39 @@ public abstract class NetworkShape<T> extends Group {
 
   public boolean isDragging() {
     return isDragging;
+  }
+
+  /** Puntos de control visuales para el redimensionamiento. */
+  protected class ResizeHandle extends Circle {
+    private double lastX, lastY;
+
+    public ResizeHandle(double radius) {
+      super(radius, Color.WHITE);
+      setStroke(Color.BLUE);
+      setStrokeWidth(1);
+      setCursor(Cursor.NW_RESIZE); // Valor por defecto, subclases cambian según posición
+      setVisible(false);
+    }
+
+    public void setupDrag(java.util.function.BiConsumer<Double, Double> onResize) {
+      this.setOnMousePressed(
+          e -> {
+            lastX = e.getSceneX();
+            lastY = e.getSceneY();
+            e.consume();
+          });
+
+      this.setOnMouseDragged(
+          e -> {
+            double deltaX = e.getSceneX() - lastX;
+            double deltaY = e.getSceneY() - lastY;
+
+            onResize.accept(deltaX, deltaY);
+
+            lastX = e.getSceneX();
+            lastY = e.getSceneY();
+            e.consume();
+          });
+    }
   }
 }

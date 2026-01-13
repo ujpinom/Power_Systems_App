@@ -20,6 +20,9 @@ public class LineShape extends NetworkShape<Lineas> {
   private final NetworkShape<?> startShape;
   private final NetworkShape<?> endShape;
 
+  private AnchorPoint startAnchor;
+  private AnchorPoint endAnchor;
+
   // Handles para edición de waypoints (Círculos)
   private final Group waypointHandles = new Group();
 
@@ -32,14 +35,25 @@ public class LineShape extends NetworkShape<Lineas> {
     this.startShape = startShape;
     this.endShape = endShape;
 
+    // Resolver Anchors por defecto
+    // Por ahora tomamos el primero disponible. En el futuro podríamos elegir el más
+    // cercano.
+    // Resolver Anchors por defecto (El más cercano al otro extremo)
+    if (!startShape.getAnchors().isEmpty()) {
+      this.startAnchor = findClosestAnchor(startShape, endShape);
+    }
+    if (!endShape.getAnchors().isEmpty()) {
+      this.endAnchor = findClosestAnchor(endShape, startShape);
+    }
+
     // 1. Línea "HitBox" (Invisible, ancha, para facilitar clic)
     hitBox = new Polyline();
-    hitBox.setStrokeWidth(15);
+    hitBox.setStrokeWidth(ShapeConstants.LINE_HITBOX_WIDTH);
     hitBox.setStroke(Color.TRANSPARENT);
 
     // 2. Línea Visual (Fina, visible)
     visualLine = new Polyline();
-    visualLine.setStrokeWidth(2);
+    visualLine.setStrokeWidth(ShapeConstants.LINE_STROKE_WIDTH);
     visualLine.setStroke(Color.BLACK);
     visualLine.setStrokeLineCap(StrokeLineCap.ROUND);
 
@@ -71,11 +85,23 @@ public class LineShape extends NetworkShape<Lineas> {
   }
 
   private void initConnectionListeners() {
-    // Escuchar cambios en X e Y de ambos nodos
-    startShape.layoutXProperty().addListener(positionListener);
-    startShape.layoutYProperty().addListener(positionListener);
-    endShape.layoutXProperty().addListener(positionListener);
-    endShape.layoutYProperty().addListener(positionListener);
+    // Si tenemos anchor, escuchamos sus coordenadas en escena
+    if (startAnchor != null) {
+      startAnchor.sceneXProperty().addListener(positionListener);
+      startAnchor.sceneYProperty().addListener(positionListener);
+    } else {
+      // Fallback: Escuchar layout del shape
+      startShape.layoutXProperty().addListener(positionListener);
+      startShape.layoutYProperty().addListener(positionListener);
+    }
+
+    if (endAnchor != null) {
+      endAnchor.sceneXProperty().addListener(positionListener);
+      endAnchor.sceneYProperty().addListener(positionListener);
+    } else {
+      endShape.layoutXProperty().addListener(positionListener);
+      endShape.layoutYProperty().addListener(positionListener);
+    }
   }
 
   /**
@@ -84,10 +110,42 @@ public class LineShape extends NetworkShape<Lineas> {
    */
   private void updateConnectionPoints() {
     // Coordenadas de inicio y fin
-    double startX = startShape.getLayoutX() + 3;
-    double startY = startShape.getLayoutY() + 30;
-    double endX = endShape.getLayoutX() + 3;
-    double endY = endShape.getLayoutY() + 30;
+    double startX, startY, endX, endY;
+
+    if (startAnchor != null) {
+      // Usar coordenadas de escena del anchor, convertidas a locales de este grupo
+      // (si fuera necesario, pero el grupo LineShape suele estar en 0,0 del padre o
+      // misma jerarquía)
+      // Asumiendo que LineShape y BusShape comparten el mismo padre (Canvas), los
+      // Scene coords del anchor pueden necesitar ajuste si el padre no es la Raíz.
+      // PERO: AnchorPoint.sceneX es coord GLOBAL de escena.
+      // LineShape.polyLine usa coordenadas locales.
+      // Si LineShape está en un Pane, layoutX/Y son relativos al Pane.
+      // Para simplificar: Asumimos que todos son hijos directos del
+      // ZoomablePane/Canvas.
+      // Entonces AnchorPoint calcula su posición respecto al Scene.
+      // Necesitamos coordenadas respecto al PADRE de LineShape.
+
+      // REVISIÓN: AnchorPoint.updateSceneCoordinates usa owner.localToParent.
+      // "localToParent" da coordenadas en el sistema del padre (el Canvas).
+      // Así que sceneX/Y en AnchorPoint son en realidad PARENT coords.
+      startX = startAnchor.sceneXProperty().get();
+      startY = startAnchor.sceneYProperty().get();
+    } else {
+      // Fallback usa la mitad del Bus si no hay anchors (Hardcoded 3 y 30)
+      // Usamos constantes genéricas o calculamos centro
+      // Es mejor si el NetworkShape tuviera un método getCenter()
+      startX = startShape.getLayoutX() + ShapeConstants.BUS_HALF_WIDTH;
+      startY = startShape.getLayoutY() + ShapeConstants.BUS_DEFAULT_HEIGHT / 2.0;
+    }
+
+    if (endAnchor != null) {
+      endX = endAnchor.sceneXProperty().get();
+      endY = endAnchor.sceneYProperty().get();
+    } else {
+      endX = endShape.getLayoutX() + ShapeConstants.BUS_HALF_WIDTH;
+      endY = endShape.getLayoutY() + ShapeConstants.BUS_DEFAULT_HEIGHT / 2.0;
+    }
 
     // Construir lista de todos los puntos: Inicio + Waypoints + Fin
     java.util.List<Double> allPoints = new java.util.ArrayList<>();
@@ -158,12 +216,12 @@ public class LineShape extends NetworkShape<Lineas> {
 
   @Override
   protected void onHoverEntered() {
-    visualLine.setStrokeWidth(4);
+    visualLine.setStrokeWidth(ShapeConstants.LINE_HOVER_WIDTH);
   }
 
   @Override
   protected void onHoverExited() {
-    visualLine.setStrokeWidth(2);
+    visualLine.setStrokeWidth(ShapeConstants.LINE_STROKE_WIDTH);
   }
 
   private void setPoints(Double... coords) {
@@ -179,7 +237,7 @@ public class LineShape extends NetworkShape<Lineas> {
   @Override
   protected void applySelectionEffect() {
     visualLine.setStroke(Color.RED);
-    visualLine.setEffect(new DropShadow(10, Color.CYAN));
+    visualLine.setEffect(new DropShadow(ShapeConstants.SELECTION_SHADOW_OFFSET, Color.CYAN));
   }
 
   @Override
@@ -209,7 +267,7 @@ public class LineShape extends NetworkShape<Lineas> {
   }
 
   @Override
-  public void setSeleccionado(boolean seleccionado) {
+  protected void internalSetSeleccionado(boolean seleccionado) {
     if (seleccionado) {
       applySelectionEffect();
       refreshWaypointHandles();
@@ -230,9 +288,44 @@ public class LineShape extends NetworkShape<Lineas> {
 
   // Método para limpiar listeners cuando se borre la línea (Evitar Memory Leaks)
   public void dispose() {
-    startShape.layoutXProperty().removeListener(positionListener);
-    startShape.layoutYProperty().removeListener(positionListener);
-    endShape.layoutXProperty().removeListener(positionListener);
-    endShape.layoutYProperty().removeListener(positionListener);
+    if (startAnchor != null) {
+      startAnchor.sceneXProperty().removeListener(positionListener);
+      startAnchor.sceneYProperty().removeListener(positionListener);
+    } else {
+      startShape.layoutXProperty().removeListener(positionListener);
+      startShape.layoutYProperty().removeListener(positionListener);
+    }
+
+    if (endAnchor != null) {
+      endAnchor.sceneXProperty().removeListener(positionListener);
+      endAnchor.sceneYProperty().removeListener(positionListener);
+    } else {
+      endShape.layoutXProperty().removeListener(positionListener);
+    }
+  }
+
+  /** Encuentra el AnchorPoint del source más cercano al centro del target. */
+  private AnchorPoint findClosestAnchor(NetworkShape<?> source, NetworkShape<?> target) {
+    if (source.getAnchors().isEmpty()) return null;
+
+    // Centro del target (aprox)
+    double targetX = target.getLayoutX(); // + Width/2? No sabemos width genérico fácil
+    double targetY = target.getLayoutY();
+
+    AnchorPoint best = null;
+    double minDst = Double.MAX_VALUE;
+
+    for (AnchorPoint a : source.getAnchors()) {
+      // Usamos sceneX/Y del anchor
+      double dx = a.sceneXProperty().get() - targetX;
+      double dy = a.sceneYProperty().get() - targetY;
+      double dst = dx * dx + dy * dy;
+
+      if (dst < minDst) {
+        minDst = dst;
+        best = a;
+      }
+    }
+    return best;
   }
 }

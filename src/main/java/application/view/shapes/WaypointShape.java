@@ -20,7 +20,7 @@ public class WaypointShape extends NetworkShape<Lineas> {
     this.indexY = indexY;
 
     // Visualización del handle
-    this.visualCircle = new Circle(5, Color.WHITE);
+    this.visualCircle = new Circle(ShapeConstants.WAYPOINT_RADIUS, Color.WHITE);
     this.visualCircle.setStroke(Color.RED);
     this.visualCircle.setStrokeWidth(1);
 
@@ -56,7 +56,7 @@ public class WaypointShape extends NetworkShape<Lineas> {
   }
 
   @Override
-  public void setSeleccionado(boolean seleccionado) {
+  protected void internalSetSeleccionado(boolean seleccionado) {
     // No tiene estado de selección individual
   }
 

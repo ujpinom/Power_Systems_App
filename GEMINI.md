@@ -123,3 +123,4 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 - [x] **Sistema de Rehacer (Redo):** Extender el sistema de gestión de estado para soportar la restauración de acciones deshechas mediante un segundo stack de comandos.
 - [x] **Eliminaciones Manuales Deshacibles:** Refactorización a `HistoryAction` para permitir que el borrado manual vía menú contextual sea reversible y limpie el stack de Redo correctamente.
 - [x] **Etiquetas Arrastrables:** Implementación de interactividad independiente para las etiquetas en `NetworkShape`, permitiendo su reubicación manual sin mover el componente.
+- [x] **Redimensionamiento de Barras:** Adición de handles de control para ajustar el alto de las barras dinámicamente.

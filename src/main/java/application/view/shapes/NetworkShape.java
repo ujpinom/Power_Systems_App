@@ -49,6 +49,10 @@ public abstract class NetworkShape<T> extends Group {
     return anchors;
   }
 
+  public int getAnchorIndex(AnchorPoint anchor) {
+    return anchors.indexOf(anchor);
+  }
+
   protected void addAnchor(double x, double y) {
     AnchorPoint anchor = new AnchorPoint(this, x, y);
     anchors.add(anchor);
@@ -165,9 +169,19 @@ public abstract class NetworkShape<T> extends Group {
    * Hooks para que las subclases añadan comportamiento extra al pasar el mouse sin sobreescribir la
    * lógica base (toFront, efectos, etc).
    */
-  protected void onHoverEntered() {}
+  protected void onHoverEntered() {
+    // Show anchors when hovering, even if not selected
+    if (!isSelected()) {
+      anchors.forEach(a -> a.setVisible(true));
+    }
+  }
 
-  protected void onHoverExited() {}
+  protected void onHoverExited() {
+    // Hide anchors when mouse leaves, unless the shape is selected
+    if (!isSelected()) {
+      anchors.forEach(a -> a.setVisible(false));
+    }
+  }
 
   /**
    * Define si el componente debe escalarse (Zoom) al pasar el mouse. Las subclases pueden

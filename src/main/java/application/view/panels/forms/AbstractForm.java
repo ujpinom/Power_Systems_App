@@ -41,4 +41,12 @@ public abstract class AbstractForm<T> {
       return defaultValue;
     }
   }
+
+  protected int parseInt(String value, int defaultValue) {
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException e) {
+      return defaultValue;
+    }
+  }
 }

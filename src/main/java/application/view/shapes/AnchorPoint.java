@@ -1,5 +1,6 @@
 package application.view.shapes;
 
+import javafx.animation.ScaleTransition;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -7,6 +8,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.util.Duration;
 
 /**
  * Represents a connection point on a NetworkShape. It maintains its position relative to the owner
@@ -40,6 +42,7 @@ public class AnchorPoint {
     this.visualRepresentation.layoutXProperty().bind(relX);
     this.visualRepresentation.layoutYProperty().bind(relY);
     this.visualRepresentation.setVisible(false);
+    this.visualRepresentation.setUserData(this); // Store reference to this AnchorPoint
 
     // Listeners to update scene coordinates
     // 1. When the relative position changes (e.g. resizing the bus)
@@ -52,6 +55,24 @@ public class AnchorPoint {
     owner.layoutXProperty().addListener(obs -> updateSceneCoordinates());
     owner.layoutYProperty().addListener(obs -> updateSceneCoordinates());
     owner.rotateProperty().addListener(obs -> updateSceneCoordinates());
+
+    // 3. Hover effects (Zoom out/Scale up)
+    ScaleTransition hoverScale = new ScaleTransition(Duration.millis(150), visualRepresentation);
+    this.visualRepresentation.setOnMouseEntered(
+        e -> {
+          hoverScale.stop();
+          hoverScale.setToX(ShapeConstants.HOVER_SCALE * 2);
+          hoverScale.setToY(ShapeConstants.HOVER_SCALE * 2);
+          hoverScale.play();
+        });
+
+    this.visualRepresentation.setOnMouseExited(
+        e -> {
+          hoverScale.stop();
+          hoverScale.setToX(1.0);
+          hoverScale.setToY(1.0);
+          hoverScale.play();
+        });
   }
 
   public void updateSceneCoordinates() {

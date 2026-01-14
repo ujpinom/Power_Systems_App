@@ -35,16 +35,8 @@ public class LineShape extends NetworkShape<Lineas> {
     this.startShape = startShape;
     this.endShape = endShape;
 
-    // Resolver Anchors por defecto
-    // Por ahora tomamos el primero disponible. En el futuro podríamos elegir el más
-    // cercano.
-    // Resolver Anchors por defecto (El más cercano al otro extremo)
-    if (!startShape.getAnchors().isEmpty()) {
-      this.startAnchor = findClosestAnchor(startShape, endShape);
-    }
-    if (!endShape.getAnchors().isEmpty()) {
-      this.endAnchor = findClosestAnchor(endShape, startShape);
-    }
+    // Resolver Anchors: Priorizar índices del modelo, fallback a proximidad
+    resolveAnchors();
 
     // 1. Línea "HitBox" (Invisible, ancha, para facilitar clic)
     hitBox = new Polyline();
@@ -80,8 +72,34 @@ public class LineShape extends NetworkShape<Lineas> {
           String prop = evt.getPropertyName();
           if ("nombreLinea".equals(prop) || "nombrePersonalizado".equals(prop)) {
             javafx.application.Platform.runLater(() -> updateLabelText(model.getNombreLinea()));
+          } else if ("anchorIndex1".equals(prop) || "anchorIndex2".equals(prop)) {
+            javafx.application.Platform.runLater(
+                () -> {
+                  removeConnectionListeners();
+                  resolveAnchors();
+                  initConnectionListeners();
+                  updateConnectionPoints();
+                });
           }
         });
+  }
+
+  private void resolveAnchors() {
+    // Start Anchor
+    int idx1 = model.getAnchorIndex1();
+    if (idx1 != -1 && idx1 < startShape.getAnchors().size()) {
+      this.startAnchor = startShape.getAnchors().get(idx1);
+    } else if (!startShape.getAnchors().isEmpty()) {
+      this.startAnchor = findClosestAnchor(startShape, endShape);
+    }
+
+    // End Anchor
+    int idx2 = model.getAnchorIndex2();
+    if (idx2 != -1 && idx2 < endShape.getAnchors().size()) {
+      this.endAnchor = endShape.getAnchors().get(idx2);
+    } else if (!endShape.getAnchors().isEmpty()) {
+      this.endAnchor = findClosestAnchor(endShape, startShape);
+    }
   }
 
   private void initConnectionListeners() {
@@ -217,11 +235,15 @@ public class LineShape extends NetworkShape<Lineas> {
   @Override
   protected void onHoverEntered() {
     visualLine.setStrokeWidth(ShapeConstants.LINE_HOVER_WIDTH);
+    startAnchor.setVisible(true);
+    endAnchor.setVisible(true);
   }
 
   @Override
   protected void onHoverExited() {
     visualLine.setStrokeWidth(ShapeConstants.LINE_STROKE_WIDTH);
+    startAnchor.setVisible(false);
+    endAnchor.setVisible(false);
   }
 
   private void setPoints(Double... coords) {
@@ -288,6 +310,10 @@ public class LineShape extends NetworkShape<Lineas> {
 
   // Método para limpiar listeners cuando se borre la línea (Evitar Memory Leaks)
   public void dispose() {
+    removeConnectionListeners();
+  }
+
+  private void removeConnectionListeners() {
     if (startAnchor != null) {
       startAnchor.sceneXProperty().removeListener(positionListener);
       startAnchor.sceneYProperty().removeListener(positionListener);
@@ -301,6 +327,7 @@ public class LineShape extends NetworkShape<Lineas> {
       endAnchor.sceneYProperty().removeListener(positionListener);
     } else {
       endShape.layoutXProperty().removeListener(positionListener);
+      endShape.layoutYProperty().removeListener(positionListener);
     }
   }
 

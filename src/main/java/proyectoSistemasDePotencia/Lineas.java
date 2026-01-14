@@ -44,6 +44,8 @@ public class Lineas {
   private double resitencia;
   private double mVarDeCargaTotales;
   private double YMediaParalela;
+  private int anchorIndex1 = -1; // -1 means no specific anchor (fallback to proximity)
+  private int anchorIndex2 = -1;
 
   private ObservableList<Double> listPuntosPolyLine;
 
@@ -321,5 +323,25 @@ public class Lineas {
 
   public double getImpedanciaFalla() {
     return impedanciaFalla;
+  }
+
+  public int getAnchorIndex1() {
+    return anchorIndex1;
+  }
+
+  public void setAnchorIndex1(int anchorIndex1) {
+    int old = this.anchorIndex1;
+    this.anchorIndex1 = anchorIndex1;
+    this.pcs.firePropertyChange("anchorIndex1", old, anchorIndex1);
+  }
+
+  public int getAnchorIndex2() {
+    return anchorIndex2;
+  }
+
+  public void setAnchorIndex2(int anchorIndex2) {
+    int old = this.anchorIndex2;
+    this.anchorIndex2 = anchorIndex2;
+    this.pcs.firePropertyChange("anchorIndex2", old, anchorIndex2);
   }
 }

@@ -25,6 +25,8 @@ public class DiagramManager implements NetworkChangeListener {
   private NetworkShape<?> connectionSource = null;
   private Polyline ghostLine = null;
   private final java.util.List<Double> currentWaypoints = new java.util.ArrayList<>();
+  private int startAnchorIndex = -1;
+  private int endAnchorIndex = -1;
 
   public DiagramManager(AnchorPane canvas) {
     this.canvas = canvas;
@@ -99,9 +101,9 @@ public class DiagramManager implements NetworkChangeListener {
           e.consume();
           // Lógica de Estado: ¿Estamos seleccionando o conectando?
           if (isConnecting) {
-            completeConnection(shape);
+            completeConnection(shape, e);
           } else if (connectionModeEnabled) {
-            startConnection(shape);
+            startConnection(shape, e);
           } else {
             seleccionarShape(shape);
           }
@@ -112,10 +114,22 @@ public class DiagramManager implements NetworkChangeListener {
 
   // --- Lógica de Conexión ---
 
-  public void startConnection(NetworkShape<?> source) {
+  public void startConnection(NetworkShape<?> source, MouseEvent event) {
     this.isConnecting = true;
     this.connectionSource = source;
     this.currentWaypoints.clear();
+    this.startAnchorIndex = -1;
+    this.endAnchorIndex = -1;
+
+    // Detectar si el clic fue en un anchor específico
+    if (event.getTarget() instanceof javafx.scene.shape.Circle) {
+      Object userData = ((javafx.scene.shape.Circle) event.getTarget()).getUserData();
+      if (userData instanceof application.view.shapes.AnchorPoint) {
+        application.view.shapes.AnchorPoint ap = (application.view.shapes.AnchorPoint) userData;
+        this.startAnchorIndex = source.getAnchorIndex(ap);
+        System.out.println("Manager: Conexión iniciada en Anchor " + startAnchorIndex);
+      }
+    }
 
     // Crear polyline fantasma visual
     this.ghostLine = new Polyline();
@@ -128,9 +142,16 @@ public class DiagramManager implements NetworkChangeListener {
     // para que no intercepte los clics dirigidos al canvas.
     this.ghostLine.setMouseTransparent(true);
 
-    // Punto inicial fijo en el centro del origen
-    double startX = source.getLayoutX() + 3;
-    double startY = source.getLayoutY() + 30;
+    // Punto inicial: Si hay anchor específico, usar su posición. Si no, centro.
+    double startX, startY;
+    if (startAnchorIndex != -1) {
+      application.view.shapes.AnchorPoint ap = source.getAnchors().get(startAnchorIndex);
+      startX = ap.sceneXProperty().get();
+      startY = ap.sceneYProperty().get();
+    } else {
+      startX = source.getLayoutX() + 3;
+      startY = source.getLayoutY() + 30;
+    }
 
     // Añadir punto inicial y punto temporal del mouse
     this.ghostLine.getPoints().addAll(startX, startY, startX, startY);
@@ -158,12 +179,22 @@ public class DiagramManager implements NetworkChangeListener {
     System.out.println("Manager: Añadido waypoint en " + snapX + ", " + snapY);
   }
 
-  private void completeConnection(NetworkShape<?> target) {
+  private void completeConnection(NetworkShape<?> target, MouseEvent event) {
     if (!isConnecting || connectionSource == null) return;
 
     if (target == connectionSource) {
       System.out.println("Manager: No se puede conectar un elemento consigo mismo.");
       return;
+    }
+
+    // Detectar si el clic fue en un anchor específico del target
+    if (event.getTarget() instanceof javafx.scene.shape.Circle) {
+      Object userData = ((javafx.scene.shape.Circle) event.getTarget()).getUserData();
+      if (userData instanceof application.view.shapes.AnchorPoint) {
+        application.view.shapes.AnchorPoint ap = (application.view.shapes.AnchorPoint) userData;
+        this.endAnchorIndex = target.getAnchorIndex(ap);
+        System.out.println("Manager: Conexión terminada en Anchor " + endAnchorIndex);
+      }
     }
 
     // Aquí validamos tipos. Por ahora asumimos Barra -> Barra = Línea
@@ -184,6 +215,10 @@ public class DiagramManager implements NetworkChangeListener {
 
     // Transferir waypoints al modelo
     nuevaLinea.getListPuntosPolyLine().addAll(currentWaypoints);
+
+    // Guardar índices de anchors
+    nuevaLinea.setAnchorIndex1(startAnchorIndex);
+    nuevaLinea.setAnchorIndex2(endAnchorIndex);
 
     // Agregar al NetworkModel (El listener se encargará de crear la visual)
     model.addLinea(nuevaLinea);

@@ -1,5 +1,6 @@
 package application.model.project;
 
+import application.model.validation.NetworkValidator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -31,6 +32,7 @@ public class NetworkModel {
   // Delegados (Managers)
   private final NetworkEventDispatcher eventDispatcher = new NetworkEventDispatcher();
   private final NetworkHistoryManager historyManager = new NetworkHistoryManager(this);
+  private final NetworkValidator validator = new NetworkValidator(this);
 
   private NetworkModel() {
     // Inicialización del Nodo Tierra
@@ -182,6 +184,10 @@ public class NetworkModel {
 
   public void redoLastAction() {
     historyManager.redo();
+  }
+
+  public NetworkValidator getValidator() {
+    return validator;
   }
 
   public void addChangeListener(NetworkChangeListener l) {

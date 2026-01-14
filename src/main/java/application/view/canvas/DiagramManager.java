@@ -2,9 +2,11 @@ package application.view.canvas;
 
 import application.model.project.NetworkChangeListener;
 import application.model.project.NetworkModel;
+import application.model.validation.ValidationResult;
 import application.view.shapes.BusShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.NetworkShape;
+import javafx.scene.control.Alert;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
@@ -197,12 +199,28 @@ public class DiagramManager implements NetworkChangeListener {
       }
     }
 
-    // Aquí validamos tipos. Por ahora asumimos Barra -> Barra = Línea
     Object sourceModel = connectionSource.getModel();
     Object targetModel = target.getModel();
 
     if (sourceModel instanceof Barras && targetModel instanceof Barras) {
-      crearLinea((Barras) sourceModel, (Barras) targetModel, connectionSource, target);
+      Barras b1 = (Barras) sourceModel;
+      Barras b2 = (Barras) targetModel;
+
+      // VALIDACIÓN DE LOGICA DE NEGOCIO
+      ValidationResult result =
+          model.getValidator().validateConnection(b1, b2, startAnchorIndex, endAnchorIndex);
+
+      if (!result.isValid()) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Validación de Negocio");
+        alert.setHeaderText("Operación no permitida");
+        alert.setContentText(result.getMessage());
+        alert.showAndWait();
+        cancelConnection();
+        return;
+      }
+
+      crearLinea(b1, b2, connectionSource, target);
     }
 
     cancelConnection(); // Limpiar estado

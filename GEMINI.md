@@ -116,7 +116,7 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 
 ## 8. Próximos Pasos Sugeridos
 
-1.  **Líneas Inteligentes (Dynamic Binding):** Implementar el redibujado automático de las líneas al arrastrar las barras conectadas. Aprovechar el `PropertyChangeSupport` del modelo para actualizar las coordenadas de inicio/fin (`startX`, `startY`, `endX`, `endY`) mediante bindings reactivos.
+1. [x] **Líneas Inteligentes (Dynamic Binding):** Implementar el redibujado automático de las líneas al arrastrar las barras conectadas. Aprovechar el `PropertyChangeSupport` del modelo para actualizar las coordenadas de inicio/fin (`startX`, `startY`, `endX`, `endY`) mediante bindings reactivos.
 2.  **Suite de Formularios Modernos:** Completar la migración de los formularios de edición (`LineForm`, `TrafoForm`, `GenForm`) utilizando el nuevo sistema de formularios reactivos que se sincronizan en tiempo real con el modelo.
 3.  **Visualización Pro de Resultados:** Vincular el motor de Newton-Raphson y cálculos de fallas con las `TableView` del panel inferior. Incluir anotaciones gráficas sobre el lienzo (etiquetas flotantes con voltajes p.u. y ángulos de fase).
 4.  **Persistencia y Exportación:** Implementar la carga/guardado en formato JSON o XML para persistencia de proyectos complejos, y exportación de reportes de resultados en formato PDF/Excel.
@@ -124,3 +124,19 @@ Este documento detalla las mejoras arquitectónicas, visuales y de experiencia d
 - [x] **Eliminaciones Manuales Deshacibles:** Refactorización a `HistoryAction` para permitir que el borrado manual vía menú contextual sea reversible y limpie el stack de Redo correctamente.
 - [x] **Etiquetas Arrastrables:** Implementación de interactividad independiente para las etiquetas en `NetworkShape`, permitiendo su reubicación manual sin mover el componente.
 - [x] **Redimensionamiento de Barras:** Adición de handles de control para ajustar el alto de las barras dinámicamente.
+
+---
+
+## 9. Fase 5: Conectividad Precisa y Reglas de Negocio
+
+### A. Sistema de Anclaje Específico (Anchor Binding)
+Note: Otros elementos deben seguir el mismo patrón de anclaje para que puedan ser conectados.
+- [x] **Identificación de Anchors:** Se asignó `userData` a los círculos de anclaje para permitir su identificación unívoca durante los eventos de clic.
+- [x] **Vinculación Persistente:** Modificación del modelo `Lineas` para almacenar `anchorIndex1` y `anchorIndex2`. Esto garantiza que las conexiones se mantengan en los puntos elegidos por el usuario, ignorando la proximidad geométrica tras movimientos o rotaciones.
+- [x] **Feedback Visual Pro:** Implementación de `ScaleTransition` para que los anchors aumenten de tamaño (zoom) al pasar el mouse, facilitando la puntería.
+
+### B. Motor de Validación de Reglas de Negocio (`NetworkValidator`)
+Note: cualquier otra regla de negocio que se requiera se puede agregar en el archivo `NetworkValidator`.
+- [x] **Arquitectura Desacoplada:** Creación del paquete `application.model.validation` con clases `ValidationResult` y `NetworkValidator`.
+- [x] **Control de Duplicados:** Validación visual que impide crear múltiples líneas sobre los mismos puntos de anclaje exactos.
+- [x] **Alertas de Usuario:** Integración de diálogos `Alert` en `DiagramManager` para informar al usuario sobre violaciones de las reglas de negocio antes de realizar la acción.

@@ -282,7 +282,7 @@ public class LineShape extends NetworkShape<Lineas> {
               .showAndWait()
               .ifPresent(
                   nuevoNombre -> {
-                    model.setNombreLinea(nuevoNombre);
+                    model.setNombrePersonalizado(nuevoNombre);
                     updateLabelText(nuevoNombre);
                   });
         });

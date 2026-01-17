@@ -39,7 +39,10 @@ public class Carga implements Connectable {
   }
 
   public void setPotenciaActiva(double potenciaActiva) {
+    double old = this.potenciaActiva;
     this.potenciaActiva = potenciaActiva;
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreCarga(), "Potencia Activa P", old, potenciaActiva);
   }
 
   public double getPotenciaReactiva() {
@@ -47,7 +50,10 @@ public class Carga implements Connectable {
   }
 
   public void setPotenciaReactiva(double potenciaReactiva) {
+    double old = this.potenciaReactiva;
     this.potenciaReactiva = potenciaReactiva;
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreCarga(), "Potencia Reactiva Q", old, potenciaReactiva);
   }
 
   public Point2D getPuntoMedio() {
@@ -79,7 +85,10 @@ public class Carga implements Connectable {
   }
 
   public void setNombreCarga(String nombreCarga) {
+    String old = this.nombreCarga;
     this.nombreCarga = nombreCarga;
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreCarga(), "Nombre", old, nombreCarga);
   }
 
   // --- Implementation of Connectable ---

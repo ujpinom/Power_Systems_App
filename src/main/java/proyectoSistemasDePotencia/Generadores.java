@@ -52,12 +52,15 @@ public class Generadores implements Connectable {
   }
 
   public void setMWSalida(double mWSalida) {
-
+    double old = this.MWSalida;
     if (mWSalida < 0) {
       MWSalida = 0.0000;
     } else if (mWSalida > MWSalidaMax) {
       MWSalida = MWSalidaMax;
     } else MWSalida = mWSalida;
+
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreGenerador(), "Potencia Activa P", old, MWSalida);
   }
 
   public double getMVarSalida() {
@@ -65,12 +68,15 @@ public class Generadores implements Connectable {
   }
 
   public void setMVarSalida(double mVarSalida) {
-
+    double old = this.MVarSalida;
     if (mVarSalida > MVarSalidaMax) {
       MVarSalida = MVarSalidaMax;
     } else if (mVarSalida < MVarSalidaMin) {
       MVarSalida = MVarSalidaMin;
     } else MVarSalida = mVarSalida;
+
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreGenerador(), "Potencia Reactiva Q", old, MVarSalida);
   }
 
   public double getMWSalidaMin() {
@@ -162,6 +168,8 @@ public class Generadores implements Connectable {
     String old = this.nombrePersonalizado;
     this.nombrePersonalizado = nombrePersonalizado;
     this.pcs.firePropertyChange("nombrePersonalizado", old, nombrePersonalizado);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreGenerador(), "Nombre", old, nombrePersonalizado);
   }
 
   public String getNombrePersonalizado() {

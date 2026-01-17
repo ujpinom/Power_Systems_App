@@ -85,6 +85,8 @@ public class Lineas implements Connectable {
     double old = this.resitencia;
     this.resitencia = resitencia;
     this.pcs.firePropertyChange("resitencia", old, resitencia);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Resistencia R", old, resitencia);
   }
 
   public double getmVarDeCargaTotales() {
@@ -103,6 +105,8 @@ public class Lineas implements Connectable {
     double old = this.YMediaParalela;
     YMediaParalela = yMediaParalela;
     this.pcs.firePropertyChange("YMediaParalela", old, yMediaParalela);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Susceptancia B/2", old, yMediaParalela);
   }
 
   public Point2D getPuntomedio() {
@@ -227,6 +231,8 @@ public class Lineas implements Connectable {
     String old = this.nombrePersonalizado;
     this.nombrePersonalizado = nombrePersonalizado;
     this.pcs.firePropertyChange("nombrePersonalizado", old, nombrePersonalizado);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Nombre Personalizado", old, nombrePersonalizado);
   }
 
   public String getNombrePersonalizado() {
@@ -243,18 +249,24 @@ public class Lineas implements Connectable {
     double old = this.z1;
     this.z1 = impedancia1;
     this.pcs.firePropertyChange("impedanciaLineaZ1", old, impedancia1);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Impedancia Z1", old, impedancia1);
   }
 
   public void setimpedanciaLineaZ2(double impedancia2) {
     double old = this.z2;
     this.z2 = impedancia2;
     this.pcs.firePropertyChange("impedanciaLineaZ2", old, impedancia2);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Impedancia Z2", old, impedancia2);
   }
 
   public void setimpedanciaLineaZ0(double impedancia0) {
     double old = this.z0;
     this.z0 = impedancia0;
     this.pcs.firePropertyChange("impedanciaLineaZ0", old, impedancia0);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Impedancia Z0", old, impedancia0);
   }
 
   public double getimpedanciaLineaZ1() {

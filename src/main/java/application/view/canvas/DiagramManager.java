@@ -6,7 +6,7 @@ import application.model.validation.ValidationResult;
 import application.view.shapes.BusShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.NetworkShape;
-import javafx.scene.control.Alert;
+import application.view.utils.UIUtils;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
@@ -29,6 +29,14 @@ public class DiagramManager implements NetworkChangeListener {
   private final java.util.List<Double> currentWaypoints = new java.util.ArrayList<>();
   private int startAnchorIndex = -1;
   private int endAnchorIndex = -1;
+
+  // --- Reconnection State ---
+  private boolean isReconnecting = false;
+  private proyectoSistemasDePotencia.Connectable reconnectModel = null;
+  private Barras reconnectBarra1Model = null;
+  private Barras reconnectBarra2Model = null;
+  private boolean isReconnectStart = false; // true if connecting Start, false if End
+  private NetworkShape<?> reconnectTargetShape = null;
 
   public DiagramManager(AnchorPane canvas) {
     this.canvas = canvas;
@@ -101,8 +109,10 @@ public class DiagramManager implements NetworkChangeListener {
     shape.setOnMouseClicked(
         e -> {
           e.consume();
-          // Lógica de Estado: ¿Estamos seleccionando o conectando?
-          if (isConnecting) {
+          // Lógica de Estado: ¿Estamos seleccionando, conectando o reconectando?
+          if (isReconnecting) {
+            handleReconnectionClick(shape, e);
+          } else if (isConnecting) {
             completeConnection(shape, e);
           } else if (connectionModeEnabled) {
             startConnection(shape, e);
@@ -210,13 +220,7 @@ public class DiagramManager implements NetworkChangeListener {
       ValidationResult result =
           model.getValidator().validateConnection(b1, b2, startAnchorIndex, endAnchorIndex);
 
-      if (!result.isValid()) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Validación de Negocio");
-        alert.setHeaderText("Operación no permitida");
-        alert.setContentText(result.getMessage());
-        alert.showAndWait();
-        cancelConnection();
+      if (showValidationError(result)) {
         return;
       }
 
@@ -224,6 +228,20 @@ public class DiagramManager implements NetworkChangeListener {
     }
 
     cancelConnection(); // Limpiar estado
+  }
+
+  /**
+   * Muestra un mensaje de error si el resultado de validación no es exitoso.
+   *
+   * @param result Resultado de la validación
+   * @return true si hubo un error y se mostró la alerta, false de lo contrario.
+   */
+  private boolean showValidationError(ValidationResult result) {
+    if (UIUtils.showValidationWarning(result)) {
+      cancelConnection();
+      return true;
+    }
+    return false;
   }
 
   private void crearLinea(Barras b1, Barras b2, NetworkShape<?> shape1, NetworkShape<?> shape2) {
@@ -257,8 +275,11 @@ public class DiagramManager implements NetworkChangeListener {
       lineShape.setOnMouseClicked(
           e -> {
             e.consume();
-            if (!isConnecting) seleccionarShape(lineShape);
+            if (!isConnecting && !isReconnecting) seleccionarShape(lineShape);
           });
+
+      // Callback de reconexión
+      lineShape.setOnReconnectRequest(this::startAnchorReselection);
 
       // Añadir al canvas (Al fondo, index 0, para que quede detrás de las barras)
       canvas.getChildren().add(0, lineShape);
@@ -273,6 +294,101 @@ public class DiagramManager implements NetworkChangeListener {
       canvas.getChildren().remove(ghostLine);
       this.ghostLine = null;
     }
+  }
+
+  // --- Reconnection Logic ---
+
+  private void startAnchorReselection(
+      proyectoSistemasDePotencia.Connectable element, Boolean isStart) {
+    // 1. Cancelar cualquier otra operación
+    cancelConnection();
+    deseleccionarTodo();
+
+    this.isReconnecting = true;
+    this.reconnectModel = element;
+    this.isReconnectStart = isStart;
+
+    // 2. Identificar el shape objetivo
+    Object targetModel = isStart ? element.getBarra1() : element.getBarra2();
+    this.reconnectBarra1Model = isStart ? element.getBarra1() : element.getBarra2();
+    this.reconnectBarra2Model = !isStart ? element.getBarra1() : element.getBarra2();
+    this.reconnectTargetShape = buscarShapePorModelo(targetModel);
+
+    if (this.reconnectTargetShape != null) {
+      // 3. Mostrar anchors
+      this.reconnectTargetShape.showAnchors(true);
+      System.out.println("Manager: Iniciando reconexión para " + (isStart ? "Inicio" : "Fin"));
+
+      // Feedback visual? Podríamos cambiar el cursor del canvas
+      canvas.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    } else {
+      System.err.println("Manager: No se encontró el shape visual.");
+      cancelReconnection();
+    }
+  }
+
+  private void handleReconnectionClick(NetworkShape<?> shape, MouseEvent event) {
+    if (!isReconnecting || shape != reconnectTargetShape) return;
+
+    // Verificar si se clickeó un anchor
+    if (event.getTarget() instanceof javafx.scene.shape.Circle) {
+      Object userData = ((javafx.scene.shape.Circle) event.getTarget()).getUserData();
+      if (userData instanceof application.view.shapes.AnchorPoint) {
+        application.view.shapes.AnchorPoint ap = (application.view.shapes.AnchorPoint) userData;
+        int newIndex = shape.getAnchorIndex(ap);
+
+        System.out.println("Manager: Update Anchor Index -> " + newIndex);
+
+        // Actualizar el modelo
+        if (isReconnectStart) {
+          ValidationResult result =
+              model
+                  .getValidator()
+                  .validateConnection(
+                      reconnectBarra1Model,
+                      reconnectBarra2Model,
+                      newIndex,
+                      reconnectModel.getAnchorIndex2());
+          if (showValidationError(result)) {
+            cancelReconnection();
+            return;
+          }
+          reconnectModel.setAnchorIndex1(newIndex);
+        } else {
+          ValidationResult result =
+              model
+                  .getValidator()
+                  .validateConnection(
+                      reconnectBarra1Model,
+                      reconnectBarra2Model,
+                      reconnectModel.getAnchorIndex1(),
+                      newIndex);
+          if (showValidationError(result)) {
+            cancelReconnection();
+            return;
+          }
+          reconnectModel.setAnchorIndex2(newIndex);
+        }
+
+        // Finalizar
+        cancelReconnection();
+        return;
+      }
+    }
+
+    // Si se cliquea el cuerpo pero no un anchor, podríamos cancelar o ignorar.
+    // Por ahora, ignoramos.
+    System.out.println("Manager: Clic en shape pero no en anchor.");
+  }
+
+  private void cancelReconnection() {
+    if (reconnectTargetShape != null) {
+      reconnectTargetShape.showAnchors(false);
+    }
+    this.isReconnecting = false;
+    this.reconnectModel = null;
+    this.reconnectTargetShape = null;
+    canvas.setCursor(javafx.scene.Cursor.DEFAULT);
   }
 
   // --- Fin Lógica de Conexión ---
@@ -296,6 +412,9 @@ public class DiagramManager implements NetworkChangeListener {
   }
 
   public void deseleccionarTodo() {
+    if (isReconnecting) {
+      cancelReconnection();
+    }
     if (seleccionActual != null) {
       seleccionActual.setSeleccionado(false);
       seleccionActual = null;

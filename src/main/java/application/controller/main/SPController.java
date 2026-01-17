@@ -854,7 +854,7 @@ public class SPController implements Initializable {
   @FXML
   private void mouseClicked(MouseEvent e) throws IOException {
 
-    areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    areaDibujo.setCursor(javafx.scene.Cursor.DEFAULT);
     double x = snap(e.getX());
     double y = snap(e.getY());
     if (e.getButton() == MouseButton.PRIMARY) {
@@ -885,12 +885,12 @@ public class SPController implements Initializable {
 
   @FXML
   private void dragEvent(MouseEvent e) {
-    areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    areaDibujo.setCursor(javafx.scene.Cursor.DEFAULT);
   }
 
   @FXML
   private void mouseEvent(MouseEvent e) {
-    areaDibujo.setCursor(javafx.scene.Cursor.CROSSHAIR);
+    areaDibujo.setCursor(javafx.scene.Cursor.DEFAULT);
     double x = e.getX();
     double y = e.getY();
     infoPosiMouse.setText(String.format("X=%.3f   Y=%.3f", x, y));

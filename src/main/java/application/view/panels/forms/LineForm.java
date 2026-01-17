@@ -49,14 +49,8 @@ public class LineForm extends AbstractForm<Lineas> {
     addField("Bus Origen:", 2, txtOrigen);
 
     TextField txtAnchor1 = new TextField(String.valueOf(linea.getAnchorIndex1()));
-    txtAnchor1.setPromptText("-1 para automático");
-    txtAnchor1.setOnAction(e -> actualizarAnchor1(linea, txtAnchor1));
-    txtAnchor1
-        .focusedProperty()
-        .addListener(
-            (obs, oldVal, newVal) -> {
-              if (!newVal) actualizarAnchor1(linea, txtAnchor1);
-            });
+    txtAnchor1.setEditable(false);
+    txtAnchor1.setDisable(true);
     addField("Anchor Origen:", 3, txtAnchor1);
 
     TextField txtDestino =
@@ -66,14 +60,8 @@ public class LineForm extends AbstractForm<Lineas> {
     addField("Bus Destino:", 4, txtDestino);
 
     TextField txtAnchor2 = new TextField(String.valueOf(linea.getAnchorIndex2()));
-    txtAnchor2.setPromptText("-1 para automático");
-    txtAnchor2.setOnAction(e -> actualizarAnchor2(linea, txtAnchor2));
-    txtAnchor2
-        .focusedProperty()
-        .addListener(
-            (obs, oldVal, newVal) -> {
-              if (!newVal) actualizarAnchor2(linea, txtAnchor2);
-            });
+    txtAnchor2.setEditable(false);
+    txtAnchor2.setDisable(true);
     addField("Anchor Destino:", 5, txtAnchor2);
 
     // --- 2. IMPEDANCIA Z1 ---
@@ -163,18 +151,6 @@ public class LineForm extends AbstractForm<Lineas> {
   private void actualizarYMedia(Lineas linea, TextField txt) {
     double val = parseDouble(txt.getText(), linea.getYMediaParalela());
     linea.setYMediaParalela(val);
-    txt.setText(String.valueOf(val));
-  }
-
-  private void actualizarAnchor1(Lineas linea, TextField txt) {
-    int val = parseInt(txt.getText(), linea.getAnchorIndex1());
-    linea.setAnchorIndex1(val);
-    txt.setText(String.valueOf(val));
-  }
-
-  private void actualizarAnchor2(Lineas linea, TextField txt) {
-    int val = parseInt(txt.getText(), linea.getAnchorIndex2());
-    linea.setAnchorIndex2(val);
     txt.setText(String.valueOf(val));
   }
 }

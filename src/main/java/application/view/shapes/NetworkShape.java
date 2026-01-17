@@ -283,6 +283,10 @@ public abstract class NetworkShape<T> extends Group {
 
   protected abstract void internalSetSeleccionado(boolean seleccionado);
 
+  public void showAnchors(boolean show) {
+    anchors.forEach(a -> a.setVisible(show));
+  }
+
   public T getModel() {
     return model;
   }

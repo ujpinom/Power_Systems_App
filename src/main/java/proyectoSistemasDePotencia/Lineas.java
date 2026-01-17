@@ -7,7 +7,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Polyline;
 
-public class Lineas {
+public class Lineas implements Connectable {
 
   private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 

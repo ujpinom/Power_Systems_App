@@ -30,6 +30,14 @@ public class LineShape extends NetworkShape<Lineas> {
   private final ChangeListener<Number> positionListener =
       (obs, oldVal, newVal) -> updateConnectionPoints();
 
+  private java.util.function.BiConsumer<proyectoSistemasDePotencia.Connectable, Boolean>
+      onReconnectHandler;
+
+  public void setOnReconnectRequest(
+      java.util.function.BiConsumer<proyectoSistemasDePotencia.Connectable, Boolean> handler) {
+    this.onReconnectHandler = handler;
+  }
+
   public LineShape(Lineas model, NetworkShape<?> startShape, NetworkShape<?> endShape) {
     super(model);
     this.startShape = startShape;
@@ -285,7 +293,23 @@ public class LineShape extends NetworkShape<Lineas> {
           NetworkModel.getInstance().removeLinea(model);
         });
 
-    menu.getItems().addAll(itemRenombrar, itemEliminar);
+    MenuItem itemReconectarInicio = new MenuItem("Reconectar Anclaje Inicio");
+    itemReconectarInicio.setOnAction(
+        e -> {
+          if (onReconnectHandler != null) {
+            onReconnectHandler.accept(model, true); // true = start
+          }
+        });
+
+    MenuItem itemReconectarFin = new MenuItem("Reconectar Anclaje Fin");
+    itemReconectarFin.setOnAction(
+        e -> {
+          if (onReconnectHandler != null) {
+            onReconnectHandler.accept(model, false); // false = end
+          }
+        });
+
+    menu.getItems().addAll(itemRenombrar, itemReconectarInicio, itemReconectarFin, itemEliminar);
   }
 
   @Override

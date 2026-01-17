@@ -2,7 +2,7 @@ package proyectoSistemasDePotencia;
 
 import javafx.geometry.Point2D;
 
-public class Carga {
+public class Carga implements Connectable {
 
   private double potenciaActiva;
   private double potenciaReactiva;
@@ -15,6 +15,7 @@ public class Carga {
   static final String ARRIBA = "ARRIBA";
   static final String ABAJO = "ABAJO";
   private String orientacion = "LEFT";
+  private int anchorIndex1 = -1;
 
   public String getOrientacion() {
     return orientacion;
@@ -79,5 +80,49 @@ public class Carga {
 
   public void setNombreCarga(String nombreCarga) {
     this.nombreCarga = nombreCarga;
+  }
+
+  // --- Implementation of Connectable ---
+
+  @Override
+  public Barras getBarra1() {
+    return getBarra();
+  }
+
+  @Override
+  public void setBarra1(Barras barra) {
+    setBarra(barra);
+  }
+
+  @Override
+  public int getAnchorIndex1() {
+    return anchorIndex1;
+  }
+
+  @Override
+  public void setAnchorIndex1(int index) {
+    this.anchorIndex1 = index;
+    // Carga no parece tener PropertyChangeSupport aún, añadiría si fuera necesario
+    // Pero por consistencia del modelo visual bastará por ahora.
+  }
+
+  @Override
+  public Barras getBarra2() {
+    return null;
+  }
+
+  @Override
+  public void setBarra2(Barras barra) {
+    // No aplica
+  }
+
+  @Override
+  public int getAnchorIndex2() {
+    return -1;
+  }
+
+  @Override
+  public void setAnchorIndex2(int index) {
+    // No aplica
   }
 }

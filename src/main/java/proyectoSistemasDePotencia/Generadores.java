@@ -3,7 +3,7 @@ package proyectoSistemasDePotencia;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-public class Generadores {
+public class Generadores implements Connectable {
 
   private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
@@ -45,6 +45,7 @@ public class Generadores {
   private double MWSalidaMax = 1000.000;
   private double MVarSalidaMin = -9900.000;
   private double MVarSalidaMax = 9900.000;
+  private int anchorIndex1 = -1;
 
   public double getMWSalida() {
     return MWSalida;
@@ -219,6 +220,50 @@ public class Generadores {
 
   public void setBarra(Barras barra) {
     this.barra = barra;
+  }
+
+  // --- Implementation of Connectable ---
+
+  @Override
+  public Barras getBarra1() {
+    return getBarra();
+  }
+
+  @Override
+  public void setBarra1(Barras barra) {
+    setBarra(barra);
+  }
+
+  @Override
+  public int getAnchorIndex1() {
+    return anchorIndex1;
+  }
+
+  @Override
+  public void setAnchorIndex1(int anchorIndex1) {
+    int old = this.anchorIndex1;
+    this.anchorIndex1 = anchorIndex1;
+    this.pcs.firePropertyChange("anchorIndex1", old, anchorIndex1);
+  }
+
+  @Override
+  public Barras getBarra2() {
+    return null; // Generador es de terminal único
+  }
+
+  @Override
+  public void setBarra2(Barras barra) {
+    // No aplica
+  }
+
+  @Override
+  public int getAnchorIndex2() {
+    return -1;
+  }
+
+  @Override
+  public void setAnchorIndex2(int index) {
+    // No aplica
   }
 
   public double getCorrienteFaseA() {

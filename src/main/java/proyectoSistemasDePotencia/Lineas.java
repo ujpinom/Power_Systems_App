@@ -1,347 +1,300 @@
 package proyectoSistemasDePotencia;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import com.sun.javafx.scene.paint.GradientUtils.Point;
+
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Polyline;
 
-public class Lineas implements Connectable {
-
-  private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
-  public void addPropertyChangeListener(PropertyChangeListener listener) {
-    this.pcs.addPropertyChangeListener(listener);
-  }
-
-  public void removePropertyChangeListener(PropertyChangeListener listener) {
-    this.pcs.removePropertyChangeListener(listener);
-  }
-
-  private Barras barra1;
-  private Barras barra2;
-  private double z1 = 1;
-  private double z2 = 1;
-  private double z0 = 1;
-  private String nombreLinea;
-  private double corrienteFallaFaseA;
-  private double corrienteFallaFaseB;
-  private double corrienteFallaFaseC;
-  private double anguloCorrienteFaseA = 0;
-  private double anguloCorrienteFaseB = -120;
-  private double anguloCorrienteFaseC = 120;
-  private double impedanciaFalla = 0;
-  private double tensionLineaPuntoFalla = 1.0;
-  private String nombrePersonalizado;
-  private double magcorrientePuntoFallaFaseA;
-  private double magcorrientePuntoFallaFaseB;
-  private double magcorrientePuntoFallaFaseC;
-  private double angCorrientePuntoFallaFaseA;
-  private double angCorrientePuntoFallaFaseB;
-  private double angCorrientePuntoFallaFaseC;
-  private Point2D puntomedio;
-  private double resitencia;
-  private double mVarDeCargaTotales;
-  private double YMediaParalela;
-  private int anchorIndex1 = -1; // -1 means no specific anchor (fallback to proximity)
-  private int anchorIndex2 = -1;
-
-  private ObservableList<Double> listPuntosPolyLine;
-
-  private Polyline polyline;
-
-  private Path path;
-
-  public Path getPath() {
-    return path;
-  }
-
-  public void setPath(Path path) {
-    this.path = path;
-  }
-
-  public Polyline getPolyline() {
-    return polyline;
-  }
-
-  public void setPolyline(Polyline polyline) {
-    this.polyline = polyline;
-  }
-
-  public ObservableList<Double> getListPuntosPolyLine() {
-    return listPuntosPolyLine;
-  }
-
-  public void setListPuntosPolyLine(ObservableList<Double> listPuntosPolyLine) {
-    this.listPuntosPolyLine = listPuntosPolyLine;
-  }
-
-  public double getResitencia() {
-    return resitencia;
-  }
-
-  public void setResitencia(double resitencia) {
-    double old = this.resitencia;
-    this.resitencia = resitencia;
-    this.pcs.firePropertyChange("resitencia", old, resitencia);
-  }
-
-  public double getmVarDeCargaTotales() {
-    return mVarDeCargaTotales;
-  }
-
-  public void setmVarDeCargaTotales(double mVarDeCargaTotales) {
-    this.mVarDeCargaTotales = mVarDeCargaTotales;
-  }
-
-  public double getYMediaParalela() {
-    return YMediaParalela;
-  }
-
-  public void setYMediaParalela(double yMediaParalela) {
-    double old = this.YMediaParalela;
-    YMediaParalela = yMediaParalela;
-    this.pcs.firePropertyChange("YMediaParalela", old, yMediaParalela);
-  }
-
-  public Point2D getPuntomedio() {
-    return puntomedio;
-  }
-
-  public void setPuntomedio(Point2D puntomedio) {
-    this.puntomedio = puntomedio;
-  }
-
-  public double getMagcorrientePuntoFallaFaseA() {
-    return magcorrientePuntoFallaFaseA;
-  }
-
-  public void setMagcorrientePuntoFallaFaseA(double magcorrientePuntoFallaFaseA) {
-    this.magcorrientePuntoFallaFaseA = magcorrientePuntoFallaFaseA;
-  }
-
-  public double getMagcorrientePuntoFallaFaseB() {
-    return magcorrientePuntoFallaFaseB;
-  }
-
-  public void setMagcorrientePuntoFallaFaseB(double magcorrientePuntoFallaFaseB) {
-    this.magcorrientePuntoFallaFaseB = magcorrientePuntoFallaFaseB;
-  }
-
-  public double getMagcorrientePuntoFallaFaseC() {
-    return magcorrientePuntoFallaFaseC;
-  }
-
-  public void setMagcorrientePuntoFallaFaseC(double magcorrientePuntoFallaFaseC) {
-    this.magcorrientePuntoFallaFaseC = magcorrientePuntoFallaFaseC;
-  }
-
-  public double getAngCorrientePuntoFallaFaseA() {
-    return angCorrientePuntoFallaFaseA;
-  }
-
-  public void setAngCorrientePuntoFallaFaseA(double angCorrientePuntoFallaFaseA) {
-    this.angCorrientePuntoFallaFaseA = angCorrientePuntoFallaFaseA;
-  }
-
-  public double getAngCorrientePuntoFallaFaseB() {
-    return angCorrientePuntoFallaFaseB;
-  }
-
-  public void setAngCorrientePuntoFallaFaseB(double angCorrientePuntoFallaFaseB) {
-    this.angCorrientePuntoFallaFaseB = angCorrientePuntoFallaFaseB;
-  }
-
-  public double getAngCorrientePuntoFallaFaseC() {
-    return angCorrientePuntoFallaFaseC;
-  }
-
-  public void setAngCorrientePuntoFallaFaseC(double angCorrientePuntoFallaFaseC) {
-    this.angCorrientePuntoFallaFaseC = angCorrientePuntoFallaFaseC;
-  }
-
-  public double getTensionLineaPuntoFalla() {
-    return tensionLineaPuntoFalla;
-  }
-
-  public void setTensionLineaPuntoFalla(double tensionLineaPuntoFalla) {
-    this.tensionLineaPuntoFalla = tensionLineaPuntoFalla;
-  }
-
-  public Barras getBarra1() {
-    return barra1;
-  }
-
-  public void setBarra1(Barras barra1) {
-    this.barra1 = barra1;
-  }
-
-  public Barras getBarra2() {
-    return barra2;
-  }
-
-  public void setBarra2(Barras barra2) {
-    this.barra2 = barra2;
-  }
-
-  public Lineas(
-      Barras barra1,
-      Barras barra2,
-      double impedancia1,
-      double impedancia2,
-      double impedancia0,
-      Path path) {
-
-    this.path = path;
-
-    this.barra1 = barra1;
-    this.barra2 = barra2;
-
-    this.z1 = impedancia1;
-    this.z0 = impedancia0;
-    this.z1 = impedancia1;
-  }
-
-  /**
-   * Constructor simplificado para creación visual. Inicializa con impedancias por defecto (1.0).
-   */
-  public Lineas(Barras barra1, Barras barra2) {
-    this.barra1 = barra1;
-    this.barra2 = barra2;
-    this.z1 = 1.0;
-    this.z2 = 1.0;
-    this.z0 = 1.0;
-    this.listPuntosPolyLine = javafx.collections.FXCollections.observableArrayList();
-  }
-
-  public String getNombreLinea() {
-    return nombrePersonalizado != null ? nombrePersonalizado : nombreLinea;
-  }
-
-  public String getNombreLogico() {
-    return nombreLinea;
-  }
-
-  public void setNombrePersonalizado(String nombrePersonalizado) {
-    String old = this.nombrePersonalizado;
-    this.nombrePersonalizado = nombrePersonalizado;
-    this.pcs.firePropertyChange("nombrePersonalizado", old, nombrePersonalizado);
-  }
-
-  public String getNombrePersonalizado() {
-    return nombrePersonalizado;
-  }
-
-  public void setNombreLinea(String nombreLinea) {
-    String old = this.nombreLinea;
-    this.nombreLinea = nombreLinea;
-    this.pcs.firePropertyChange("nombreLinea", old, nombreLinea);
-  }
-
-  public void setimpedanciaLineaZ1(double impedancia1) {
-    double old = this.z1;
-    this.z1 = impedancia1;
-    this.pcs.firePropertyChange("impedanciaLineaZ1", old, impedancia1);
-  }
-
-  public void setimpedanciaLineaZ2(double impedancia2) {
-    double old = this.z2;
-    this.z2 = impedancia2;
-    this.pcs.firePropertyChange("impedanciaLineaZ2", old, impedancia2);
-  }
-
-  public void setimpedanciaLineaZ0(double impedancia0) {
-    double old = this.z0;
-    this.z0 = impedancia0;
-    this.pcs.firePropertyChange("impedanciaLineaZ0", old, impedancia0);
-  }
-
-  public double getimpedanciaLineaZ1() {
-    return z1;
-  }
-
-  public double getimpedanciaLineaZ2() {
-    return z2;
-  }
-
-  public double getimpedanciaLineaZ0() {
-    return z0;
-  }
-
-  public void setCorrienteFallaFaseA(double corrienteFalla) {
-    this.corrienteFallaFaseA = corrienteFalla;
-  }
-
-  public double getCorrienteFallaFaseA() {
-    return corrienteFallaFaseA;
-  }
-
-  public void setCorrienteFallaFaseB(double corrienteFalla) {
-    this.corrienteFallaFaseB = corrienteFalla;
-  }
-
-  public double getCorrienteFallaFaseB() {
-    return corrienteFallaFaseB;
-  }
-
-  public void setCorrienteFallaFaseC(double corrienteFalla) {
-    this.corrienteFallaFaseC = corrienteFalla;
-  }
-
-  public double getCorrienteFallaFaseC() {
-    return corrienteFallaFaseC;
-  }
-
-  public void setAnguloCorrienteFaseA(double angulo) {
-    this.anguloCorrienteFaseA = angulo;
-  }
-
-  public double getAnguloCorrienteFaseA() {
-    return anguloCorrienteFaseA;
-  }
-
-  public void setAnguloCorrienteFaseB(double angulo) {
-    this.anguloCorrienteFaseB = angulo;
-  }
-
-  public double getAnguloCorrienteFaseB() {
-    return anguloCorrienteFaseB;
-  }
-
-  public void setAnguloCorrienteFaseC(double angulo) {
-    this.anguloCorrienteFaseC = angulo;
-  }
-
-  public double getAnguloCorrienteFaseC() {
-    return anguloCorrienteFaseC;
-  }
-
-  public void setImpedanciafalla(double impedanciaFalla) {
-    this.impedanciaFalla = impedanciaFalla;
-  }
-
-  public double getImpedanciaFalla() {
-    return impedanciaFalla;
-  }
-
-  public int getAnchorIndex1() {
-    return anchorIndex1;
-  }
-
-  public void setAnchorIndex1(int anchorIndex1) {
-    int old = this.anchorIndex1;
-    this.anchorIndex1 = anchorIndex1;
-    this.pcs.firePropertyChange("anchorIndex1", old, anchorIndex1);
-  }
-
-  public int getAnchorIndex2() {
-    return anchorIndex2;
-  }
-
-  public void setAnchorIndex2(int anchorIndex2) {
-    int old = this.anchorIndex2;
-    this.anchorIndex2 = anchorIndex2;
-    this.pcs.firePropertyChange("anchorIndex2", old, anchorIndex2);
-  }
+public class Lineas {
+	
+	private Barras barra1;
+	private Barras barra2;
+	private double z1=1;
+	private double z2=1;
+	private double z0=1;
+	private String nombreLinea;
+	private double corrienteFallaFaseA;
+	private double corrienteFallaFaseB;
+	private double corrienteFallaFaseC;
+	private double anguloCorrienteFaseA=0;
+	private double anguloCorrienteFaseB=-120;
+	private double anguloCorrienteFaseC=120;
+	private double impedanciaFalla=0;
+	private double tensionLineaPuntoFalla=1.0;
+	private double magcorrientePuntoFallaFaseA;
+	private double magcorrientePuntoFallaFaseB;
+	private double magcorrientePuntoFallaFaseC;
+	private double angCorrientePuntoFallaFaseA;
+	private double angCorrientePuntoFallaFaseB;
+	private double angCorrientePuntoFallaFaseC;
+	private Point2D puntomedio;
+	private double resitencia;
+	private double mVarDeCargaTotales;
+	private double YMediaParalela;
+
+	private ObservableList<Double> listPuntosPolyLine;
+	
+	private Polyline polyline;
+	
+	private Path path;
+
+		
+	public Path getPath() {
+		return path;
+	}
+
+
+	public void setPath(Path path) {
+		this.path = path;
+	}
+
+
+	public Polyline getPolyline() {
+		return polyline;
+	}
+
+
+	public void setPolyline(Polyline polyline) {
+		this.polyline = polyline;
+	}
+
+
+	public ObservableList<Double> getListPuntosPolyLine() {
+		return listPuntosPolyLine;
+	}
+
+
+	public void setListPuntosPolyLine(ObservableList<Double> listPuntosPolyLine) {
+		this.listPuntosPolyLine = listPuntosPolyLine;
+	}
+
+
+	public double getResitencia() {
+		return resitencia;
+	}
+
+
+	public void setResitencia(double resitencia) {
+		this.resitencia = resitencia;
+	}
+
+
+	public double getmVarDeCargaTotales() {
+		return mVarDeCargaTotales;
+	}
+
+
+	public void setmVarDeCargaTotales(double mVarDeCargaTotales) {
+		this.mVarDeCargaTotales = mVarDeCargaTotales;
+	}
+
+
+	public double getYMediaParalela() {
+		return YMediaParalela;
+	}
+
+
+	public void setYMediaParalela(double yMediaParalela) {
+		YMediaParalela = yMediaParalela;
+	}
+
+
+	public Point2D getPuntomedio() {
+		return puntomedio;
+	}
+
+
+	public void setPuntomedio(Point2D puntomedio) {
+		this.puntomedio = puntomedio;
+	}
+
+
+	public double getMagcorrientePuntoFallaFaseA() {
+		return magcorrientePuntoFallaFaseA;
+		
+	}
+
+
+	public void setMagcorrientePuntoFallaFaseA(double magcorrientePuntoFallaFaseA) {
+		this.magcorrientePuntoFallaFaseA = magcorrientePuntoFallaFaseA;
+	}
+
+
+	public double getMagcorrientePuntoFallaFaseB() {
+		return magcorrientePuntoFallaFaseB;
+	}
+
+
+	public void setMagcorrientePuntoFallaFaseB(double magcorrientePuntoFallaFaseB) {
+		this.magcorrientePuntoFallaFaseB = magcorrientePuntoFallaFaseB;
+	}
+
+
+	public double getMagcorrientePuntoFallaFaseC() {
+		return magcorrientePuntoFallaFaseC;
+	}
+
+
+	public void setMagcorrientePuntoFallaFaseC(double magcorrientePuntoFallaFaseC) {
+		this.magcorrientePuntoFallaFaseC = magcorrientePuntoFallaFaseC;
+	}
+
+
+	public double getAngCorrientePuntoFallaFaseA() {
+		return angCorrientePuntoFallaFaseA;
+	}
+
+
+	public void setAngCorrientePuntoFallaFaseA(double angCorrientePuntoFallaFaseA) {
+		this.angCorrientePuntoFallaFaseA = angCorrientePuntoFallaFaseA;
+	}
+
+
+	public double getAngCorrientePuntoFallaFaseB() {
+		return angCorrientePuntoFallaFaseB;
+	}
+
+
+	public void setAngCorrientePuntoFallaFaseB(double angCorrientePuntoFallaFaseB) {
+		this.angCorrientePuntoFallaFaseB = angCorrientePuntoFallaFaseB;
+	}
+
+
+	public double getAngCorrientePuntoFallaFaseC() {
+		return angCorrientePuntoFallaFaseC;
+	}
+
+
+	public void setAngCorrientePuntoFallaFaseC(double angCorrientePuntoFallaFaseC) {
+		this.angCorrientePuntoFallaFaseC = angCorrientePuntoFallaFaseC;
+	}
+
+
+	public double getTensionLineaPuntoFalla() {
+		return tensionLineaPuntoFalla;
+	}
+
+
+	public void setTensionLineaPuntoFalla(double tensionLineaPuntoFalla) {
+		this.tensionLineaPuntoFalla = tensionLineaPuntoFalla;
+	}
+
+
+	public Barras getBarra1() {
+		return barra1;
+	}
+
+
+	public void setBarra1(Barras barra1) {
+		this.barra1 = barra1;
+	}
+
+
+	public Barras getBarra2() {
+		return barra2;
+	}
+
+
+	public void setBarra2(Barras barra2) {
+		this.barra2 = barra2;
+	}
+
+
+	public Lineas(Barras barra1, Barras barra2,double impedancia1,double impedancia2,double impedancia0,Path path) {
+		
+		this.path=path;
+		
+		this.barra1 = barra1;
+		this.barra2 = barra2;
+		
+		this.z1=impedancia1;
+		this.z0=impedancia0;
+		this.z1=impedancia1;
+		
+	}
+	
+	public String getNombreLinea() {
+		return nombreLinea;
+	}
+	
+	public void setNombreLinea(String nombreLinea) {
+		this.nombreLinea=nombreLinea;
+	}
+	
+	public void setimpedanciaLineaZ1(double impedancia1) {
+		this.z1=impedancia1;
+	}
+	public void setimpedanciaLineaZ2(double impedancia2) {
+		this.z2=impedancia2;
+	}
+	public void setimpedanciaLineaZ0(double impedancia0) {
+		this.z0=impedancia0;
+	}
+	
+	public double getimpedanciaLineaZ1() {
+		return z1;
+	}
+	public double getimpedanciaLineaZ2() {
+		return z2;
+	}
+	public double getimpedanciaLineaZ0() {
+		return z0;
+	}
+
+	
+	public void setCorrienteFallaFaseA(double corrienteFalla) {
+		this.corrienteFallaFaseA=corrienteFalla;
+	}
+	
+	public double getCorrienteFallaFaseA() {
+		return corrienteFallaFaseA;
+	}
+	public void setCorrienteFallaFaseB(double corrienteFalla) {
+		this.corrienteFallaFaseB=corrienteFalla;
+	}
+	
+	public double getCorrienteFallaFaseB() {
+		return corrienteFallaFaseB;
+	}
+	public void setCorrienteFallaFaseC(double corrienteFalla) {
+		this.corrienteFallaFaseC=corrienteFalla;
+	}
+	
+	public double getCorrienteFallaFaseC() {
+		return corrienteFallaFaseC;
+	}
+	
+	public void setAnguloCorrienteFaseA(double angulo) {
+		this.anguloCorrienteFaseA=angulo;
+	}
+	
+	public double getAnguloCorrienteFaseA() {
+		return anguloCorrienteFaseA;
+	}
+	
+	public void setAnguloCorrienteFaseB(double angulo) {
+		this.anguloCorrienteFaseB=angulo;
+	}
+	
+	public double getAnguloCorrienteFaseB() {
+		return anguloCorrienteFaseB;
+	}
+	
+	public void setAnguloCorrienteFaseC(double angulo) {
+		this.anguloCorrienteFaseC=angulo;
+	}
+	
+	public double getAnguloCorrienteFaseC() {
+		return anguloCorrienteFaseC;
+	}
+	public void setImpedanciafalla(double impedanciaFalla) {
+		this.impedanciaFalla=impedanciaFalla;
+	}
+	
+	public double getImpedanciaFalla() {
+		return impedanciaFalla;
+	}
 }

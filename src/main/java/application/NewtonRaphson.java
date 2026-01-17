@@ -1,703 +1,742 @@
 package application;
 
-import application.controller.main.SPController;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
 import proyectoSistemasDePotencia.Bancos;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Carga;
 import proyectoSistemasDePotencia.Complejo;
 import proyectoSistemasDePotencia.Generadores;
+import proyectoSistemasDePotencia.Zbarra;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.apache.commons.math3.linear.DecompositionSolver;
 
 public class NewtonRaphson implements Cloneable {
 
-  private int dimensionMatrizjacobiana =
-      0; // Determina cuantas filas y columnas hay que quitar de la jacobiana.
-  private List<Integer> indicesBarrasCompPV =
-      new ArrayList<>(); // Almacena el indice de las barras que son de
-  // compensaciÃ³n o PV.
-  private List<Double>[] infoIteracionesVoltajes;
+	private int dimensionMatrizjacobiana = 0; // Determina cuantas filas y columnas hay que quitar de la jacobiana.
+	private List<Integer> indicesBarrasCompPV = new ArrayList<>(); // Almacena el indice de las barras que son de
+	// compensaciÃ³n o PV.
+	private List<Double>[] infoIteracionesVoltajes;
 
-  private List<Double>[] infoIteracionesAngulos;
+	private List<Double>[] infoIteracionesAngulos;
 
-  private int numeroIteraciones = 20;
+	private int numeroIteraciones = 20;
 
-  private List<Barras> barras;
+	private List<Barras> barras;
 
-  private double epsilon = 0.001;
+	private double epsilon = 0.001;
 
-  private Complejo[][] matrizAdj;
-  // {{new Complejo(),new Complejo(),new Complejo(),new Complejo(),new Complejo()}
-  // ,{new Complejo(),new Complejo(8.985190,-44.835953),new
-  // Complejo(-3.815629,19.078144),new Complejo(-5.169561,25.847809),new
-  // Complejo()}
-  // ,{new Complejo(),new Complejo(-3.815629,19.078144),new
-  // Complejo(8.985190,-44.835953),new Complejo(),new
-  // Complejo(-5.169561,25.847809)}
-  // ,{new Complejo(),new Complejo(-5.169561,25.847809),new Complejo(),new
-  // Complejo(8.193267,-40.863838),new Complejo(-3.023705,15.118528)},
-  // {new Complejo(),new Complejo(),new Complejo(-5.169561,25.847809),new
-  // Complejo(-3.023705,15.118528),new Complejo(8.193267,-40.863838)}};
-  //
+	private Complejo[][] matrizAdj;
+	// {{new Complejo(),new Complejo(),new Complejo(),new Complejo(),new Complejo()}
+	// ,{new Complejo(),new Complejo(8.985190,-44.835953),new
+	// Complejo(-3.815629,19.078144),new Complejo(-5.169561,25.847809),new
+	// Complejo()}
+	// ,{new Complejo(),new Complejo(-3.815629,19.078144),new
+	// Complejo(8.985190,-44.835953),new Complejo(),new
+	// Complejo(-5.169561,25.847809)}
+	// ,{new Complejo(),new Complejo(-5.169561,25.847809),new Complejo(),new
+	// Complejo(8.193267,-40.863838),new Complejo(-3.023705,15.118528)},
+	// {new Complejo(),new Complejo(),new Complejo(-5.169561,25.847809),new
+	// Complejo(-3.023705,15.118528),new Complejo(8.193267,-40.863838)}};
+	//
 
-  private double[] erroresPotencia;
+	private double[] erroresPotencia;
 
-  private double[][] jacobiana;
+	private double[][] jacobiana;
 
-  private double[] erroresParametros;
+	private double[] erroresParametros;
 
-  private int iteConvergencia;
+	private int iteConvergencia;
 
-  @SuppressWarnings("unchecked")
-  public NewtonRaphson(
-      List<Barras> barras, int numeroIteraciones, double epsilon, Complejo[][] matrizAdj) {
+	@SuppressWarnings("unchecked")
+	public NewtonRaphson(List<Barras> barras, int numeroIteraciones, double epsilon, Complejo[][] matrizAdj) {
 
-    this.barras = barras;
-    this.erroresPotencia = new double[2 * (barras.size() - 1)];
-    this.matrizAdj = matrizAdj;
-    this.numeroIteraciones = numeroIteraciones;
-    this.epsilon = epsilon;
+		this.barras = barras;
+		this.erroresPotencia = new double[2 * (barras.size() - 1)];
+		this.matrizAdj = matrizAdj;
+		this.numeroIteraciones = numeroIteraciones;
+		this.epsilon = epsilon;
 
-    jacobiana = new double[2 * (barras.size() - 1)][2 * (barras.size() - 1)];
-    infoIteracionesVoltajes = (List<Double>[]) new List[barras.size()];
-    infoIteracionesAngulos = (List<Double>[]) new List[barras.size()];
+		jacobiana = new double[2 * (barras.size() - 1)][2 * (barras.size() - 1)];
+		infoIteracionesVoltajes = (List<Double>[]) new List[barras.size()];
+		infoIteracionesAngulos = (List<Double>[]) new List[barras.size()];
 
-    for (int i = 0; i < erroresPotencia.length; i++) {
-      erroresPotencia[i] = Double.POSITIVE_INFINITY;
-    }
+		for (int i = 0; i < erroresPotencia.length; i++) {
+			erroresPotencia[i] = Double.POSITIVE_INFINITY;
+		}
 
-    for (int i = 0; i < barras.size(); i++) {
+		for (int i = 0; i < barras.size(); i++) {
 
-      infoIteracionesAngulos[i] = new ArrayList<Double>();
-      infoIteracionesVoltajes[i] = new ArrayList<Double>();
-    }
+			infoIteracionesAngulos[i] = new ArrayList<Double>();
+			infoIteracionesVoltajes[i] = new ArrayList<Double>();
 
-    for (int i = 1; i < barras.size(); i++) {
+		}
 
-      infoIteracionesAngulos[i].add(barras.get(i).getAnguloVoltajeBarra());
-      infoIteracionesVoltajes[i].add(barras.get(i).getVoltajePrefalla());
-    }
+		for (int i = 1; i < barras.size(); i++) {
 
-    adjustarIndicesBarrasCompPV();
-  }
+			infoIteracionesAngulos[i].add(barras.get(i).getAnguloVoltajeBarra());
+			infoIteracionesVoltajes[i].add(barras.get(i).getVoltajePrefalla());
 
-  private void adjustarIndicesBarrasCompPV() {
+		}
+		
+		adjustarIndicesBarrasCompPV();
 
-    indicesBarrasCompPV.clear();
-    dimensionMatrizjacobiana = 0;
+	}
+	
+	private void adjustarIndicesBarrasCompPV() {
+		
+		indicesBarrasCompPV.clear();
+		dimensionMatrizjacobiana=0;
+		
+		for (int i = 0; i < barras.size(); i++) {
 
-    for (int i = 0; i < barras.size(); i++) {
+			Barras b = barras.get(i);
 
-      Barras b = barras.get(i);
+			if (b.isBarraCompensacion()) {
+				indicesBarrasCompPV.add(i);
+				dimensionMatrizjacobiana += 2;
+			}
 
-      if (b.isBarraCompensacion()) {
-        indicesBarrasCompPV.add(i);
-        dimensionMatrizjacobiana += 2;
-      } else if (b.isBarraPV()) {
-        indicesBarrasCompPV.add(i);
-        dimensionMatrizjacobiana += 1;
-      }
-    }
-  }
+			else if (b.isBarraPV()) {
+				indicesBarrasCompPV.add(i);
+				dimensionMatrizjacobiana += 1;
+			}
 
-  @SuppressWarnings("unchecked")
-  public NewtonRaphson(List<Barras> barras) {
-    this.erroresPotencia = new double[2 * (barras.size() - 1)];
-    this.barras = barras;
 
-    for (int i = 0; i < erroresPotencia.length; i++) {
-      erroresPotencia[i] = Double.POSITIVE_INFINITY;
-    }
+		}
+		
+	}
 
-    jacobiana = new double[2 * (barras.size() - 1)][2 * (barras.size() - 1)];
-    infoIteracionesVoltajes = (List<Double>[]) new List[5];
-    infoIteracionesAngulos = (List<Double>[]) new List[5];
+	@SuppressWarnings("unchecked")
+	public NewtonRaphson(List<Barras> barras) {
+		this.erroresPotencia = new double[2 * (barras.size() - 1)];
+		this.barras = barras;
 
-    for (int i = 0; i < barras.size(); i++) {
-      Barras b = barras.get(i);
+		for (int i = 0; i < erroresPotencia.length; i++) {
+			erroresPotencia[i] = Double.POSITIVE_INFINITY;
+		}
 
-      if (b.isBarraCompensacion()) {
-        indicesBarrasCompPV.add(i);
-        dimensionMatrizjacobiana += 2;
-      } else if (b.isBarraPV()) {
-        indicesBarrasCompPV.add(i);
-        dimensionMatrizjacobiana += 1;
-      }
+		jacobiana = new double[2 * (barras.size() - 1)][2 * (barras.size() - 1)];
+		infoIteracionesVoltajes = (List<Double>[]) new List[5];
+		infoIteracionesAngulos = (List<Double>[]) new List[5];
 
-      infoIteracionesAngulos[i] = new ArrayList<Double>();
-      infoIteracionesVoltajes[i] = new ArrayList<Double>();
-    }
+		for (int i = 0; i < barras.size(); i++) {
+			Barras b = barras.get(i);
 
-    for (int i = 1; i < barras.size(); i++) {
+			if (b.isBarraCompensacion()) {
+				indicesBarrasCompPV.add(i);
+				dimensionMatrizjacobiana += 2;
+			}
 
-      infoIteracionesAngulos[i].add(barras.get(i).getAnguloVoltajeBarra());
-      infoIteracionesVoltajes[i].add(barras.get(i).getVoltajePrefalla());
-    }
-  }
+			else if (b.isBarraPV()) {
+				indicesBarrasCompPV.add(i);
+				dimensionMatrizjacobiana += 1;
+			}
 
-  public List<Double>[] solucionVoltajes() {
-    return infoIteracionesVoltajes;
-  }
+			infoIteracionesAngulos[i] = new ArrayList<Double>();
+			infoIteracionesVoltajes[i] = new ArrayList<Double>();
 
-  public List<Double>[] solucionAngulos() {
+		}
 
-    return infoIteracionesAngulos;
-  }
+		for (int i = 1; i < barras.size(); i++) {
 
-  public List<Complejo>[] solucionFormaCompleja() {
+			infoIteracionesAngulos[i].add(barras.get(i).getAnguloVoltajeBarra());
+			infoIteracionesVoltajes[i].add(barras.get(i).getVoltajePrefalla());
 
-    List<Complejo>[] solucion = (List<Complejo>[]) new List[barras.size()];
+		}
 
-    for (int i = 0; i < solucion.length; i++) {
+	}
 
-      solucion[i] = new ArrayList<Complejo>();
+	public List<Double>[] solucionVoltajes() {
+		return infoIteracionesVoltajes;
+	}
 
-      if (i > 0) {
+	public List<Double>[] solucionAngulos() {
 
-        double voltaje = infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size() - 1);
-        double angulo = infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size() - 1);
+		return infoIteracionesAngulos;
+	}
 
-        Complejo voltajeComplejo = Complejo.polar2CartesianoAnguloRad(voltaje, angulo);
+	public List<Complejo>[] solucionFormaCompleja() {
 
-        solucion[i].add(voltajeComplejo);
-      }
-    }
+		List<Complejo>[] solucion = (List<Complejo>[]) new List[barras.size()];
 
-    return solucion;
-  }
+		for (int i = 0; i < solucion.length; i++) {
 
-  public void calcularFlujoPotencia(
-      List<Generadores> generadores, List<Bancos> bancos, List<Carga> cargas) {
+			solucion[i] = new ArrayList<Complejo>();
 
-    int iteracionActual = 1;
+			if (i > 0) {
 
-    while (iteracionActual <= numeroIteraciones) {
+				double voltaje = infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size() - 1);
+				double angulo = infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size() - 1);
 
-      for (int i = 1; i < barras.size(); i++) {
+				Complejo voltajeComplejo = Complejo.polar2CartesianoAnguloRad(voltaje, angulo);
 
-        Barras b = barras.get(i);
+				solucion[i].add(voltajeComplejo);
+			}
 
-        if (b.isBarraCompensacion()) {
-          continue;
-        } else if (b.isBarraPQ()) {
+		}
 
-          calcularJacobiana(i, b);
-          calcularPotencias(i, b);
+		return solucion;
+	}
 
-        } else if (b.isBarraPV()) {
-          calcularJacobiana(i, b);
-          calcularPotencias(i, b);
-        }
-      }
+	public void calcularFlujoPotencia(List<Generadores> generadores, List<Bancos> bancos, List<Carga> cargas) {
 
-      RealMatrix jaco = new Array2DRowRealMatrix(jacobiana);
+		int iteracionActual = 1;
 
-      adjustarIndicesBarrasCompPV();
+		while (iteracionActual <= numeroIteraciones) {
 
-      List<Integer> indicesAEliminar = dropIndices();
 
-      int[] indicesAMantener =
-          new int[jacobiana.length - dimensionMatrizjacobiana]; // / La soluciÃ³n del problema
-      /// de flujos de potencia
-      /// corresponden a estas
-      /// barras +1.
-      int contador = 0;
-      for (int i = 0; i < jacobiana.length; i++) {
+				for (int i = 1; i < barras.size(); i++) {
 
-        if (!indicesAEliminar.contains(i)) {
+					Barras b = barras.get(i);
 
-          indicesAMantener[contador++] = i;
-        }
-      }
+					if (b.isBarraCompensacion()) {
+						continue;
+					}
 
-      RealMatrix jacobianDroped = jaco.getSubMatrix(indicesAMantener, indicesAMantener);
+					else if (b.isBarraPQ()) {
 
-      double[] erroresPotenciaDroped = new double[jacobiana.length - dimensionMatrizjacobiana];
-      contador = 0;
+						calcularJacobiana(i, b);
+						calcularPotencias(i, b);
 
-      for (int i = 0; i < erroresPotencia.length; i++) {
+					}
 
-        if (erroresPotencia[i] == Double.POSITIVE_INFINITY) {
-          continue;
-        } else {
+					else if (b.isBarraPV()) {
+						calcularJacobiana(i, b);
+						calcularPotencias(i, b);
+					}
 
-          erroresPotenciaDroped[contador++] = erroresPotencia[i];
-        }
-      }
+				}
+			
 
-      RealVector erroresPotencia = new ArrayRealVector(erroresPotenciaDroped);
+			RealMatrix jaco = new Array2DRowRealMatrix(jacobiana);
+			
+			adjustarIndicesBarrasCompPV();
 
-      SingularValueDecomposition svd = new SingularValueDecomposition(jacobianDroped);
-      DecompositionSolver solver = svd.getSolver();
+			List<Integer> indicesAEliminar = dropIndices();
 
-      RealVector sol = solver.solve(erroresPotencia);
+			int[] indicesAMantener = new int[jacobiana.length - dimensionMatrizjacobiana]; /// La soluciÃ³n del problema
+			/// de flujos de potencia
+			/// corresponden a estas
+			/// barras +1.
+			int contador = 0;
+			for (int i = 0; i < jacobiana.length; i++) {
 
-      erroresParametros = sol.toArray();
+				if (!indicesAEliminar.contains(i)) {
 
-      correcionParametros(indicesAMantener);
+					indicesAMantener[contador++] = i;
 
-      verificarLimitesPotenciaReactiva();
+				}
 
-      int cont = 0;
+			}
 
-      for (int i = 1;
-          i < infoIteracionesAngulos.length;
-          i++) { // VerificaciÃ³n con el proposito de verificar la convergencia del sistema de
-        // potencia
-        // Diferencia de Angulos y voltajes menor que el epsilon estipulado.Si todas las barras
-        // cumplen este criterio se da por entendido que una soluciÃ³n ha sido
-        // encontrada y por consiguiente el algoritmo es detenido.
+			RealMatrix jacobianDroped = jaco.getSubMatrix(indicesAMantener, indicesAMantener);
 
-        int angulos = infoIteracionesAngulos[i].size();
-        int voltajes = infoIteracionesVoltajes[i].size();
+			double[] erroresPotenciaDroped = new double[jacobiana.length - dimensionMatrizjacobiana];
+			contador = 0;
 
-        if (barras.get(i).isBarraCompensacion()) {
-          ++cont;
-          continue;
-        } else if (barras.get(i).isBarraPV()) {
+			for (int i = 0; i < erroresPotencia.length; i++) {
 
-          if (Math.abs(
-                  infoIteracionesAngulos[i].get(angulos - 1)
-                      - infoIteracionesAngulos[i].get(angulos - 2))
-              <= epsilon) {
+				if (erroresPotencia[i] == Double.POSITIVE_INFINITY) {
+					continue;
+				} else {
 
-            ++cont;
+					erroresPotenciaDroped[contador++] = erroresPotencia[i];
 
-          } else {
-            break;
-          }
+				}
 
-        } else if (barras.get(i).isBarraPQ()) {
+			}
 
-          if (Math.abs(
-                      infoIteracionesAngulos[i].get(angulos - 1)
-                          - infoIteracionesAngulos[i].get(angulos - 2))
-                  <= epsilon
-              && (Math.abs(
-                      infoIteracionesVoltajes[i].get(voltajes - 1)
-                          - infoIteracionesVoltajes[i].get(voltajes - 2))
-                  <= epsilon)) {
-            ++cont;
+			RealVector erroresPotencia = new ArrayRealVector(erroresPotenciaDroped);
 
-          } else {
-            break;
-          }
-        }
-      }
+			SingularValueDecomposition svd = new SingularValueDecomposition(jacobianDroped);
+			DecompositionSolver solver = svd.getSolver();
 
-      if (cont == barras.size() - 1) {
-        break;
-      }
+			RealVector sol = solver.solve(erroresPotencia);
 
-      ++iteracionActual;
-    }
+			erroresParametros = sol.toArray();
 
-    iteConvergencia = iteracionActual;
-  }
+			correcionParametros(indicesAMantener);
+			
+			
+			verificarLimitesPotenciaReactiva();
+			
 
-  public void verificarLimitesPotenciaReactiva() {
+			int cont = 0;
 
-    double potenciaReactivaCarga = 0.0;
-    double potenciaRealCarga = 0.0;
+			for (int i = 1; i < infoIteracionesAngulos.length; i++) { // VerificaciÃ³n con el proposito de verificar la convergencia del sistema de potencia  
+				// Diferencia de Angulos y voltajes menor que el epsilon estipulado.Si todas las barras cumplen este criterio se da por entendido que una soluciÃ³n ha sido 
+				// encontrada y por consiguiente el algoritmo es detenido.
 
-    for (int i = 0; i < barras.size(); i++) {
+				int angulos = infoIteracionesAngulos[i].size();
+				int voltajes = infoIteracionesVoltajes[i].size();
 
-      Barras b = barras.get(i);
+				if (barras.get(i).isBarraCompensacion()) {
+					++cont;
+					continue;
+				}
 
-      if (b.isBarraPV()) {
+				else if (barras.get(i).isBarraPV()) {
 
-        Complejo potenciaCompleja = new Complejo();
+					if (Math.abs(infoIteracionesAngulos[i].get(angulos - 1)
+							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon) {
 
-        double mag = infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size() - 1);
+						++cont;
 
-        double ang = infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size() - 1);
+					} else {
+						break;
+					}
 
-        Complejo tensionBarra = Complejo.polar2CartesianoAnguloRad(mag, ang);
+				} else if (barras.get(i).isBarraPQ()) {
 
-        Complejo tensionBarraConjugada = Complejo.conjugado(tensionBarra);
+					if (Math.abs(infoIteracionesAngulos[i].get(angulos - 1)
+							- infoIteracionesAngulos[i].get(angulos - 2)) <= epsilon
+							&& (Math.abs(infoIteracionesVoltajes[i].get(voltajes - 1)
+									- infoIteracionesVoltajes[i].get(voltajes - 2)) <= epsilon)) {
+						++cont;
 
-        for (int j = 1; j < barras.size(); j++) {
+					} else {
+						break;
+					}
+				}
 
-          Complejo Yin = matrizAdj[i][j];
-          double magn = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size() - 1);
+			}
 
-          double angn = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size() - 1);
+			if (cont == barras.size() - 1) {
+				break;
+			}
 
-          Complejo Vn = Complejo.polar2CartesianoAnguloRad(magn, angn);
+			++iteracionActual;
 
-          potenciaCompleja = Complejo.suma(potenciaCompleja, Complejo.producto(Yin, Vn));
-        }
+		}
 
-        potenciaCompleja = Complejo.producto(potenciaCompleja, tensionBarraConjugada);
+		iteConvergencia = iteracionActual;
 
-        double Q = -potenciaCompleja.getImag();
+	}
 
-        if (b.containsCarga()) {
+	public void verificarLimitesPotenciaReactiva() {
+		
+		double potenciaReactivaCarga=0.0;
+		double potenciaRealCarga=0.0;
 
-          potenciaReactivaCarga = b.getCarga().getPotenciaReactiva() / SPController.BASE_SISTEMA;
-          potenciaRealCarga = b.getCarga().getPotenciaActiva() / SPController.BASE_SISTEMA;
-        }
+		for (int i = 0; i < barras.size(); i++) {
 
-        if ((Q + potenciaReactivaCarga)
-            > b.getGenerador().getMVarSalidaMax() / SPController.BASE_SISTEMA) {
+			Barras b = barras.get(i);
 
-          b.getGenerador().setMVarSalida(b.getGenerador().getMVarSalidaMax());
+			if (b.isBarraPV()) {
 
-          double potenciaActivaEntregada = b.getGenerador().getMWSalida() - potenciaRealCarga;
-          double potenciaImCalculada = b.getGenerador().getMVarSalida() - potenciaReactivaCarga;
 
-          Carga c = new Carga(); // La carga combinada del generador y la carga de la barra;
+				Complejo potenciaCompleja = new Complejo();
 
-          c.setPotenciaActiva(potenciaActivaEntregada * SPController.BASE_SISTEMA);
-          c.setPotenciaReactiva(potenciaImCalculada * SPController.BASE_SISTEMA);
+				double mag = infoIteracionesVoltajes[i].get(infoIteracionesVoltajes[i].size() - 1);
 
-          b.setCargaFromPVtoPQ(c);
-          b.setBarraPV(false);
-          b.setBarraPQ(true);
-          b.setBarraFromPV2PQ(true);
-        }
-      }
-    }
-  }
+				double ang = infoIteracionesAngulos[i].get(infoIteracionesAngulos[i].size() - 1);
 
-  public int getIteConvergencia() {
-    return iteConvergencia;
-  }
+				Complejo tensionBarra = Complejo.polar2CartesianoAnguloRad(mag, ang);
 
-  public void setIteConvergencia(int iteConvergencia) {
-    this.iteConvergencia = iteConvergencia;
-  }
+				Complejo tensionBarraConjugada = Complejo.conjugado(tensionBarra);
 
-  private void imprimir(double[][] m, String title) {
+				for (int j = 1; j < barras.size(); j++) {
 
-    System.out.println(title);
+					Complejo Yin = matrizAdj[i][j];
+					double magn = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size() - 1);
 
-    for (int i = 0; i < m.length; i++) {
-      for (int j = 0; j < m[0].length; j++) {
+					double angn = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size() - 1);
 
-        System.out.print(m[i][j] + " ");
-      }
+					Complejo Vn = Complejo.polar2CartesianoAnguloRad(magn, angn);
 
-      System.out.println();
-    }
-  }
+					potenciaCompleja = Complejo.suma(potenciaCompleja, Complejo.producto(Yin, Vn));
 
-  /**
-   * Calcula los indices que se deben quitar de la jacobiana.
-   *
-   * @return
-   */
-  private List<Integer> dropIndices() {
+				}
 
-    List<Integer> indices = new ArrayList<>();
+				potenciaCompleja = Complejo.producto(potenciaCompleja, tensionBarraConjugada);
 
-    for (int i = 0; i < indicesBarrasCompPV.size(); i++) {
+				double Q = -potenciaCompleja.getImag();
 
-      int index = indicesBarrasCompPV.get(i);
+				if (b.containsCarga()) {
 
-      Barras b = barras.get(index);
+					 potenciaReactivaCarga= b.getCarga().getPotenciaReactiva() / SPController.BASE_SISTEMA;
+					 potenciaRealCarga= b.getCarga().getPotenciaActiva() / SPController.BASE_SISTEMA;
+				}
 
-      if (b.isBarraCompensacion()) {
+				if ( (Q+potenciaReactivaCarga) > b.getGenerador().getMVarSalidaMax() / SPController.BASE_SISTEMA) {
+					
+					b.getGenerador().setMVarSalida(b.getGenerador().getMVarSalidaMax());
+					
+					double potenciaActivaEntregada= b.getGenerador().getMWSalida()-potenciaRealCarga;
+					double potenciaImCalculada= b.getGenerador().getMVarSalida()-potenciaReactivaCarga;
+					
+					Carga c= new Carga(); // La carga combinada del generador y la carga de la barra;
+					
+					c.setPotenciaActiva(potenciaActivaEntregada*SPController.BASE_SISTEMA);
+					c.setPotenciaReactiva(potenciaImCalculada*SPController.BASE_SISTEMA);	
+				
+					b.setCargaFromPVtoPQ(c);			
+					b.setBarraPV(false);
+					b.setBarraPQ(true);
+					b.setBarraFromPV2PQ(true);
+					
+				} 
+			}
 
-        indices.add(index - 1);
-        indices.add(index + barras.size() - 2);
+		}
 
-      } else if (b.isBarraPV()) {
+	}
 
-        indices.add(index + barras.size() - 2);
-      }
-    }
+	public int getIteConvergencia() {
+		return iteConvergencia;
+	}
 
-    return indices;
-  }
+	public void setIteConvergencia(int iteConvergencia) {
+		this.iteConvergencia = iteConvergencia;
+	}
 
-  private void correcionParametros(int[] indicesBarras) {
+	private void imprimir(double[][] m, String title) {
 
-    for (int i = 0; i < indicesBarras.length; i++) {
+		System.out.println(title);
 
-      int barra = indicesBarras[i] + 1;
+		for (int i = 0; i < m.length; i++) {
+			for (int j = 0; j < m[0].length; j++) {
 
-      double errorParametroCalculado = erroresParametros[i];
+				System.out.print(m[i][j] + " ");
+			}
 
-      if (indicesBarras[i] < jacobiana.length / 2) {
+			System.out.println();
 
-        double anguloPrevio =
-            infoIteracionesAngulos[barra].get(infoIteracionesAngulos[barra].size() - 1);
+		}
 
-        infoIteracionesAngulos[barra].add((anguloPrevio + errorParametroCalculado));
+	}
 
-      } else {
-        double voltajePrevio =
-            infoIteracionesVoltajes[barra - (barras.size() - 1)].get(
-                infoIteracionesVoltajes[barra - (barras.size() - 1)].size() - 1);
+	/**
+	 * Calcula los indices que se deben quitar de la jacobiana.
+	 * 
+	 * @return
+	 */
 
-        double resultado = voltajePrevio * (1 + (errorParametroCalculado / voltajePrevio));
+	private List<Integer> dropIndices() {
 
-        infoIteracionesVoltajes[barra - (barras.size() - 1)].add(resultado);
-      }
-    }
-  }
+		List<Integer> indices = new ArrayList<>();
 
-  private void calcularPotencias(int index, Barras b) {
+		for (int i = 0; i < indicesBarrasCompPV.size(); i++) {
 
-    int i = index - 1;
+			int index = indicesBarrasCompPV.get(i);
 
-    double potenciaCalculada = 0.0;
-    double potenciaProgramadaReal = 0.0;
+			Barras b = barras.get(index);
 
-    if (b.isBarraPV()) {
-      if (b.containsGenerador())
-        potenciaProgramadaReal = b.getGenerador().getMWSalida() / SPController.BASE_SISTEMA;
-    }
+			if (b.isBarraCompensacion()) {
 
-    if (b.containsCarga() && !b.isBarraFromPV2PQ()) {
-      potenciaProgramadaReal -= b.getCarga().getPotenciaActiva() / SPController.BASE_SISTEMA;
-    }
+				indices.add(index - 1);
+				indices.add(index + barras.size() - 2);
 
-    if (b.isBarraFromPV2PQ()) {
+			}
 
-      potenciaProgramadaReal =
-          b.getCargaFromPVtoPQ().getPotenciaActiva() / SPController.BASE_SISTEMA;
-    }
+			else if (b.isBarraPV()) {
 
-    Complejo admitancia = matrizAdj[index][index];
+				indices.add(index + barras.size() - 2);
 
-    double resis = admitancia.getReal();
+			}
 
-    potenciaCalculada =
-        infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-            * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-            * resis;
+		}
 
-    // #######################################
-    // Potencia real
-    // ####################################
+		return indices;
 
-    for (int j = 1; j < barras.size(); j++) {
+	}
 
-      if (j != index) {
+	private void correcionParametros(int[] indicesBarras) {
 
-        double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
-        double V_j = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size() - 1);
-        double magY_i_j = matrizAdj[index][j].modulo();
+		for (int i = 0; i < indicesBarras.length; i++) {
 
-        double angY_i_j = matrizAdj[index][j].argumento();
-        angY_i_j = (angY_i_j * Math.PI) / 180.0;
+			int barra = indicesBarras[i] + 1;
 
-        double angV_j = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size() - 1);
-        // angV_j=(angV_j*Math.PI)/180.0;
+			double errorParametroCalculado = erroresParametros[i];
 
-        double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
-        // angV_i= (angV_i*Math.PI)/180.0;
+			if (indicesBarras[i] < jacobiana.length / 2) {
 
-        potenciaCalculada += (V_i * V_j * magY_i_j * Math.cos(angY_i_j + angV_j - angV_i));
-      }
-    }
+				double anguloPrevio = infoIteracionesAngulos[barra].get(infoIteracionesAngulos[barra].size() - 1);
 
-    double potenciaRealError = potenciaProgramadaReal - potenciaCalculada;
+				infoIteracionesAngulos[barra].add((anguloPrevio + errorParametroCalculado));
 
-    erroresPotencia[i] = potenciaRealError;
+			}
 
-    // #######################################
-    // Potencia imaginaria
-    // #######################################
+			else {
+				double voltajePrevio = infoIteracionesVoltajes[barra - (barras.size() - 1)]
+						.get(infoIteracionesVoltajes[barra - (barras.size() - 1)].size() - 1);
 
-    if (b.isBarraPV()) {
-      return;
-    }
+				double resultado = voltajePrevio * (1 + (errorParametroCalculado / voltajePrevio));
 
-    double potenciaImaginariaCalculada = 0.0;
-    double potenciaImaginariaProgramada = 0.0;
+				infoIteracionesVoltajes[barra - (barras.size() - 1)].add(resultado);
 
-    if (b.containsCarga() && !b.isBarraFromPV2PQ()) {
-      potenciaImaginariaProgramada =
-          potenciaImaginariaProgramada
-              - b.getCarga().getPotenciaReactiva() / SPController.BASE_SISTEMA;
-    }
+			}
 
-    if (b.isBarraFromPV2PQ()) {
+		}
 
-      potenciaImaginariaProgramada =
-          b.getCargaFromPVtoPQ().getPotenciaReactiva() / SPController.BASE_SISTEMA;
-    }
+	}
 
-    //		if (b.containsBanco()) {
-    //			potenciaImaginariaProgramada = potenciaImaginariaProgramada -
-    // b.getBanco().getPotenciaReactiva()/SPController.BASE_SISTEMA;
-    //		}
+	private void calcularPotencias(int index, Barras b) {
 
-    double react = admitancia.getImag();
+		int i = index - 1;
 
-    potenciaImaginariaCalculada =
-        (-1)
-            * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-            * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-            * react;
+		double potenciaCalculada = 0.0;
+		double potenciaProgramadaReal = 0.0;
 
-    for (int j = 1; j < barras.size(); j++) {
+		if (b.isBarraPV()) {
+			if (b.containsGenerador())
+				potenciaProgramadaReal = b.getGenerador().getMWSalida() / SPController.BASE_SISTEMA;
+		}
 
-      if (j != index) {
-        double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
-        double V_j = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size() - 1);
-        double magY_i_j = matrizAdj[index][j].modulo();
+		if (b.containsCarga() && !b.isBarraFromPV2PQ()) {
+			potenciaProgramadaReal -= b.getCarga().getPotenciaActiva() / SPController.BASE_SISTEMA;
+		}
+		
+		if(b.isBarraFromPV2PQ()) {
+			
+			potenciaProgramadaReal= b.getCargaFromPVtoPQ().getPotenciaActiva()/SPController.BASE_SISTEMA;
+			
+		}
 
-        double angY_i_j = matrizAdj[index][j].argumento();
-        angY_i_j = (angY_i_j * Math.PI) / 180.0;
+		Complejo admitancia = matrizAdj[index][index];
 
-        double angV_j = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size() - 1);
-        // angV_j=(angV_j*Math.PI)/180.0;
+		double resis = admitancia.getReal();
 
-        double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
-        // angV_i= (angV_i*Math.PI)/180.0;
+		potenciaCalculada = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
+				* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * resis;
 
-        potenciaImaginariaCalculada -=
-            (V_i * V_j * magY_i_j * Math.sin(angY_i_j + angV_j - angV_i));
-      }
-    }
+		// #######################################
+		// Potencia real
+		// ####################################
 
-    erroresPotencia[i + barras.size() - 1] =
-        potenciaImaginariaProgramada - potenciaImaginariaCalculada;
-  }
+		for (int j = 1; j < barras.size(); j++) {
 
-  private void calcularJacobiana(int index, Barras b) {
+			if (j != index) {
 
-    int i = index - 1;
+				double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
+				double V_j = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size() - 1);
+				double magY_i_j = matrizAdj[index][j].modulo();
 
-    // ############################
+				double angY_i_j = matrizAdj[index][j].argumento();
+				angY_i_j = (angY_i_j * Math.PI) / 180.0;
 
-    // Calculo Jacobiana11
+				double angV_j = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size() - 1);
+				// angV_j=(angV_j*Math.PI)/180.0;
 
-    // ###########################
-    double resultadoDiagonal = 0.0;
+				double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
+				// angV_i= (angV_i*Math.PI)/180.0;
 
-    for (int j = 0; j < barras.size() - 1; j++) {
+				potenciaCalculada += (V_i * V_j * magY_i_j * Math.cos(angY_i_j + angV_j - angV_i));
 
-      if (j != i) {
+			}
 
-        double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
-        double V_j = infoIteracionesVoltajes[j + 1].get(infoIteracionesVoltajes[j + 1].size() - 1);
-        double magY_i_j = matrizAdj[index][j + 1].modulo();
+		}
 
-        double angY_i_j = matrizAdj[index][j + 1].argumento();
-        angY_i_j = (angY_i_j * Math.PI) / 180.0;
+		double potenciaRealError = potenciaProgramadaReal - potenciaCalculada;
 
-        double angV_j = infoIteracionesAngulos[j + 1].get(infoIteracionesAngulos[j + 1].size() - 1);
-        // angV_j=(angV_j*Math.PI)/180.0;
+		erroresPotencia[i] = potenciaRealError;
 
-        double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
-        // angV_i= (angV_i*Math.PI)/180.0;
+		// #######################################
+		// Potencia imaginaria
+		// #######################################
 
-        double resultado = (-1) * (V_i * V_j * magY_i_j * Math.sin(angY_i_j + angV_j - angV_i));
+		if (b.isBarraPV()) {
+			return;
+		}
+		
+		
+		double potenciaImaginariaCalculada = 0.0;
+		double potenciaImaginariaProgramada = 0.0;
 
-        jacobiana[i][j] = resultado;
+		if (b.containsCarga() && ! b.isBarraFromPV2PQ()) {
+			potenciaImaginariaProgramada = potenciaImaginariaProgramada
+					- b.getCarga().getPotenciaReactiva() / SPController.BASE_SISTEMA;
+		}
+		
+		if( b.isBarraFromPV2PQ()) {
+			
+			potenciaImaginariaProgramada= b.getCargaFromPVtoPQ().getPotenciaReactiva() / SPController.BASE_SISTEMA;
+			
+		}
+		
+		//		if (b.containsBanco()) {
+		//			potenciaImaginariaProgramada = potenciaImaginariaProgramada - b.getBanco().getPotenciaReactiva()/SPController.BASE_SISTEMA;
+		//		}
 
-        resultadoDiagonal -= resultado;
-      }
-    }
+		double react = admitancia.getImag();
 
-    jacobiana[i][i] = resultadoDiagonal;
+		potenciaImaginariaCalculada = (-1)
+				* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
+				* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * react;
 
-    // ############################
+		for (int j = 1; j < barras.size(); j++) {
 
-    // Calculo Jacobiana21
+			if (j != index) {
+				double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
+				double V_j = infoIteracionesVoltajes[j].get(infoIteracionesVoltajes[j].size() - 1);
+				double magY_i_j = matrizAdj[index][j].modulo();
 
-    // ###########################
+				double angY_i_j = matrizAdj[index][j].argumento();
+				angY_i_j = (angY_i_j * Math.PI) / 180.0;
 
-    i = index - 1 + barras.size() - 1;
+				double angV_j = infoIteracionesAngulos[j].get(infoIteracionesAngulos[j].size() - 1);
+				// angV_j=(angV_j*Math.PI)/180.0;
 
-    resultadoDiagonal = 0.0;
+				double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
+				// angV_i= (angV_i*Math.PI)/180.0;
 
-    for (int j = 0; j < barras.size() - 1; j++) {
+				potenciaImaginariaCalculada -= (V_i * V_j * magY_i_j * Math.sin(angY_i_j + angV_j - angV_i));
 
-      if (j != index - 1) {
+			}
 
-        double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
-        double V_j = infoIteracionesVoltajes[j + 1].get(infoIteracionesVoltajes[j + 1].size() - 1);
-        double magY_i_j = matrizAdj[index][j + 1].modulo();
+		}
 
-        double angY_i_j = matrizAdj[index][j + 1].argumento();
-        angY_i_j = (angY_i_j * Math.PI) / 180.0;
+		erroresPotencia[i + barras.size() - 1] = potenciaImaginariaProgramada - potenciaImaginariaCalculada;
 
-        double angV_j = infoIteracionesAngulos[j + 1].get(infoIteracionesAngulos[j + 1].size() - 1);
-        // angV_j=(angV_j*Math.PI)/180.0;
+	}
 
-        double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
-        // angV_i= (angV_i*Math.PI)/180.0;
+	private void calcularJacobiana(int index, Barras b) {
 
-        double resultado = (-1) * (V_i * V_j * magY_i_j * Math.cos(angY_i_j + angV_j - angV_i));
+		int i = index - 1;
 
-        jacobiana[i][j] = resultado;
+		// ############################
 
-        resultadoDiagonal -= resultado;
-      }
-    }
+		// Calculo Jacobiana11
 
-    jacobiana[i][index - 1] = resultadoDiagonal;
+		// ###########################
+		double resultadoDiagonal = 0.0;
 
-    // ############################
+		for (int j = 0; j < barras.size() - 1; j++) {
 
-    // Calculo Jacobiana12
+			if (j != i) {
 
-    // ###########################
+				double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
+				double V_j = infoIteracionesVoltajes[j + 1].get(infoIteracionesVoltajes[j + 1].size() - 1);
+				double magY_i_j = matrizAdj[index][j + 1].modulo();
 
-    i = index - 1;
+				double angY_i_j = matrizAdj[index][j + 1].argumento();
+				angY_i_j = (angY_i_j * Math.PI) / 180.0;
 
-    resultadoDiagonal = 0.0;
+				double angV_j = infoIteracionesAngulos[j + 1].get(infoIteracionesAngulos[j + 1].size() - 1);
+				// angV_j=(angV_j*Math.PI)/180.0;
 
-    for (int j = barras.size() - 1; j < jacobiana.length; j++) {
+				double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
+				// angV_i= (angV_i*Math.PI)/180.0;
 
-      if (j - (barras.size() - 1) != i) {
+				double resultado = (-1) * (V_i * V_j * magY_i_j * Math.sin(angY_i_j + angV_j - angV_i));
 
-        jacobiana[i][j] = (-1) * jacobiana[i + barras.size() - 1][j - (barras.size() - 1)];
+				jacobiana[i][j] = resultado;
 
-      } else if (j - (barras.size() - 1) == i) {
+				resultadoDiagonal -= resultado;
 
-        Complejo admitancia = matrizAdj[index][index];
+			}
 
-        double resis = admitancia.getReal();
+		}
 
-        jacobiana[i][j] =
-            jacobiana[i + barras.size() - 1][j - (barras.size() - 1)]
-                + 2
-                    * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-                    * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-                    * resis;
-      }
-    }
+		jacobiana[i][i] = resultadoDiagonal;
 
-    // ############################
+		// ############################
 
-    // Calculo Jacobiana22
+		// Calculo Jacobiana21
 
-    // ###########################
+		// ###########################
 
-    i = index - 1 + barras.size() - 1;
+		i = index - 1 + barras.size() - 1;
 
-    for (int j = barras.size() - 1; j < jacobiana.length; j++) {
+		resultadoDiagonal = 0.0;
 
-      if (j != i) {
+		for (int j = 0; j < barras.size() - 1; j++) {
 
-        jacobiana[i][j] = jacobiana[i - (barras.size() - 1)][j - (barras.size() - 1)];
+			if (j != index - 1) {
 
-      } else if (j == i) {
+				double V_i = infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1);
+				double V_j = infoIteracionesVoltajes[j + 1].get(infoIteracionesVoltajes[j + 1].size() - 1);
+				double magY_i_j = matrizAdj[index][j + 1].modulo();
 
-        Complejo admitancia = matrizAdj[index][index];
+				double angY_i_j = matrizAdj[index][j + 1].argumento();
+				angY_i_j = (angY_i_j * Math.PI) / 180.0;
 
-        double react = admitancia.getImag();
+				double angV_j = infoIteracionesAngulos[j + 1].get(infoIteracionesAngulos[j + 1].size() - 1);
+				// angV_j=(angV_j*Math.PI)/180.0;
 
-        jacobiana[i][j] =
-            -jacobiana[i - (barras.size() - 1)][j - (barras.size() - 1)]
-                - 2
-                    * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-                    * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
-                    * react;
-      }
-    }
-  }
+				double angV_i = infoIteracionesAngulos[index].get(infoIteracionesAngulos[index].size() - 1);
+				// angV_i= (angV_i*Math.PI)/180.0;
+
+				double resultado = (-1) * (V_i * V_j * magY_i_j * Math.cos(angY_i_j + angV_j - angV_i));
+
+				jacobiana[i][j] = resultado;
+
+				resultadoDiagonal -= resultado;
+
+			}
+
+		}
+
+		jacobiana[i][index - 1] = resultadoDiagonal;
+
+		// ############################
+
+		// Calculo Jacobiana12
+
+		// ###########################
+
+		i = index - 1;
+
+		resultadoDiagonal = 0.0;
+
+		for (int j = barras.size() - 1; j < jacobiana.length; j++) {
+
+			if (j - (barras.size() - 1) != i) {
+
+				jacobiana[i][j] = (-1) * jacobiana[i + barras.size() - 1][j - (barras.size() - 1)];
+
+			}
+
+			else if (j - (barras.size() - 1) == i) {
+
+				Complejo admitancia = matrizAdj[index][index];
+
+				double resis = admitancia.getReal();
+
+				jacobiana[i][j] = jacobiana[i + barras.size() - 1][j - (barras.size() - 1)]
+						+ 2 * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
+						* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * resis;
+
+			}
+
+		}
+
+		// ############################
+
+		// Calculo Jacobiana22
+
+		// ###########################
+
+		i = index - 1 + barras.size() - 1;
+
+		for (int j = barras.size() - 1; j < jacobiana.length; j++) {
+
+			if (j != i) {
+
+				jacobiana[i][j] = jacobiana[i - (barras.size() - 1)][j - (barras.size() - 1)];
+
+			}
+
+			else if (j == i) {
+
+				Complejo admitancia = matrizAdj[index][index];
+
+				double react = admitancia.getImag();
+
+				jacobiana[i][j] = -jacobiana[i - (barras.size() - 1)][j - (barras.size() - 1)]
+						- 2 * infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1)
+						* infoIteracionesVoltajes[index].get(infoIteracionesVoltajes[index].size() - 1) * react;
+
+			}
+
+		}
+
+	}
+
 }

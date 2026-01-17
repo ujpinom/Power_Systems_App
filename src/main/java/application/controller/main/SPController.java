@@ -5,6 +5,7 @@ import application.EcuacionesVoltajeYPotencia;
 import application.NewtonRaphson;
 import application.enums.ToolType;
 import application.model.project.NetworkModel;
+import application.service.logging.LogService;
 import application.view.canvas.DiagramManager;
 import application.view.panels.PropertiesPanel;
 import grafos.Edges;
@@ -159,21 +160,14 @@ public class SPController implements Initializable {
   private String nombreTrafo = "T";
   private String nombreGenerador = "G";
   private String nombreCarga = "C";
-  private String nombreBanco = "BA";
-  private String nombreCompensador = "E";
 
-  private ArrayList<Double> distanciasLineas = new ArrayList<>();
-  private ArrayList<Double> corGenerador = new ArrayList<>();
   private ArrayList<Double> corCarga = new ArrayList<>();
-  private ArrayList<Double> corBanco = new ArrayList<>();
-  private ArrayList<Double> corCompensador = new ArrayList<>();
   private ObservableList<Node> lista;
-  private ArrayList<Double> posBarra = new ArrayList<>();
   private WeightedGraph<Barras> grafo1;
   private WeightedGraph<Barras> grafo2;
   private WeightedGraph<Barras> grafo0;
-  private double impedanciaDeFalla;
   private String tipoElementoFallado;
+  private double impedanciaDeFalla;
   private ArrayList<Double> coorFalla = new ArrayList<>();
   private boolean fallaEnLinea = false;
   private Lineas lineaFallada;
@@ -221,6 +215,19 @@ public class SPController implements Initializable {
 
     diagramManager.setCurrentTool(ToolType.NONE);
     infoElemento.setText("Elemento: Selección");
+
+    // Conectar LogService a la consola visual
+    application.service.logging.LogService.getInstance()
+        .addListener(
+            msg -> {
+              javafx.application.Platform.runLater(
+                  () -> {
+                    display.appendText(msg + "\n");
+                  });
+            });
+
+    application.service.logging.LogService.getInstance()
+        .info("Sistema de Potencia iniciado correctamente.");
 
     // Manejo de tecla ESC para cancelar conexión/herramienta
     areaDibujo
@@ -475,9 +482,9 @@ public class SPController implements Initializable {
         updateZoom(1.0 / currentScale);
       }
 
-      System.out.println("Controller: Area de dibujo limpiada.");
+      LogService.getInstance().info("Área de dibujo limpiada.");
     } else {
-      System.out.println("Controller: Limpieza cancelada por el usuario.");
+      LogService.getInstance().info("Limpieza cancelada por el usuario.");
     }
   }
 
@@ -528,6 +535,7 @@ public class SPController implements Initializable {
               perdidadsPotencia,
               potenciaEntranteBarras);
 
+          LogService.getInstance().info("Flujo de potencia calculado exitosamente.");
           System.out.println("RESULTADOS Angulos Y voltajes:");
 
           for (int i = 1; i < solucion.length; i++) {

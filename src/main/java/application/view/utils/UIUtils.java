@@ -1,6 +1,7 @@
 package application.view.utils;
 
 import application.model.validation.ValidationResult;
+import application.service.logging.LogService;
 import javafx.scene.control.Alert;
 
 /** Utilidades centralizadas para la interfaz de usuario. */
@@ -44,6 +45,7 @@ public class UIUtils {
    */
   public static boolean showValidationWarning(ValidationResult result) {
     if (!result.isValid()) {
+      LogService.getInstance().warn("Validación fallida: " + result.getMessage());
       Alert alert = new Alert(Alert.AlertType.WARNING);
       alert.setTitle("Validación de Negocio");
       alert.setHeaderText("Operación no permitida");

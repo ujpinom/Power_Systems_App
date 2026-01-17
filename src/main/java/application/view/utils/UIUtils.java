@@ -7,6 +7,36 @@ import javafx.scene.control.Alert;
 public class UIUtils {
 
   /**
+   * Alinea un valor a la cuadrícula.
+   *
+   * @param value El valor original.
+   * @param gridSize El tamaño de la cuadrícula.
+   * @return El valor alineado.
+   */
+  public static double snap(double value, double gridSize) {
+    return Math.round(value / gridSize) * gridSize;
+  }
+
+  /**
+   * Valida si un punto está lo suficientemente lejos de las barras existentes.
+   *
+   * @param x Coordenada X del punto.
+   * @param y Coordenada Y del punto.
+   * @param barras Lista de barras existentes.
+   * @return true si no hay conflicto, false de lo contrario.
+   */
+  public static boolean validarProximidadBarra(
+      double x, double y, java.util.List<proyectoSistemasDePotencia.Barras> barras) {
+    double radioMinimo = 80.0;
+    for (proyectoSistemasDePotencia.Barras b : barras) {
+      if ("Tierra".equalsIgnoreCase(b.getNombreBarra())) continue;
+      double dist = Math.sqrt(Math.pow(x - b.getXbarra(), 2) + Math.pow(y - b.getYbarra(), 2));
+      if (dist < radioMinimo) return false;
+    }
+    return true;
+  }
+
+  /**
    * Muestra una alerta de advertencia basada en un resultado de validación fallido.
    *
    * @param result El resultado de la validación.

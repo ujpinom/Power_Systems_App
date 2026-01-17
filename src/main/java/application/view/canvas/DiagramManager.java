@@ -1,12 +1,15 @@
 package application.view.canvas;
 
+import application.enums.ToolType;
 import application.model.project.NetworkChangeListener;
 import application.model.project.NetworkModel;
 import application.model.validation.ValidationResult;
+import application.view.panels.PropertiesPanel;
 import application.view.shapes.BusShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.NetworkShape;
 import application.view.utils.UIUtils;
+import java.util.function.Consumer;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
@@ -38,7 +41,11 @@ public class DiagramManager implements NetworkChangeListener {
   private boolean isReconnectStart = false; // true if connecting Start, false if End
   private NetworkShape<?> reconnectTargetShape = null;
 
-  public DiagramManager(AnchorPane canvas) {
+  // --- Tool and Feedback ---
+  private ToolType currentTool = ToolType.NONE;
+  private Consumer<String> statusMessenger;
+
+  public DiagramManager(AnchorPane canvas, PropertiesPanel propertiesPanel) {
     this.canvas = canvas;
     this.model = NetworkModel.getInstance();
 
@@ -50,13 +57,7 @@ public class DiagramManager implements NetworkChangeListener {
         MouseEvent.MOUSE_CLICKED,
         e -> {
           if (e.getTarget() == canvas) {
-            System.out.println("Manager: Clic en fondo vacío");
-            if (isConnecting) {
-              // Añadir un waypoint intermedio
-              addWaypoint(e.getX(), e.getY());
-            } else {
-              deseleccionarTodo();
-            }
+            handleCanvasClick(e);
           }
         });
 
@@ -71,6 +72,13 @@ public class DiagramManager implements NetworkChangeListener {
             ghostLine.getPoints().set(size - 1, e.getY());
           }
         });
+
+    model
+        .seleccionActualProperty()
+        .addListener(
+            (obs, oldVal, newVal) -> {
+              propertiesPanel.mostrarPropiedades(newVal);
+            });
   }
 
   @Override
@@ -97,6 +105,63 @@ public class DiagramManager implements NetworkChangeListener {
   public void setConnectionMode(boolean enabled) {
     this.connectionModeEnabled = enabled;
     if (!enabled) cancelConnection();
+  }
+
+  public void setCurrentTool(ToolType tool) {
+    this.currentTool = tool;
+    setConnectionMode(tool == ToolType.LINEA || tool == ToolType.TRANSFORMADOR);
+  }
+
+  public void setStatusMessenger(Consumer<String> statusMessenger) {
+    this.statusMessenger = statusMessenger;
+  }
+
+  private void postStatus(String message) {
+    if (statusMessenger != null) {
+      statusMessenger.accept(message);
+    }
+  }
+
+  private void handleCanvasClick(MouseEvent e) {
+    double x = UIUtils.snap(e.getX(), 20.0);
+    double y = UIUtils.snap(e.getY(), 20.0);
+
+    if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+      switch (currentTool) {
+        case LINEA:
+        case TRANSFORMADOR:
+          if (isConnecting) {
+            addWaypoint(e.getX(), e.getY());
+          }
+          break;
+        case BARRA:
+          crearBarra(x, y);
+          break;
+        case NONE:
+          deseleccionarTodo();
+          break;
+        default:
+          System.out.println(
+              "Manager: Herramienta " + currentTool + " no implementada para click directo.");
+          break;
+      }
+    }
+  }
+
+  private void crearBarra(double x, double y) {
+    if (!UIUtils.validarProximidadBarra(x, y, model.getBarras())) {
+      postStatus("Error: Espacio ocupado, seleccione otra ubicación.");
+      return;
+    }
+
+    String nombreDefault = "Bus-" + (model.getBarras().size());
+    Barras logicaBarra = new Barras(nombreDefault);
+    logicaBarra.setXbarra(x - 3);
+    logicaBarra.setYbarra(y - 30);
+
+    System.out.println("Manager: Barra creada en: " + x + ", " + y);
+    model.addBarra(logicaBarra);
+    postStatus("Barra creada exitosamente.");
   }
 
   private void agregarBarraVisual(Barras barra) {

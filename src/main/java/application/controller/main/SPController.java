@@ -41,7 +41,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Priority;
@@ -138,7 +137,6 @@ public class SPController implements Initializable {
   private List<Complejo>[] perdidasLineas;
 
   // --- State Management ---
-  private ToolType currentTool = ToolType.NONE;
 
   private boolean trifasica;
   private boolean monofasica;
@@ -203,7 +201,6 @@ public class SPController implements Initializable {
   private double epsilon = 0.01;
 
   private Barras barraCompensacion = null;
-  private NetworkModel networkModel;
   private DiagramManager diagramManager;
   private PropertiesPanel propertiesPanel;
   @FXML private VBox rightPanelContainer;
@@ -213,21 +210,17 @@ public class SPController implements Initializable {
   public void initialize(URL arg0, ResourceBundle arg1) {
     scrollContainer.setHvalue(0.5);
     scrollContainer.setVvalue(0.5);
-    this.networkModel = NetworkModel.getInstance();
 
-    this.diagramManager = new DiagramManager(areaDibujo);
-    this.propertiesPanel = new PropertiesPanel();
+    propertiesPanel = new PropertiesPanel();
+    this.diagramManager = new DiagramManager(areaDibujo, propertiesPanel);
+    diagramManager.setStatusMessenger(msg -> infoTare.setText(msg));
+
     rightPanelContainer.getChildren().clear();
     rightPanelContainer.getChildren().add(propertiesPanel);
     VBox.setVgrow(propertiesPanel, Priority.ALWAYS);
-    networkModel
-        .seleccionActualProperty()
-        .addListener(
-            (obs, oldVal, newVal) -> {
-              propertiesPanel.mostrarPropiedades(newVal);
-            });
 
-    // ... existing initializations ...
+    diagramManager.setCurrentTool(ToolType.NONE);
+    infoElemento.setText("Elemento: Selección");
 
     // Manejo de tecla ESC para cancelar conexión/herramienta
     areaDibujo
@@ -240,10 +233,9 @@ public class SPController implements Initializable {
                     event -> {
                       if (event.getCode() == KeyCode.ESCAPE) {
                         diagramManager.cancelConnection();
+                        diagramManager.setCurrentTool(ToolType.NONE);
                         none.setSelected(true);
-                        currentTool = ToolType.NONE;
                         infoElemento.setText("Elemento: Edición");
-                        diagramManager.setConnectionMode(false);
                       }
                     });
               }
@@ -404,53 +396,50 @@ public class SPController implements Initializable {
 
   @FXML
   private void lineaSelected(ActionEvent e) {
-    currentTool = ToolType.LINEA;
-    infoElemento.setText("Elemento: Lí­nea");
-    diagramManager.setConnectionMode(true);
+    diagramManager.setCurrentTool(ToolType.LINEA);
+    infoElemento.setText("Elemento: Línea");
   }
 
   @FXML
   private void barraSelected(ActionEvent e) {
-    currentTool = ToolType.BARRA;
+    diagramManager.setCurrentTool(ToolType.BARRA);
     infoElemento.setText("Elemento: Barra");
-    diagramManager.setConnectionMode(false);
   }
 
   @FXML
   private void compensadorSelected(ActionEvent e) {
-    currentTool = ToolType.COMPENSADOR;
-    infoElemento.setText("Elemento: Compensador EstÃ¡tico");
+    diagramManager.setCurrentTool(ToolType.COMPENSADOR);
+    infoElemento.setText("Elemento: Compensador");
   }
 
   @FXML
   private void trafoSelected(ActionEvent e) {
-    currentTool = ToolType.TRANSFORMADOR;
+    diagramManager.setCurrentTool(ToolType.TRANSFORMADOR);
     infoElemento.setText("Elemento: Transformador");
   }
 
   @FXML
   private void genSelected(ActionEvent e) {
-    currentTool = ToolType.GENERADOR;
+    diagramManager.setCurrentTool(ToolType.GENERADOR);
     infoElemento.setText("Elemento: Generador");
   }
 
   @FXML
   private void cargaSelected(ActionEvent e) {
-    currentTool = ToolType.CARGA;
+    diagramManager.setCurrentTool(ToolType.CARGA);
     infoElemento.setText("Elemento: Carga");
   }
 
   @FXML
   private void bancoSelected(ActionEvent e) {
-    currentTool = ToolType.BANCO;
+    diagramManager.setCurrentTool(ToolType.BANCO);
     infoElemento.setText("Elemento: Banco");
   }
 
   @FXML
   private void editionSelected(ActionEvent e) {
-    currentTool = ToolType.NONE;
-    infoElemento.setText("Elemento: EdiciÃ³n");
-    diagramManager.setConnectionMode(false);
+    diagramManager.setCurrentTool(ToolType.NONE);
+    infoElemento.setText("Elemento: Edición");
   }
 
   @FXML
@@ -477,10 +466,9 @@ public class SPController implements Initializable {
       NetworkModel.getInstance().clearAll();
 
       // 2. Resetear herramienta y selección
-      currentTool = ToolType.NONE;
+      diagramManager.setCurrentTool(ToolType.NONE);
       infoElemento.setText("Elemento: Edición");
       diagramManager.deseleccionarTodo();
-      diagramManager.setConnectionMode(false);
 
       // 3. Resetear Zoom a 100%
       if (currentScale != 1.0) {
@@ -778,109 +766,29 @@ public class SPController implements Initializable {
     }
   }
 
-  private double snap(double value) {
-    double gridSize = 20.0;
-    return Math.round(value / gridSize) * gridSize;
-  }
-
   @FXML
   private void zoomIn(ActionEvent event) {
-    updateZoom(1.2); // Aumentar 20%
+    updateZoom(1.2);
   }
 
   @FXML
   private void zoomOut(ActionEvent event) {
-    updateZoom(0.833); // Disminuir
+    updateZoom(0.833);
   }
 
   private void updateZoom(double factor) {
-    // Limites de zoom (entre 10% y 500%)
     double newScale = currentScale * factor;
     if (newScale < 0.1 || newScale > 5.0) return;
-
     currentScale = newScale;
 
-    // Aplicar transformación al área de dibujo
     Scale scaleTransform = new Scale(currentScale, currentScale, 0, 0);
     areaDibujo.getTransforms().clear();
     areaDibujo.getTransforms().add(scaleTransform);
 
-    // Ajustar el tamaño del contenedor para que el ScrollPane sepa que el contenido
-    // cambió
-    // Esto es clave para que las barras de scroll funcionen bien al hacer zoom
     zoomContainer.setPrefWidth(areaDibujo.getPrefWidth() * currentScale);
     zoomContainer.setPrefHeight(areaDibujo.getPrefHeight() * currentScale);
 
     zoomLabel.setText(String.format("%.0f%%", currentScale * 100));
-  }
-
-  // --- LÓGICA DE CREACIÓN DE OBJETOS ---
-
-  private boolean validarProximidad(double x, double y) {
-    double radioMinimo = 80.0; // Distancia mínima en píxeles
-    for (Barras b : barras) {
-      // Ignoramos la barra "Tierra" si es la primera (índice 0) o si no tiene
-      // coordenadas reales aún
-      if (b.getNombreBarra().equals("Tierra")) continue;
-
-      // Calcular distancia Euclideana entre el punto de click y las barras existentes
-      double dist = Math.sqrt(Math.pow(x - b.getXbarra(), 2) + Math.pow(y - b.getYbarra(), 2));
-
-      if (dist < radioMinimo) {
-        return false; // Conflicto espacial detectado
-      }
-    }
-    return true; // Espacio libre
-  }
-
-  private void crearBarra(double x, double y) {
-
-    if (!validarProximidad(x, y)) {
-      infoTare.setText("Error: Espacio ocupado, seleccione otra ubicación.");
-      return;
-    }
-
-    String nombreDefault = "Bus-" + (barras.size());
-    Barras logicaBarra = new Barras(nombreDefault);
-    logicaBarra.setXbarra(x - 3);
-    logicaBarra.setYbarra(y - 30);
-    // barras.add(logicaBarra); // Ya no es necesario, addBarra lo añade al modelo
-    // centralizado
-    System.out.println("Barra creada en: " + x + ", " + y);
-    NetworkModel.getInstance().addBarra(logicaBarra);
-    infoTare.setText("Barra creada exitosamente.");
-  }
-
-  @FXML
-  private void mouseClicked(MouseEvent e) throws IOException {
-
-    areaDibujo.setCursor(javafx.scene.Cursor.DEFAULT);
-    double x = snap(e.getX());
-    double y = snap(e.getY());
-    if (e.getButton() == MouseButton.PRIMARY) {
-      switch (currentTool) {
-        case BARRA:
-          crearBarra(x, y);
-          break;
-        case NONE:
-          // Lógica para seleccionar/ver propiedades
-          System.out.println("Modo Selección: Click en " + x + ", " + y);
-          break;
-        case TRANSFORMADOR:
-          break;
-        case GENERADOR:
-          break;
-        case CARGA:
-          break;
-        case BANCO:
-          break;
-        case COMPENSADOR:
-          break;
-        default:
-          break;
-      }
-      return;
-    }
   }
 
   @FXML

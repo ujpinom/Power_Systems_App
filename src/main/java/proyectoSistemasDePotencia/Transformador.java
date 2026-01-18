@@ -28,6 +28,12 @@ public class Transformador extends Lineas {
     this.conexionSecundaria = "YN-" + barra2.getNombreBarra();
   }
 
+  public Transformador(Barras barra1, Barras barra2) {
+    super(barra1, barra2);
+    this.conexionPrimaria = "YN-" + barra1.getNombreBarra();
+    this.conexionSecundaria = "YN-" + barra2.getNombreBarra();
+  }
+
   public double getMagTab() {
     return magTab;
   }

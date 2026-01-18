@@ -9,7 +9,7 @@ import javafx.scene.shape.Polyline;
 
 public class Lineas implements Connectable {
 
-  private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+  protected final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     this.pcs.addPropertyChangeListener(listener);

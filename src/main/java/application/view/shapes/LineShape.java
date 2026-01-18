@@ -61,7 +61,7 @@ public class LineShape extends NetworkShape<Lineas> {
     this.getChildren().addAll(hitBox, visualLine, waypointHandles);
 
     // Crear etiqueta
-    createLabel(model.getNombreLinea(), 0, 0);
+    createLabel(model.getNombreLinea(), 10, 10);
 
     // Escuchar cambios en los puntos del modelo para redibujar
     model
@@ -202,7 +202,7 @@ public class LineShape extends NetworkShape<Lineas> {
 
     if (this.label != null) {
       this.label.setLayoutX(avgX);
-      this.label.setLayoutY(avgY - 15);
+      this.label.setLayoutY(avgY);
     }
   }
 

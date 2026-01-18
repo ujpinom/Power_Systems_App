@@ -81,11 +81,19 @@ public class Transformador extends Lineas {
   }
 
   public void setConexionPrimaria(String tipoConexion) {
+    String old = this.conexionPrimaria;
     this.conexionPrimaria = tipoConexion;
+    this.pcs.firePropertyChange("conexionPrimaria", old, tipoConexion);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Conexión Primaria", old, tipoConexion);
   }
 
   public void setConexionSecundaria(String tipoConexion) {
+    String old = this.conexionSecundaria;
     this.conexionSecundaria = tipoConexion;
+    this.pcs.firePropertyChange("conexionSecundaria", old, tipoConexion);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Conexión Secundaria", old, tipoConexion);
   }
 
   public String getConexionPrimaria() {

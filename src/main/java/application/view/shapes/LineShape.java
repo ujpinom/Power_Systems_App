@@ -14,8 +14,8 @@ import proyectoSistemasDePotencia.Lineas;
 
 public class LineShape extends NetworkShape<Lineas> {
 
-  private final Polyline visualLine;
-  private final Polyline hitBox; // Línea invisible gruesa para detectar clics
+  protected final Polyline visualLine;
+  protected final Polyline hitBox; // Línea invisible gruesa para detectar clics
 
   private final NetworkShape<?> startShape;
   private final NetworkShape<?> endShape;
@@ -134,7 +134,7 @@ public class LineShape extends NetworkShape<Lineas> {
    * Recalcula los puntos de la línea. Aquí es donde podemos implementar lógica de Ruteo Ortogonal
    * (Codos) en el futuro. Por ahora, haremos una conexión directa inteligente (Centro a Centro).
    */
-  private void updateConnectionPoints() {
+  protected void updateConnectionPoints() {
     // Coordenadas de inicio y fin
     double startX, startY, endX, endY;
 

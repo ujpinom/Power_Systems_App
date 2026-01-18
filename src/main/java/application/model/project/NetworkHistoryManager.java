@@ -101,8 +101,8 @@ public class NetworkHistoryManager {
 
   private void performAdd(Object item) {
     if (item instanceof Barras) model.addBarra((Barras) item);
-    else if (item instanceof Lineas) model.addLinea((Lineas) item);
     else if (item instanceof Transformador) model.addTransformador((Transformador) item);
+    else if (item instanceof Lineas) model.addLinea((Lineas) item);
     else if (item instanceof Generadores) model.addGenerador((Generadores) item);
     else if (item instanceof Carga) model.addCarga((Carga) item);
     else if (item instanceof Bancos) model.addBanco((Bancos) item);
@@ -111,8 +111,8 @@ public class NetworkHistoryManager {
 
   private void performRemove(Object item) {
     if (item instanceof Barras) model.removeBarra((Barras) item);
-    else if (item instanceof Lineas) model.removeLinea((Lineas) item);
     else if (item instanceof Transformador) model.removeTransformador((Transformador) item);
+    else if (item instanceof Lineas) model.removeLinea((Lineas) item);
     else if (item instanceof Generadores) model.removeGenerador((Generadores) item);
     else if (item instanceof Carga) model.removeCarga((Carga) item);
     else if (item instanceof Bancos) model.removeBanco((Bancos) item);

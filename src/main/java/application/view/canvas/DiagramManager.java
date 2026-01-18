@@ -9,6 +9,7 @@ import application.view.panels.PropertiesPanel;
 import application.view.shapes.BusShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.NetworkShape;
+import application.view.shapes.TrafoShape;
 import application.view.utils.UIUtils;
 import java.util.function.Consumer;
 import javafx.scene.input.MouseEvent;
@@ -18,6 +19,7 @@ import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Lineas;
+import proyectoSistemasDePotencia.Transformador;
 
 public class DiagramManager implements NetworkChangeListener {
   private final AnchorPane canvas;
@@ -86,6 +88,8 @@ public class DiagramManager implements NetworkChangeListener {
   public void onAdded(Object element) {
     if (element instanceof Barras) {
       agregarBarraVisual((Barras) element);
+    } else if (element instanceof Transformador) {
+      agregarTransformadorVisual((Transformador) element);
     } else if (element instanceof Lineas) {
       agregarLineaVisual((Lineas) element);
     }
@@ -292,7 +296,11 @@ public class DiagramManager implements NetworkChangeListener {
         return;
       }
 
-      crearLinea(b1, b2, connectionSource, target);
+      if (currentTool == application.enums.ToolType.LINEA) {
+        crearLinea(b1, b2, connectionSource, target);
+      } else if (currentTool == application.enums.ToolType.TRANSFORMADOR) {
+        crearTransformador(b1, b2, connectionSource, target);
+      }
     }
 
     cancelConnection(); // Limpiar estado
@@ -310,6 +318,32 @@ public class DiagramManager implements NetworkChangeListener {
       return true;
     }
     return false;
+  }
+
+  private void crearTransformador(
+      Barras b1, Barras b2, NetworkShape<?> shape1, NetworkShape<?> shape2) {
+    // 1. Crear Modelo
+    Transformador trafo = new Transformador(b1, b2);
+    trafo.setNombreLinea("T-" + (model.getTransformadores().size() + 1));
+
+    // Transferir waypoints al modelo
+    trafo.getListPuntosPolyLine().addAll(currentWaypoints);
+
+    // Guardar índices de anchors
+    trafo.setAnchorIndex1(startAnchorIndex);
+    trafo.setAnchorIndex2(endAnchorIndex);
+
+    // Agregar al NetworkModel
+    model.addTransformador(trafo);
+
+    LogService.getInstance()
+        .info(
+            "Transformador "
+                + trafo.getNombreLinea()
+                + " creado entre "
+                + b1.getNombreBarra()
+                + " y "
+                + b2.getNombreBarra());
   }
 
   private void crearLinea(Barras b1, Barras b2, NetworkShape<?> shape1, NetworkShape<?> shape2) {
@@ -335,6 +369,29 @@ public class DiagramManager implements NetworkChangeListener {
                 + b1.getNombreBarra()
                 + " y "
                 + b2.getNombreBarra());
+  }
+
+  private void agregarTransformadorVisual(Transformador trafo) {
+    NetworkShape<?> shape1 = buscarShapePorModelo(trafo.getBarra1());
+    NetworkShape<?> shape2 = buscarShapePorModelo(trafo.getBarra2());
+
+    if (shape1 != null && shape2 != null) {
+      TrafoShape trafoShape = new TrafoShape(trafo, shape1, shape2);
+
+      // Evento de selección para el trafo
+      trafoShape.setOnMouseClicked(
+          e -> {
+            deseleccionarTodo();
+            trafoShape.setSeleccionado(true);
+            seleccionActual = trafoShape;
+            model.setSeleccionActual(trafo);
+            e.consume();
+          });
+
+      trafoShape.setOnReconnectRequest(this::startAnchorReselection);
+
+      canvas.getChildren().add(trafoShape);
+    }
   }
 
   private void agregarLineaVisual(Lineas linea) {
@@ -493,6 +550,9 @@ public class DiagramManager implements NetworkChangeListener {
     if (modelData instanceof Barras) {
       LogService.getInstance()
           .info("Seleccionada barra -> " + ((Barras) modelData).getNombreBarra());
+    } else if (modelData instanceof Transformador) {
+      LogService.getInstance()
+          .info("Seleccionado transformador -> " + ((Transformador) modelData).getNombreLinea());
     } else if (modelData instanceof Lineas) {
       LogService.getInstance()
           .info("Seleccionada linea -> " + ((Lineas) modelData).getNombreLinea());
@@ -547,7 +607,8 @@ public class DiagramManager implements NetworkChangeListener {
               }
               return false;
             });
-    LogService.getInstance().info("Línea " + linea.getNombreLinea() + " eliminada del diagrama.");
+    String type = (linea instanceof Transformador) ? "Transformador " : "Línea ";
+    LogService.getInstance().info(type + linea.getNombreLinea() + " eliminada del diagrama.");
   }
 
   private NetworkShape<?> buscarShapePorModelo(Object modelo) {

@@ -59,6 +59,9 @@ public class TrafoShape extends LineShape {
     this.getChildren()
         .addAll(circle1, circle2, iconPrimario, iconSecundario, groundPrimario, groundSecundario);
 
+    // Desplazar la etiqueta por defecto para no tapar los círculos del trafo
+    this.labelOffsetY = -35.0;
+
     // Reactividad: Escuchar cambios de conexión y de impedancia de tierra
     model.addPropertyChangeListener(
         evt -> {

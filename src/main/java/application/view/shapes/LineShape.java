@@ -200,10 +200,7 @@ public class LineShape extends NetworkShape<Lineas> {
     avgX /= (allPoints.size() / 2);
     avgY /= (allPoints.size() / 2);
 
-    if (this.label != null) {
-      this.label.setLayoutX(avgX);
-      this.label.setLayoutY(avgY);
-    }
+    updateLabelPosition(avgX, avgY);
   }
 
   private void refreshWaypointHandles() {

@@ -17,6 +17,10 @@ public abstract class NetworkShape<T> extends Group {
   protected final T model;
   protected Label label;
 
+  // Variables para persistencia de posición de etiqueta
+  protected double labelOffsetX = 0, labelOffsetY = 0;
+  protected double labelBaseX = 0, labelBaseY = 0;
+
   // Configuración de animación
   private final ScaleTransition hoverAnimation;
 
@@ -118,8 +122,28 @@ public abstract class NetworkShape<T> extends Group {
 
           lbl.setLayoutX(newX);
           lbl.setLayoutY(newY);
+
+          // Actualizar offsets persistentes
+          this.labelOffsetX = newX - labelBaseX;
+          this.labelOffsetY = newY - labelBaseY;
+
           e.consume();
         });
+  }
+
+  /**
+   * Actualiza la posición de la etiqueta respetando los offsets manuales.
+   *
+   * @param baseX Posición base automática (ej: centro del componente).
+   * @param baseY Posición base automática.
+   */
+  public void updateLabelPosition(double baseX, double baseY) {
+    this.labelBaseX = baseX;
+    this.labelBaseY = baseY;
+    if (this.label != null) {
+      this.label.setLayoutX(baseX + labelOffsetX);
+      this.label.setLayoutY(baseY + labelOffsetY);
+    }
   }
 
   public void updateLabelText(String newText) {

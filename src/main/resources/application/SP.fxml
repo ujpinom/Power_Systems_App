@@ -255,7 +255,6 @@
                      <children>
                          <AnchorPane fx:id="areaDibujo" 
                                      prefHeight="6000.0" prefWidth="6000.0"
-                                     onMouseClicked="#mouseClicked" 
                                      onMouseDragged="#dragEvent" 
                                      onMouseMoved="#mouseEvent" />
                      </children>

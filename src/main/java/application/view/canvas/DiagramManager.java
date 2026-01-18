@@ -1,12 +1,16 @@
 package application.view.canvas;
 
+import application.enums.ToolType;
 import application.model.project.NetworkChangeListener;
 import application.model.project.NetworkModel;
 import application.model.validation.ValidationResult;
+import application.service.logging.LogService;
+import application.view.panels.PropertiesPanel;
 import application.view.shapes.BusShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.NetworkShape;
 import application.view.utils.UIUtils;
+import java.util.function.Consumer;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
@@ -38,7 +42,11 @@ public class DiagramManager implements NetworkChangeListener {
   private boolean isReconnectStart = false; // true if connecting Start, false if End
   private NetworkShape<?> reconnectTargetShape = null;
 
-  public DiagramManager(AnchorPane canvas) {
+  // --- Tool and Feedback ---
+  private ToolType currentTool = ToolType.NONE;
+  private Consumer<String> statusMessenger;
+
+  public DiagramManager(AnchorPane canvas, PropertiesPanel propertiesPanel) {
     this.canvas = canvas;
     this.model = NetworkModel.getInstance();
 
@@ -50,13 +58,7 @@ public class DiagramManager implements NetworkChangeListener {
         MouseEvent.MOUSE_CLICKED,
         e -> {
           if (e.getTarget() == canvas) {
-            System.out.println("Manager: Clic en fondo vacío");
-            if (isConnecting) {
-              // Añadir un waypoint intermedio
-              addWaypoint(e.getX(), e.getY());
-            } else {
-              deseleccionarTodo();
-            }
+            handleCanvasClick(e);
           }
         });
 
@@ -71,6 +73,13 @@ public class DiagramManager implements NetworkChangeListener {
             ghostLine.getPoints().set(size - 1, e.getY());
           }
         });
+
+    model
+        .seleccionActualProperty()
+        .addListener(
+            (obs, oldVal, newVal) -> {
+              propertiesPanel.mostrarPropiedades(newVal);
+            });
   }
 
   @Override
@@ -97,6 +106,65 @@ public class DiagramManager implements NetworkChangeListener {
   public void setConnectionMode(boolean enabled) {
     this.connectionModeEnabled = enabled;
     if (!enabled) cancelConnection();
+  }
+
+  public void setCurrentTool(ToolType tool) {
+    this.currentTool = tool;
+    setConnectionMode(tool == ToolType.LINEA || tool == ToolType.TRANSFORMADOR);
+  }
+
+  public void setStatusMessenger(Consumer<String> statusMessenger) {
+    this.statusMessenger = statusMessenger;
+  }
+
+  private void postStatus(String message) {
+    if (statusMessenger != null) {
+      statusMessenger.accept(message);
+    }
+    LogService.getInstance().info(message);
+  }
+
+  private void handleCanvasClick(MouseEvent e) {
+    double x = UIUtils.snap(e.getX(), 20.0);
+    double y = UIUtils.snap(e.getY(), 20.0);
+
+    if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+      switch (currentTool) {
+        case LINEA:
+        case TRANSFORMADOR:
+          if (isConnecting) {
+            addWaypoint(e.getX(), e.getY());
+          }
+          break;
+        case BARRA:
+          crearBarra(x, y);
+          break;
+        case NONE:
+          deseleccionarTodo();
+          break;
+        default:
+          LogService.getInstance()
+              .info("Herramienta " + currentTool + " no implementada para click directo.");
+          break;
+      }
+    }
+  }
+
+  private void crearBarra(double x, double y) {
+    if (!UIUtils.validarProximidadBarra(x, y, model.getBarras())) {
+      postStatus("Error: Espacio ocupado, seleccione otra ubicación.");
+      return;
+    }
+
+    String nombreDefault = "Bus-" + (model.getBarras().size());
+    Barras logicaBarra = new Barras(nombreDefault);
+    logicaBarra.setXbarra(x - 3);
+    logicaBarra.setYbarra(y - 30);
+
+    model.addBarra(logicaBarra);
+    LogService.getInstance()
+        .info("Barra " + logicaBarra.getNombreBarra() + " creada en (" + x + ", " + y + ")");
+    postStatus("Barra " + logicaBarra.getNombreBarra() + " creada exitosamente.");
   }
 
   private void agregarBarraVisual(Barras barra) {
@@ -139,7 +207,7 @@ public class DiagramManager implements NetworkChangeListener {
       if (userData instanceof application.view.shapes.AnchorPoint) {
         application.view.shapes.AnchorPoint ap = (application.view.shapes.AnchorPoint) userData;
         this.startAnchorIndex = source.getAnchorIndex(ap);
-        System.out.println("Manager: Conexión iniciada en Anchor " + startAnchorIndex);
+        LogService.getInstance().info("Conexión iniciada en Anchor " + startAnchorIndex);
       }
     }
 
@@ -188,14 +256,14 @@ public class DiagramManager implements NetworkChangeListener {
     ghostLine.getPoints().add(size - 2, snapX);
     ghostLine.getPoints().add(size - 1, snapY);
 
-    System.out.println("Manager: Añadido waypoint en " + snapX + ", " + snapY);
+    LogService.getInstance().info("Añadido waypoint en " + snapX + ", " + snapY);
   }
 
   private void completeConnection(NetworkShape<?> target, MouseEvent event) {
     if (!isConnecting || connectionSource == null) return;
 
     if (target == connectionSource) {
-      System.out.println("Manager: No se puede conectar un elemento consigo mismo.");
+      LogService.getInstance().warn("No se puede conectar un elemento consigo mismo.");
       return;
     }
 
@@ -205,7 +273,7 @@ public class DiagramManager implements NetworkChangeListener {
       if (userData instanceof application.view.shapes.AnchorPoint) {
         application.view.shapes.AnchorPoint ap = (application.view.shapes.AnchorPoint) userData;
         this.endAnchorIndex = target.getAnchorIndex(ap);
-        System.out.println("Manager: Conexión terminada en Anchor " + endAnchorIndex);
+        LogService.getInstance().info("Conexión terminada en Anchor " + endAnchorIndex);
       }
     }
 
@@ -259,8 +327,14 @@ public class DiagramManager implements NetworkChangeListener {
     // Agregar al NetworkModel (El listener se encargará de crear la visual)
     model.addLinea(nuevaLinea);
 
-    System.out.println(
-        "Manager: Conexión creada entre " + b1.getNombreBarra() + " y " + b2.getNombreBarra());
+    LogService.getInstance()
+        .info(
+            "Línea "
+                + nuevaLinea.getNombreLinea()
+                + " creada entre "
+                + b1.getNombreBarra()
+                + " y "
+                + b2.getNombreBarra());
   }
 
   private void agregarLineaVisual(Lineas linea) {
@@ -317,12 +391,12 @@ public class DiagramManager implements NetworkChangeListener {
     if (this.reconnectTargetShape != null) {
       // 3. Mostrar anchors
       this.reconnectTargetShape.showAnchors(true);
-      System.out.println("Manager: Iniciando reconexión para " + (isStart ? "Inicio" : "Fin"));
+      LogService.getInstance().info("Reconexión iniciada para " + (isStart ? "Inicio" : "Fin"));
 
       // Feedback visual? Podríamos cambiar el cursor del canvas
       canvas.setCursor(javafx.scene.Cursor.CROSSHAIR);
     } else {
-      System.err.println("Manager: No se encontró el shape visual.");
+      LogService.getInstance().error("No se encontró el shape visual para reconexión.");
       cancelReconnection();
     }
   }
@@ -337,7 +411,19 @@ public class DiagramManager implements NetworkChangeListener {
         application.view.shapes.AnchorPoint ap = (application.view.shapes.AnchorPoint) userData;
         int newIndex = shape.getAnchorIndex(ap);
 
-        System.out.println("Manager: Update Anchor Index -> " + newIndex);
+        String elementLabel = reconnectModel.toString();
+        if (reconnectModel instanceof Lineas) {
+          elementLabel = "Línea " + ((Lineas) reconnectModel).getNombreLinea();
+        }
+
+        LogService.getInstance()
+            .info(
+                "Punto de anclaje actualizado para "
+                    + (isReconnectStart ? "Inicio" : "Fin")
+                    + " de "
+                    + elementLabel
+                    + " -> Anchor "
+                    + newIndex);
 
         // Actualizar el modelo
         if (isReconnectStart) {
@@ -378,7 +464,7 @@ public class DiagramManager implements NetworkChangeListener {
 
     // Si se cliquea el cuerpo pero no un anchor, podríamos cancelar o ignorar.
     // Por ahora, ignoramos.
-    System.out.println("Manager: Clic en shape pero no en anchor.");
+    LogService.getInstance().info("Clic en componente (selección).");
   }
 
   private void cancelReconnection() {
@@ -405,7 +491,11 @@ public class DiagramManager implements NetworkChangeListener {
     // Debug
     Object modelData = shape.getModel();
     if (modelData instanceof Barras) {
-      System.out.println("Manager: Seleccionada barra -> " + ((Barras) modelData).getNombreBarra());
+      LogService.getInstance()
+          .info("Seleccionada barra -> " + ((Barras) modelData).getNombreBarra());
+    } else if (modelData instanceof Lineas) {
+      LogService.getInstance()
+          .info("Seleccionada linea -> " + ((Lineas) modelData).getNombreLinea());
     }
 
     model.setSeleccionActual(modelData);
@@ -434,6 +524,7 @@ public class DiagramManager implements NetworkChangeListener {
               }
               return false;
             });
+    LogService.getInstance().info("Barra " + barra.getNombreBarra() + " eliminada del diagrama.");
   }
 
   private void removerLineaVisual(Lineas linea) {
@@ -456,6 +547,7 @@ public class DiagramManager implements NetworkChangeListener {
               }
               return false;
             });
+    LogService.getInstance().info("Línea " + linea.getNombreLinea() + " eliminada del diagrama.");
   }
 
   private NetworkShape<?> buscarShapePorModelo(Object modelo) {

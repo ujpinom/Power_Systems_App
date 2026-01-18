@@ -181,7 +181,10 @@ public class Barras {
   }
 
   public void setBarraPQ(boolean barraPQ) {
+    boolean old = this.barraPQ;
     this.barraPQ = barraPQ;
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreBarra(), "Es PQ", old, barraPQ);
   }
 
   public boolean isBarraPV() {
@@ -189,7 +192,10 @@ public class Barras {
   }
 
   public void setBarraPV(boolean barraPV) {
+    boolean old = this.barraPV;
     this.barraPV = barraPV;
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreBarra(), "Es PV", old, barraPV);
   }
 
   public boolean isBarraCompensacion() {
@@ -200,6 +206,8 @@ public class Barras {
     boolean old = this.barraCompensacion;
     this.barraCompensacion = barraCompensacion;
     this.pcs.firePropertyChange("barraCompensacion", old, barraCompensacion);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreBarra(), "Es Compensación", old, barraCompensacion);
   }
 
   public Ellipse getEllipse() {
@@ -239,6 +247,8 @@ public class Barras {
     String old = this.nombrePersonalizado;
     this.nombrePersonalizado = nombre;
     this.pcs.firePropertyChange("nombrePersonalizado", old, nombre);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreBarra(), "Nombre Personalizado", old, nombre);
   }
 
   /**
@@ -304,6 +314,8 @@ public class Barras {
     double old = this.anguloVoltajeBarra;
     this.anguloVoltajeBarra = anguloVoltajeBarra;
     this.pcs.firePropertyChange("anguloVoltajeBarra", old, anguloVoltajeBarra);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreBarra(), "Ángulo de Voltaje", old, anguloVoltajeBarra);
   }
 
   public String getOrientacion() {
@@ -471,6 +483,8 @@ public class Barras {
     double old = this.voltajePrefalla;
     this.voltajePrefalla = voltajePrefalla;
     this.pcs.firePropertyChange("voltajePrefalla", old, voltajePrefalla);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreBarra(), "Voltaje p.u.", old, voltajePrefalla);
   }
 
   public double getxCoorG() {

@@ -39,7 +39,10 @@ public class Transformador extends Lineas {
   }
 
   public void setMagTab(double magTab) {
+    double old = this.magTab;
     this.magTab = magTab;
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Magnitud del Tap", old, magTab);
   }
 
   public double getAngtab() {
@@ -47,7 +50,10 @@ public class Transformador extends Lineas {
   }
 
   public void setAngtab(double angtab) {
+    double old = this.angtab;
     this.angtab = angtab;
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Ángulo del Tap", old, angtab);
   }
 
   public Barras getBarraConTap() {

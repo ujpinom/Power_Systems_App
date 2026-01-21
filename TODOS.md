@@ -1,0 +1,3 @@
+- Crear el panel de propiedades para el transformador.
+- Revisar el menu contextual del transformador.
+-

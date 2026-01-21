@@ -9,8 +9,7 @@ import proyectoSistemasDePotencia.Lineas;
 import proyectoSistemasDePotencia.Transformador;
 
 /**
- * Fábrica responsable de crear los componentes visuales (Shapes) y configurar
- * sus interacciones
+ * Fábrica responsable de crear los componentes visuales (Shapes) y configurar sus interacciones
  * básicas.
  */
 public class ShapeFactory {

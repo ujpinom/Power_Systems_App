@@ -3,12 +3,14 @@ package application.view.panels;
 import application.model.project.NetworkModel;
 import application.view.panels.forms.BusForm;
 import application.view.panels.forms.LineForm;
+import application.view.panels.forms.TrafoForm;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import proyectoSistemasDePotencia.Barras;
 import proyectoSistemasDePotencia.Lineas;
+import proyectoSistemasDePotencia.Transformador;
 
 public class PropertiesPanel extends VBox {
 
@@ -42,6 +44,8 @@ public class PropertiesPanel extends VBox {
 
     if (elemento instanceof Barras) {
       contentBox.getChildren().add(new BusForm().render((Barras) elemento));
+    } else if (elemento instanceof Transformador) {
+      contentBox.getChildren().add(new TrafoForm().render((Transformador) elemento));
     } else if (elemento instanceof Lineas) {
       contentBox.getChildren().add(new LineForm().render((Lineas) elemento));
     }

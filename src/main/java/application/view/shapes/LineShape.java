@@ -14,8 +14,8 @@ import proyectoSistemasDePotencia.Lineas;
 
 public class LineShape extends NetworkShape<Lineas> {
 
-  private final Polyline visualLine;
-  private final Polyline hitBox; // Línea invisible gruesa para detectar clics
+  protected final Polyline visualLine;
+  protected final Polyline hitBox; // Línea invisible gruesa para detectar clics
 
   private final NetworkShape<?> startShape;
   private final NetworkShape<?> endShape;
@@ -61,7 +61,7 @@ public class LineShape extends NetworkShape<Lineas> {
     this.getChildren().addAll(hitBox, visualLine, waypointHandles);
 
     // Crear etiqueta
-    createLabel(model.getNombreLinea(), 0, 0);
+    createLabel(model.getNombreLinea(), 10, 10);
 
     // Escuchar cambios en los puntos del modelo para redibujar
     model
@@ -134,7 +134,7 @@ public class LineShape extends NetworkShape<Lineas> {
    * Recalcula los puntos de la línea. Aquí es donde podemos implementar lógica de Ruteo Ortogonal
    * (Codos) en el futuro. Por ahora, haremos una conexión directa inteligente (Centro a Centro).
    */
-  private void updateConnectionPoints() {
+  protected void updateConnectionPoints() {
     // Coordenadas de inicio y fin
     double startX, startY, endX, endY;
 
@@ -200,10 +200,7 @@ public class LineShape extends NetworkShape<Lineas> {
     avgX /= (allPoints.size() / 2);
     avgY /= (allPoints.size() / 2);
 
-    if (this.label != null) {
-      this.label.setLayoutX(avgX);
-      this.label.setLayoutY(avgY - 15);
-    }
+    updateLabelPosition(avgX, avgY);
   }
 
   private void refreshWaypointHandles() {

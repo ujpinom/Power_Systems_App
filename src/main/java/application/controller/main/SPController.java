@@ -239,7 +239,7 @@ public class SPController implements Initializable {
                     KeyEvent.KEY_PRESSED,
                     event -> {
                       if (event.getCode() == KeyCode.ESCAPE) {
-                        diagramManager.cancelConnection();
+                        diagramManager.deseleccionarTodo();
                         diagramManager.setCurrentTool(ToolType.NONE);
                         none.setSelected(true);
                         infoElemento.setText("Elemento: Edición");

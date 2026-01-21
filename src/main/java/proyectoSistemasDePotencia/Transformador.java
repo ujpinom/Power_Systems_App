@@ -28,6 +28,12 @@ public class Transformador extends Lineas {
     this.conexionSecundaria = "YN-" + barra2.getNombreBarra();
   }
 
+  public Transformador(Barras barra1, Barras barra2) {
+    super(barra1, barra2);
+    this.conexionPrimaria = "YN-" + barra1.getNombreBarra();
+    this.conexionSecundaria = "YN-" + barra2.getNombreBarra();
+  }
+
   public double getMagTab() {
     return magTab;
   }
@@ -75,11 +81,19 @@ public class Transformador extends Lineas {
   }
 
   public void setConexionPrimaria(String tipoConexion) {
+    String old = this.conexionPrimaria;
     this.conexionPrimaria = tipoConexion;
+    this.pcs.firePropertyChange("conexionPrimaria", old, tipoConexion);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Conexión Primaria", old, tipoConexion);
   }
 
   public void setConexionSecundaria(String tipoConexion) {
+    String old = this.conexionSecundaria;
     this.conexionSecundaria = tipoConexion;
+    this.pcs.firePropertyChange("conexionSecundaria", old, tipoConexion);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(getNombreLinea(), "Conexión Secundaria", old, tipoConexion);
   }
 
   public String getConexionPrimaria() {
@@ -91,7 +105,16 @@ public class Transformador extends Lineas {
   }
 
   public void setImpedanciaAterrizamientoPrimaria(double impedanciaAterrizamientoPrimaria) {
+    double old = this.impedanciaAterrizamientoPrimaria;
     this.impedanciaAterrizamientoPrimaria = 3 * impedanciaAterrizamientoPrimaria;
+    this.pcs.firePropertyChange(
+        "impedanciaAterrizamientoPrimaria", old, this.impedanciaAterrizamientoPrimaria);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(
+            getNombreLinea(),
+            "Z Aterrizamiento Primaria",
+            old / 3,
+            impedanciaAterrizamientoPrimaria);
   }
 
   public double getImpedanciaAterrizamientoPrimaria() {
@@ -99,7 +122,16 @@ public class Transformador extends Lineas {
   }
 
   public void setImpedanciaAterrizamientoSecundaria(double impedanciaAterrizamientoSecundaria) {
+    double old = this.impedanciaAterrizamientoSecundaria;
     this.impedanciaAterrizamientoSecundaria = 3 * impedanciaAterrizamientoSecundaria;
+    this.pcs.firePropertyChange(
+        "impedanciaAterrizamientoSecundaria", old, this.impedanciaAterrizamientoSecundaria);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(
+            getNombreLinea(),
+            "Z Aterrizamiento Secundaria",
+            old / 3,
+            impedanciaAterrizamientoSecundaria);
   }
 
   public double getImpedanciaAterrizamientoSecundaria() {

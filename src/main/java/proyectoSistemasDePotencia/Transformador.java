@@ -105,7 +105,16 @@ public class Transformador extends Lineas {
   }
 
   public void setImpedanciaAterrizamientoPrimaria(double impedanciaAterrizamientoPrimaria) {
+    double old = this.impedanciaAterrizamientoPrimaria;
     this.impedanciaAterrizamientoPrimaria = 3 * impedanciaAterrizamientoPrimaria;
+    this.pcs.firePropertyChange(
+        "impedanciaAterrizamientoPrimaria", old, this.impedanciaAterrizamientoPrimaria);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(
+            getNombreLinea(),
+            "Z Aterrizamiento Primaria",
+            old / 3,
+            impedanciaAterrizamientoPrimaria);
   }
 
   public double getImpedanciaAterrizamientoPrimaria() {
@@ -113,7 +122,16 @@ public class Transformador extends Lineas {
   }
 
   public void setImpedanciaAterrizamientoSecundaria(double impedanciaAterrizamientoSecundaria) {
+    double old = this.impedanciaAterrizamientoSecundaria;
     this.impedanciaAterrizamientoSecundaria = 3 * impedanciaAterrizamientoSecundaria;
+    this.pcs.firePropertyChange(
+        "impedanciaAterrizamientoSecundaria", old, this.impedanciaAterrizamientoSecundaria);
+    application.service.logging.LogService.getInstance()
+        .propertyChange(
+            getNombreLinea(),
+            "Z Aterrizamiento Secundaria",
+            old / 3,
+            impedanciaAterrizamientoSecundaria);
   }
 
   public double getImpedanciaAterrizamientoSecundaria() {

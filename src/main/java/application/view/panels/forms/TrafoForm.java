@@ -108,7 +108,7 @@ public class TrafoForm extends AbstractForm<Transformador> {
 
     Label lblGroundedPrim = createLabel("Z Aterrizamiento Primaria (p.u.):");
     TextField txtGroundedPrim =
-        new TextField(String.valueOf(trafo.getImpedanciaAterrizamientoPrimaria()));
+        new TextField(String.valueOf(trafo.getImpedanciaAterrizamientoPrimaria() / 3));
     VBox groundedPrimBox = new VBox(5, lblGroundedPrim, txtGroundedPrim);
     actualizarVisibilidadTierra(trafo.getConexionPrimaria(), groundedPrimBox);
 
@@ -134,7 +134,7 @@ public class TrafoForm extends AbstractForm<Transformador> {
 
     Label lblGroundedSec = createLabel("Z Aterrizamiento Secundaria (p.u.):");
     TextField txtGroundedSec =
-        new TextField(String.valueOf(trafo.getImpedanciaAterrizamientoSecundaria()));
+        new TextField(String.valueOf(trafo.getImpedanciaAterrizamientoSecundaria() / 3));
     VBox groundedSecBox = new VBox(5, lblGroundedSec, txtGroundedSec);
     actualizarVisibilidadTierra(trafo.getConexionSecundaria(), groundedSecBox);
 

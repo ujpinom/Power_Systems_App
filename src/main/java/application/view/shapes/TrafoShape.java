@@ -16,19 +16,22 @@ public class TrafoShape extends LineShape {
   private final Circle circle2;
   private final SVGPath iconPrimario;
   private final SVGPath iconSecundario;
-  private final SVGPath groundPrimario;
-  private final SVGPath groundSecundario;
 
   private static final double TRAFO_CIRCLE_RADIUS = 18.0;
   private static final double TRAFO_OFFSET = 14.0;
 
-  // Rutas SVG Estándar (Escaladas para mejor visibilidad)
+  // Rutas SVG Estándar (Consolidadas para evitar bugs visuales)
   private static final String SVG_DELTA = "M 0,14 L 7,0 L 14,14 Z";
   private static final String SVG_WYE = "M 7,7 L 7,0 M 7,7 L 0,14 M 7,7 L 14,14";
-  private static final String SVG_GROUND =
-      "M 0,0 L 0,10 M -6,10 L 6,10 M -4,13 L 4,13 M -2,16 L 2,16";
-  private static final String SVG_REACTOR =
-      "M 0,0 C 4,0 4,2 0,2 C -4,2 -4,4 0,4 C 4,4 4,6 0,6 C -4,6 -4,8 0,8";
+
+  // Wye-Grounded Directo (Sólido)
+  private static final String SVG_YN_SOLID =
+      SVG_WYE + " M 7,7 L 7,12 M 2,12 L 12,12 M 4,14 L 10,14 M 6,16 L 8,16";
+
+  // Wye-Grounded a través de Impedancia (Zig-Zag)
+  private static final String SVG_YN_IMPEDANCE =
+      SVG_WYE
+          + " M 7,7 L 7,9 L 6,10 L 8,11 L 6,12 L 8,13 L 7,14 L 7,16 M 2,16 L 12,16 M 4,18 L 10,18 M 6,20 L 8,20";
 
   public enum WindingType {
     YN,
@@ -53,11 +56,8 @@ public class TrafoShape extends LineShape {
 
     iconPrimario = createSVGIcon();
     iconSecundario = createSVGIcon();
-    groundPrimario = createSVGIcon();
-    groundSecundario = createSVGIcon();
 
-    this.getChildren()
-        .addAll(circle1, circle2, iconPrimario, iconSecundario, groundPrimario, groundSecundario);
+    this.getChildren().addAll(circle1, circle2, iconPrimario, iconSecundario);
 
     // Desplazar la etiqueta por defecto para no tapar los círculos del trafo
     this.labelOffsetY = -35.0;
@@ -92,43 +92,25 @@ public class TrafoShape extends LineShape {
   private void updateWindingIcons() {
     Transformador t = (Transformador) getModel();
 
-    // 1. Iconos Base
-    setupWindingIcon(iconPrimario, WindingType.fromString(t.getConexionPrimaria()));
-    setupWindingIcon(iconSecundario, WindingType.fromString(t.getConexionSecundaria()));
-
-    // 2. Lógica de Tierra Primaria
-    setupGroundLogic(
-        groundPrimario, t.getConexionPrimaria(), t.getImpedanciaAterrizamientoPrimaria());
-    // 3. Lógica de Tierra Secundaria
-    setupGroundLogic(
-        groundSecundario, t.getConexionSecundaria(), t.getImpedanciaAterrizamientoSecundaria());
+    setupWindingContent(
+        iconPrimario, t.getConexionPrimaria(), t.getImpedanciaAterrizamientoPrimaria());
+    setupWindingContent(
+        iconSecundario, t.getConexionSecundaria(), t.getImpedanciaAterrizamientoSecundaria());
   }
 
-  private void setupWindingIcon(SVGPath icon, WindingType type) {
-    switch (type) {
-      case DELTA:
-        icon.setContent(SVG_DELTA);
-        break;
-      case Y:
-      case YN:
-        icon.setContent(SVG_WYE);
-        break;
-    }
-  }
-
-  private void setupGroundLogic(SVGPath gIcon, String connection, double zGround) {
+  private void setupWindingContent(SVGPath icon, String connection, double zGround) {
     WindingType type = WindingType.fromString(connection);
-    if (type == WindingType.YN) {
+
+    if (type == WindingType.DELTA) {
+      icon.setContent(SVG_DELTA);
+    } else if (type == WindingType.Y) {
+      icon.setContent(SVG_WYE);
+    } else if (type == WindingType.YN) {
       if (zGround == 0) {
-        gIcon.setContent(SVG_GROUND);
-        gIcon.setVisible(true);
+        icon.setContent(SVG_YN_SOLID);
       } else {
-        // Reactor + Ground (Combinado en una ruta para simplificar el posicionamiento)
-        gIcon.setContent(SVG_REACTOR + " " + "M 0,8" + " " + SVG_GROUND);
-        gIcon.setVisible(true);
+        icon.setContent(SVG_YN_IMPEDANCE);
       }
-    } else {
-      gIcon.setVisible(false);
     }
   }
 
@@ -166,31 +148,26 @@ public class TrafoShape extends LineShape {
               circle2.setCenterX(centerX + TRAFO_OFFSET);
               circle2.setCenterY(centerY);
 
-              positionIcons(iconPrimario, groundPrimario, centerX - TRAFO_OFFSET, centerY);
-              positionIcons(iconSecundario, groundSecundario, centerX + TRAFO_OFFSET, centerY);
+              positionIcon(iconPrimario, centerX - TRAFO_OFFSET, centerY);
+              positionIcon(iconSecundario, centerX + TRAFO_OFFSET, centerY);
             } else {
               circle1.setCenterX(centerX);
               circle1.setCenterY(centerY - TRAFO_OFFSET);
               circle2.setCenterX(centerX);
               circle2.setCenterY(centerY + TRAFO_OFFSET);
 
-              positionIcons(iconPrimario, groundPrimario, centerX, centerY - TRAFO_OFFSET);
-              positionIcons(iconSecundario, groundSecundario, centerX, centerY + TRAFO_OFFSET);
+              positionIcon(iconPrimario, centerX, centerY - TRAFO_OFFSET);
+              positionIcon(iconSecundario, centerX, centerY + TRAFO_OFFSET);
             }
           });
     }
   }
 
-  private void positionIcons(SVGPath winding, SVGPath ground, double cx, double cy) {
+  private void positionIcon(SVGPath icon, double cx, double cy) {
     // Escalar un poco si queremos iconos más grandes, pero 1.0 suele estar bien
     // para este radio
-    winding.setLayoutX(cx - 7); // Centrar el icono de 14x14 (Neutral en cx, cy)
-    winding.setLayoutY(cy - 7);
-
-    if (ground.isVisible()) {
-      ground.setLayoutX(cx);
-      ground.setLayoutY(cy); // Conectar directamente al centro de la Estrella
-    }
+    icon.setLayoutX(cx - 7); // Centrar el icono de 14x14 (Neutral en cx, cy)
+    icon.setLayoutY(cy - 7);
   }
 
   @Override

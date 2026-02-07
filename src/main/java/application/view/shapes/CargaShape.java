@@ -1,6 +1,7 @@
 package application.view.shapes;
 
 import application.model.project.NetworkModel;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.DropShadow;
@@ -36,6 +37,7 @@ public class CargaShape extends SingleTerminalShape<Carga> {
   private final Polygon cabezaFlechaQ;
   private final Text textoP;
   private final Text textoQ;
+  private boolean showPowerFlow = false;
 
   private boolean isSelected = false;
 
@@ -84,6 +86,7 @@ public class CargaShape extends SingleTerminalShape<Carga> {
     // Inicializar listeners de barra/anchor (común de terminal único)
     initializeSingleTerminalConnection();
     updatePowerText();
+    applyPowerFlowVisibility();
 
     // Calcular posición inicial
     onAnchorOrBusMoved();
@@ -131,7 +134,11 @@ public class CargaShape extends SingleTerminalShape<Carga> {
     double toAnchorX = anchorX - genX;
     double toAnchorY = anchorY - genY;
     updateConnectionLine(lineaConexion, toAnchorX, toAnchorY, LOAD_CONNECTION_OFFSET);
-    updatePowerArrows(toAnchorX, toAnchorY);
+    if (showPowerFlow) {
+      updatePowerArrows(toAnchorX, toAnchorY);
+    } else {
+      hidePowerArrows();
+    }
 
     // Rotar el triángulo para que la punta quede alejándose de la barra.
     double dx = genX - anchorX;
@@ -190,13 +197,22 @@ public class CargaShape extends SingleTerminalShape<Carga> {
 
     MenuItem itemReconectar = createReconnectMenuItem("Reconectar Anclaje");
 
+    CheckMenuItem itemMostrarFlujo = new CheckMenuItem("Mostrar Flechas P/Q");
+    itemMostrarFlujo.setSelected(showPowerFlow);
+    itemMostrarFlujo.setOnAction(
+        e -> {
+          showPowerFlow = itemMostrarFlujo.isSelected();
+          applyPowerFlowVisibility();
+          onAnchorOrBusMoved();
+        });
+
     MenuItem itemEliminar = new MenuItem("Eliminar");
     itemEliminar.setOnAction(
         e -> {
           NetworkModel.getInstance().removeCarga(model);
         });
 
-    menu.getItems().addAll(itemRenombrar, itemReconectar, itemEliminar);
+    menu.getItems().addAll(itemRenombrar, itemReconectar, itemMostrarFlujo, itemEliminar);
   }
 
   @Override
@@ -324,5 +340,14 @@ public class CargaShape extends SingleTerminalShape<Carga> {
     flechaQ.setEndY(0);
     cabezaFlechaP.getPoints().clear();
     cabezaFlechaQ.getPoints().clear();
+  }
+
+  private void applyPowerFlowVisibility() {
+    flechaP.setVisible(showPowerFlow);
+    flechaQ.setVisible(showPowerFlow);
+    cabezaFlechaP.setVisible(showPowerFlow);
+    cabezaFlechaQ.setVisible(showPowerFlow);
+    textoP.setVisible(showPowerFlow);
+    textoQ.setVisible(showPowerFlow);
   }
 }

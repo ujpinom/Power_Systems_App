@@ -1,6 +1,7 @@
 package application.view.shapes;
 
 import application.model.project.NetworkModel;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.DropShadow;
@@ -37,6 +38,7 @@ public class GenShape extends SingleTerminalShape<Generadores> {
   private final Polygon cabezaFlechaQ;
   private final Text textoP;
   private final Text textoQ;
+  private boolean showPowerFlow = false;
 
   private boolean isSelected = false;
 
@@ -89,6 +91,7 @@ public class GenShape extends SingleTerminalShape<Generadores> {
     // Inicializar listeners de barra/anchor (común de terminal único)
     initializeSingleTerminalConnection();
     updatePowerText();
+    applyPowerFlowVisibility();
 
     // Calcular posición inicial
     onAnchorOrBusMoved();
@@ -136,7 +139,11 @@ public class GenShape extends SingleTerminalShape<Generadores> {
     double dist = Math.hypot(toAnchorX, toAnchorY);
 
     updateConnectionLine(lineaConexion, toAnchorX, toAnchorY, GEN_RADIUS);
-    updatePowerArrows(toAnchorX, toAnchorY, dist);
+    if (showPowerFlow) {
+      updatePowerArrows(toAnchorX, toAnchorY, dist);
+    } else {
+      hidePowerArrows();
+    }
 
     cuerpoGenerador.setCenterX(0);
     cuerpoGenerador.setCenterY(0);
@@ -193,13 +200,22 @@ public class GenShape extends SingleTerminalShape<Generadores> {
 
     MenuItem itemReconectar = createReconnectMenuItem("Reconectar Anclaje");
 
+    CheckMenuItem itemMostrarFlujo = new CheckMenuItem("Mostrar Flechas P/Q");
+    itemMostrarFlujo.setSelected(showPowerFlow);
+    itemMostrarFlujo.setOnAction(
+        e -> {
+          showPowerFlow = itemMostrarFlujo.isSelected();
+          applyPowerFlowVisibility();
+          onAnchorOrBusMoved();
+        });
+
     MenuItem itemEliminar = new MenuItem("Eliminar");
     itemEliminar.setOnAction(
         e -> {
           NetworkModel.getInstance().removeGenerador(model);
         });
 
-    menu.getItems().addAll(itemRenombrar, itemReconectar, itemEliminar);
+    menu.getItems().addAll(itemRenombrar, itemReconectar, itemMostrarFlujo, itemEliminar);
   }
 
   @Override
@@ -326,5 +342,14 @@ public class GenShape extends SingleTerminalShape<Generadores> {
     flechaQ.setEndY(0);
     cabezaFlechaP.getPoints().clear();
     cabezaFlechaQ.getPoints().clear();
+  }
+
+  private void applyPowerFlowVisibility() {
+    flechaP.setVisible(showPowerFlow);
+    flechaQ.setVisible(showPowerFlow);
+    cabezaFlechaP.setVisible(showPowerFlow);
+    cabezaFlechaQ.setVisible(showPowerFlow);
+    textoP.setVisible(showPowerFlow);
+    textoQ.setVisible(showPowerFlow);
   }
 }

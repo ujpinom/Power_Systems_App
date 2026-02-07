@@ -58,6 +58,7 @@ public class Generadores implements Connectable {
     } else if (mWSalida > MWSalidaMax) {
       MWSalida = MWSalidaMax;
     } else MWSalida = mWSalida;
+    this.pcs.firePropertyChange("MWSalida", old, MWSalida);
 
     application.service.logging.LogService.getInstance()
         .propertyChange(getNombreGenerador(), "Potencia Activa P", old, MWSalida);
@@ -74,6 +75,7 @@ public class Generadores implements Connectable {
     } else if (mVarSalida < MVarSalidaMin) {
       MVarSalida = MVarSalidaMin;
     } else MVarSalida = mVarSalida;
+    this.pcs.firePropertyChange("MVarSalida", old, MVarSalida);
 
     application.service.logging.LogService.getInstance()
         .propertyChange(getNombreGenerador(), "Potencia Reactiva Q", old, MVarSalida);

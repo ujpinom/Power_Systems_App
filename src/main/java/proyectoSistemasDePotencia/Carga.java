@@ -72,6 +72,7 @@ public class Carga implements Connectable {
   public void setPotenciaActiva(double potenciaActiva) {
     double old = this.potenciaActiva;
     this.potenciaActiva = potenciaActiva;
+    this.pcs.firePropertyChange("potenciaActiva", old, potenciaActiva);
     application.service.logging.LogService.getInstance()
         .propertyChange(getNombreCarga(), "Potencia Activa P", old, potenciaActiva);
   }
@@ -83,6 +84,7 @@ public class Carga implements Connectable {
   public void setPotenciaReactiva(double potenciaReactiva) {
     double old = this.potenciaReactiva;
     this.potenciaReactiva = potenciaReactiva;
+    this.pcs.firePropertyChange("potenciaReactiva", old, potenciaReactiva);
     application.service.logging.LogService.getInstance()
         .propertyChange(getNombreCarga(), "Potencia Reactiva Q", old, potenciaReactiva);
   }

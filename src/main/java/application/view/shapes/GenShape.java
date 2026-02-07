@@ -1,56 +1,47 @@
 package application.view.shapes;
 
 import application.model.project.NetworkModel;
-import javafx.beans.value.ChangeListener;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
 import proyectoSistemasDePotencia.Generadores;
 
 /**
  * Representación visual de un Generador en el diagrama. El generador se muestra como un círculo con
  * una onda senoidal (~) conectado a una barra mediante una línea.
  */
-public class GenShape extends NetworkShape<Generadores> {
+public class GenShape extends SingleTerminalShape<Generadores> {
 
   // Dimensiones del generador
   private static final double GEN_RADIUS = 18.0;
   private static final double CONNECTION_LINE_LENGTH = 30.0;
+  private static final double FLOW_ARROW_LATERAL_OFFSET = 8.0;
+  private static final double FLOW_ARROW_HEAD_LENGTH = 6.0;
+  private static final double FLOW_ARROW_HEAD_HALF_WIDTH = 3.5;
+  private static final double FLOW_LABEL_PERP_OFFSET = 14.0;
+  private static final double FLOW_LABEL_TANGENTIAL_SHIFT = -2.0;
 
   // Componentes visuales
   private final Circle cuerpoGenerador;
   private final SVGPath simboloOnda;
   private final Line lineaConexion;
-
-  // Referencia al shape de la barra conectada
-  private final BusShape busShape;
-  private AnchorPoint connectedAnchor;
-
-  // Listener para actualizar posición cuando la barra se mueve
-  private final ChangeListener<Number> positionListener = (obs, oldVal, newVal) -> updatePosition();
+  private final Line flechaP;
+  private final Line flechaQ;
+  private final Polygon cabezaFlechaP;
+  private final Polygon cabezaFlechaQ;
+  private final Text textoP;
+  private final Text textoQ;
 
   private boolean isSelected = false;
 
-  // Handler para reconexión
-  private java.util.function.BiConsumer<proyectoSistemasDePotencia.Connectable, Boolean>
-      onReconnectHandler;
-
-  public void setOnReconnectRequest(
-      java.util.function.BiConsumer<proyectoSistemasDePotencia.Connectable, Boolean> handler) {
-    this.onReconnectHandler = handler;
-  }
-
   public GenShape(Generadores generador, BusShape busShape) {
-    super(generador);
-    this.busShape = busShape;
-    enableDrag();
-
-    // Resolver el anchor de conexión
-    resolveAnchor();
+    super(generador, busShape);
 
     // 1. Línea de conexión (del generador hacia la barra)
     lineaConexion = new Line();
@@ -71,17 +62,36 @@ public class GenShape extends NetworkShape<Generadores> {
     simboloOnda.setStrokeWidth(2.0);
     simboloOnda.setFill(Color.TRANSPARENT);
 
+    // 4. Flechas de potencia (hacia la barra): P (activa) y Q (reactiva)
+    flechaP = createFlowArrowShaft(Color.DODGERBLUE);
+    flechaQ = createFlowArrowShaft(Color.DARKORANGE);
+    cabezaFlechaP = createFlowArrowHead(Color.DODGERBLUE);
+    cabezaFlechaQ = createFlowArrowHead(Color.DARKORANGE);
+    textoP = createFlowLabel(Color.DODGERBLUE);
+    textoQ = createFlowLabel(Color.DARKORANGE);
+
     // Añadir componentes al grupo
-    this.getChildren().addAll(lineaConexion, cuerpoGenerador, simboloOnda);
+    this.getChildren()
+        .addAll(
+            lineaConexion,
+            flechaP,
+            flechaQ,
+            cabezaFlechaP,
+            cabezaFlechaQ,
+            textoP,
+            textoQ,
+            cuerpoGenerador,
+            simboloOnda);
 
     // Crear etiqueta
     createLabel(generador.getNombreGenerador(), GEN_RADIUS + 5, -GEN_RADIUS);
 
-    // Inicializar listeners de posición
-    initPositionListeners();
+    // Inicializar listeners de barra/anchor (común de terminal único)
+    initializeSingleTerminalConnection();
+    updatePowerText();
 
     // Calcular posición inicial
-    updatePosition();
+    onAnchorOrBusMoved();
 
     // Suscribirse a cambios del modelo
     model.addPropertyChangeListener(
@@ -90,120 +100,48 @@ public class GenShape extends NetworkShape<Generadores> {
           if ("nombreGenerador".equals(prop) || "nombrePersonalizado".equals(prop)) {
             javafx.application.Platform.runLater(() -> updateLabelText(model.getNombreGenerador()));
           } else if ("anchorIndex1".equals(prop)) {
+            javafx.application.Platform.runLater(this::refreshConnectionAnchor);
+          } else if ("MWSalida".equals(prop) || "MVarSalida".equals(prop)) {
             javafx.application.Platform.runLater(
                 () -> {
-                  removePositionListeners();
-                  resolveAnchor();
-                  initPositionListeners();
-                  updatePosition();
+                  updatePowerText();
+                  onAnchorOrBusMoved();
                 });
           }
         });
   }
 
-  private void resolveAnchor() {
-    int anchorIndex = model.getAnchorIndex1();
-    if (anchorIndex >= 0 && anchorIndex < busShape.getAnchors().size()) {
-      this.connectedAnchor = busShape.getAnchors().get(anchorIndex);
-    } else if (!busShape.getAnchors().isEmpty()) {
-      // Fallback: usar el primer anchor
-      this.connectedAnchor = busShape.getAnchors().get(0);
-      model.setAnchorIndex1(0);
-    }
-  }
+  @Override
+  protected void onAnchorOrBusMoved() {
+    double[] anchorCoords = getAnchorCoordinates();
+    double anchorX = anchorCoords[0];
+    double anchorY = anchorCoords[1];
 
-  private void initPositionListeners() {
-    if (connectedAnchor != null) {
-      connectedAnchor.sceneXProperty().addListener(positionListener);
-      connectedAnchor.sceneYProperty().addListener(positionListener);
-    } else {
-      busShape.layoutXProperty().addListener(positionListener);
-      busShape.layoutYProperty().addListener(positionListener);
-    }
-  }
-
-  private void removePositionListeners() {
-    if (connectedAnchor != null) {
-      connectedAnchor.sceneXProperty().removeListener(positionListener);
-      connectedAnchor.sceneYProperty().removeListener(positionListener);
-    } else {
-      busShape.layoutXProperty().removeListener(positionListener);
-      busShape.layoutYProperty().removeListener(positionListener);
-    }
-  }
-
-  /**
-   * Actualiza la posición del generador basándose en el anchor de la barra y su posición interna.
-   */
-  private void updatePosition() {
-    double anchorX, anchorY;
-
-    if (connectedAnchor != null) {
-      anchorX = connectedAnchor.sceneXProperty().get();
-      anchorY = connectedAnchor.sceneYProperty().get();
-    } else {
-      // Fallback: centro de la barra
-      anchorX = busShape.getLayoutX() + ShapeConstants.BUS_HALF_WIDTH;
-      anchorY = busShape.getLayoutY() + ShapeConstants.BUS_DEFAULT_HEIGHT / 2.0;
-    }
-
-    // Determinar dirección de conexión basada en la posición del anchor
-    double dirX, dirY;
-    if (connectedAnchor != null) {
-      // Si el anchor está a la izquierda de la barra, el generador va hacia la
-      // izquierda
-      if (connectedAnchor.getRelX() <= 0) {
-        dirX = -1;
-      } else {
-        dirX = 1;
-      }
-      dirY = 0; // Conexión horizontal por defecto
-    } else {
-      dirX = 0;
-      dirY = 1; // Conexión vertical hacia abajo
-    }
-
-    // Calcular posición del centro del generador
     double genX = model.getXCenter();
     double genY = model.getYCenter();
-
-    // Si las coordenadas no están inicializadas, calcularlas basándose en el anchor
     if (genX == 0 && genY == 0) {
-      genX = anchorX + dirX * (CONNECTION_LINE_LENGTH + GEN_RADIUS);
-      genY = anchorY + dirY * (CONNECTION_LINE_LENGTH + GEN_RADIUS);
+      double[] defaultCenter =
+          getDefaultCenterFromAnchor(anchorX, anchorY, CONNECTION_LINE_LENGTH + GEN_RADIUS);
+      genX = defaultCenter[0];
+      genY = defaultCenter[1];
       model.setXCenter(genX);
       model.setYCenter(genY);
     }
 
-    // Posicionar el grupo en el centro del generador
     this.setLayoutX(genX);
     this.setLayoutY(genY);
 
-    // La línea de conexión va desde el borde del círculo hasta el anchor
-    // Calcular el punto en el borde del círculo más cercano al anchor
-    double dx = anchorX - genX;
-    double dy = anchorY - genY;
-    double dist = Math.sqrt(dx * dx + dy * dy);
+    double toAnchorX = anchorX - genX;
+    double toAnchorY = anchorY - genY;
+    double dist = Math.hypot(toAnchorX, toAnchorY);
 
-    if (dist > 0) {
-      // Punto en el borde del círculo
-      double borderX = (dx / dist) * GEN_RADIUS;
-      double borderY = (dy / dist) * GEN_RADIUS;
+    updateConnectionLine(lineaConexion, toAnchorX, toAnchorY, GEN_RADIUS);
+    updatePowerArrows(toAnchorX, toAnchorY, dist);
 
-      // La línea va del borde del círculo al anchor
-      lineaConexion.setStartX(borderX);
-      lineaConexion.setStartY(borderY);
-      lineaConexion.setEndX(anchorX - genX);
-      lineaConexion.setEndY(anchorY - genY);
-    }
-
-    // El cuerpo y símbolo están en 0,0 relativo al grupo (LayoutX/Y es el centro)
     cuerpoGenerador.setCenterX(0);
     cuerpoGenerador.setCenterY(0);
     simboloOnda.setLayoutX(0);
     simboloOnda.setLayoutY(0);
-
-    // Actualizar posición de la etiqueta
     updateLabelPosition(GEN_RADIUS + 5, -GEN_RADIUS);
   }
 
@@ -211,8 +149,7 @@ public class GenShape extends NetworkShape<Generadores> {
   protected void updateModelCoordinates(double x, double y) {
     model.setXCenter(x);
     model.setYCenter(y);
-    // Actualizar visualmente la línea de conexión después del arrastre
-    updatePosition();
+    onAnchorOrBusMoved();
   }
 
   @Override
@@ -254,13 +191,7 @@ public class GenShape extends NetworkShape<Generadores> {
                   });
         });
 
-    MenuItem itemReconectar = new MenuItem("Reconectar Anclaje");
-    itemReconectar.setOnAction(
-        e -> {
-          if (onReconnectHandler != null) {
-            onReconnectHandler.accept(model, true); // true = terminal 1 (único)
-          }
-        });
+    MenuItem itemReconectar = createReconnectMenuItem("Reconectar Anclaje");
 
     MenuItem itemEliminar = new MenuItem("Eliminar");
     itemEliminar.setOnAction(
@@ -278,6 +209,122 @@ public class GenShape extends NetworkShape<Generadores> {
 
   /** Limpia los listeners para evitar memory leaks. */
   public void dispose() {
-    removePositionListeners();
+    disposeSingleTerminalConnection();
+  }
+
+  private Line createFlowArrowShaft(Color color) {
+    Line arrow = new Line();
+    arrow.setStroke(color);
+    arrow.setStrokeWidth(1.8);
+    return arrow;
+  }
+
+  private Polygon createFlowArrowHead(Color color) {
+    Polygon head = new Polygon();
+    head.setFill(color);
+    return head;
+  }
+
+  private Text createFlowLabel(Color color) {
+    Text text = new Text();
+    text.setFill(color);
+    text.setStyle("-fx-font-size: 10px; -fx-font-weight: bold;");
+    return text;
+  }
+
+  private void updatePowerText() {
+    textoP.setText(String.format("P %.1f", model.getMWSalida()));
+    textoQ.setText(String.format("Q %.1f", model.getMVarSalida()));
+  }
+
+  private void updatePowerArrows(double toAnchorX, double toAnchorY, double dist) {
+    if (dist < 1e-6) {
+      hidePowerArrows();
+      return;
+    }
+
+    double ux = toAnchorX / dist;
+    double uy = toAnchorY / dist;
+    double px = -uy;
+    double py = ux;
+
+    double usable = Math.max(10.0, dist - GEN_RADIUS - 2.0);
+    double arrowLength = Math.min(20.0, usable * 0.45);
+    double baseDistance = GEN_RADIUS + 3.0;
+
+    updateArrowGeometry(
+        flechaP,
+        cabezaFlechaP,
+        textoP,
+        ux,
+        uy,
+        px,
+        py,
+        baseDistance,
+        arrowLength,
+        +FLOW_ARROW_LATERAL_OFFSET);
+    updateArrowGeometry(
+        flechaQ,
+        cabezaFlechaQ,
+        textoQ,
+        ux,
+        uy,
+        px,
+        py,
+        baseDistance,
+        arrowLength,
+        -FLOW_ARROW_LATERAL_OFFSET);
+  }
+
+  private void updateArrowGeometry(
+      Line shaft,
+      Polygon head,
+      Text label,
+      double ux,
+      double uy,
+      double px,
+      double py,
+      double baseDistance,
+      double arrowLength,
+      double lateralOffset) {
+
+    double startX = ux * baseDistance + px * lateralOffset;
+    double startY = uy * baseDistance + py * lateralOffset;
+    double endX = startX + ux * arrowLength;
+    double endY = startY + uy * arrowLength;
+
+    shaft.setStartX(startX);
+    shaft.setStartY(startY);
+    shaft.setEndX(endX);
+    shaft.setEndY(endY);
+
+    double backX = endX - ux * FLOW_ARROW_HEAD_LENGTH;
+    double backY = endY - uy * FLOW_ARROW_HEAD_LENGTH;
+    double leftX = backX + px * FLOW_ARROW_HEAD_HALF_WIDTH;
+    double leftY = backY + py * FLOW_ARROW_HEAD_HALF_WIDTH;
+    double rightX = backX - px * FLOW_ARROW_HEAD_HALF_WIDTH;
+    double rightY = backY - py * FLOW_ARROW_HEAD_HALF_WIDTH;
+    head.getPoints().setAll(endX, endY, leftX, leftY, rightX, rightY);
+
+    double midX = startX + ux * (arrowLength * 0.5);
+    double midY = startY + uy * (arrowLength * 0.5);
+    double side = lateralOffset >= 0 ? 1.0 : -1.0;
+    label.setLayoutX(
+        midX + (px * side * FLOW_LABEL_PERP_OFFSET) + (ux * FLOW_LABEL_TANGENTIAL_SHIFT));
+    label.setLayoutY(
+        midY + (py * side * FLOW_LABEL_PERP_OFFSET) + (uy * FLOW_LABEL_TANGENTIAL_SHIFT));
+  }
+
+  private void hidePowerArrows() {
+    flechaP.setStartX(0);
+    flechaP.setStartY(0);
+    flechaP.setEndX(0);
+    flechaP.setEndY(0);
+    flechaQ.setStartX(0);
+    flechaQ.setStartY(0);
+    flechaQ.setEndX(0);
+    flechaQ.setEndY(0);
+    cabezaFlechaP.getPoints().clear();
+    cabezaFlechaQ.getPoints().clear();
   }
 }

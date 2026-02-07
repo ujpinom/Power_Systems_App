@@ -57,6 +57,7 @@ public class NetworkModel {
     lineas.addListener((ListChangeListener<Lineas>) c -> recomputeLogicalNames());
     transformadores.addListener((ListChangeListener<Transformador>) c -> recomputeLogicalNames());
     generadores.addListener((ListChangeListener<Generadores>) c -> recomputeLogicalNames());
+    cargas.addListener((ListChangeListener<Carga>) c -> recomputeLogicalNames());
   }
 
   private void recomputeLogicalNames() {
@@ -66,6 +67,7 @@ public class NetworkModel {
       transformadores.get(i).setNombreLinea("Trafo " + (i + 1));
     for (int i = 0; i < generadores.size(); i++)
       generadores.get(i).setNombreGenerador("Gen " + (i + 1));
+    for (int i = 0; i < cargas.size(); i++) cargas.get(i).setNombreCarga("Load " + (i + 1));
   }
 
   // --- GETTERS ---

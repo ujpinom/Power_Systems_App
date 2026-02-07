@@ -8,6 +8,8 @@ import application.service.logging.LogService;
 import application.view.canvas.handlers.*;
 import application.view.panels.PropertiesPanel;
 import application.view.shapes.BusShape;
+import application.view.shapes.CargaShape;
+import application.view.shapes.GenShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.NetworkShape;
 import application.view.shapes.TrafoShape;
@@ -16,6 +18,8 @@ import java.util.function.Consumer;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import proyectoSistemasDePotencia.Barras;
+import proyectoSistemasDePotencia.Carga;
+import proyectoSistemasDePotencia.Generadores;
 import proyectoSistemasDePotencia.Lineas;
 import proyectoSistemasDePotencia.Transformador;
 
@@ -32,10 +36,12 @@ public class DiagramManager implements NetworkChangeListener {
   private final ShapeFactory shapeFactory;
   private final ConnectionHandler connectionHandler;
   private final ReconnectionHandler reconnectionHandler;
+  private final SingleTerminalHandler singleTerminalHandler;
 
   // --- Tool and Feedback ---
   private ToolType currentTool = ToolType.NONE;
   private boolean connectionModeEnabled = false;
+  private boolean singleConnectionMode = false;
   private Consumer<String> statusMessenger;
 
   public DiagramManager(AnchorPane canvas, PropertiesPanel propertiesPanel) {
@@ -47,6 +53,7 @@ public class DiagramManager implements NetworkChangeListener {
     this.shapeFactory = new ShapeFactory(this);
     this.connectionHandler = new ConnectionHandler(canvas, model, this);
     this.reconnectionHandler = new ReconnectionHandler(canvas, model, this);
+    this.singleTerminalHandler = new SingleTerminalHandler(model, this);
 
     // Registrarse como observador universal
     this.model.addChangeListener(this);
@@ -87,6 +94,10 @@ public class DiagramManager implements NetworkChangeListener {
       agregarTransformadorVisual((Transformador) element);
     } else if (element instanceof Lineas) {
       agregarLineaVisual((Lineas) element);
+    } else if (element instanceof Generadores) {
+      agregarGeneradorVisual((Generadores) element);
+    } else if (element instanceof Carga) {
+      agregarCargaVisual((Carga) element);
     }
   }
 
@@ -97,12 +108,27 @@ public class DiagramManager implements NetworkChangeListener {
       selectionHandler.limpiarReferencia(shape);
       canvas.getChildren().remove(shape);
 
+      if (shape instanceof LineShape) {
+        ((LineShape) shape).dispose();
+      }
+
+      if (shape instanceof GenShape) {
+        ((GenShape) shape).dispose();
+      }
+
+      if (shape instanceof CargaShape) {
+        ((CargaShape) shape).dispose();
+      }
+
       String label = element.toString();
       if (element instanceof Barras) label = "Barra " + ((Barras) element).getNombreBarra();
       else if (element instanceof Lineas)
         label = "Línea/Trafo " + ((Lineas) element).getNombreLinea();
+      else if (element instanceof Generadores)
+        label = "Generador " + ((Generadores) element).getNombreGenerador();
+      else if (element instanceof Carga) label = "Carga " + ((Carga) element).getNombreCarga();
 
-      LogService.getInstance().info(label + " eliminada del diagrama.");
+      LogService.getInstance().info(label + " eliminado del diagrama.");
     }
   }
 
@@ -114,6 +140,11 @@ public class DiagramManager implements NetworkChangeListener {
   public void setCurrentTool(ToolType tool) {
     this.currentTool = tool;
     setConnectionMode(tool == ToolType.LINEA || tool == ToolType.TRANSFORMADOR);
+    setSingleConnectionMode(tool == ToolType.GENERADOR || tool == ToolType.CARGA);
+  }
+
+  public void setSingleConnectionMode(boolean enabled) {
+    this.singleConnectionMode = enabled;
   }
 
   public void setStatusMessenger(Consumer<String> statusMessenger) {
@@ -192,6 +223,22 @@ public class DiagramManager implements NetworkChangeListener {
     }
   }
 
+  private void agregarGeneradorVisual(Generadores generador) {
+    BusShape busShape = (BusShape) buscarShapePorModelo(generador.getBarra());
+    if (busShape != null) {
+      GenShape shape = shapeFactory.createGenShape(generador, busShape);
+      canvas.getChildren().add(shape);
+    }
+  }
+
+  private void agregarCargaVisual(proyectoSistemasDePotencia.Carga carga) {
+    BusShape busShape = (BusShape) buscarShapePorModelo(carga.getBarra());
+    if (busShape != null) {
+      CargaShape shape = shapeFactory.createCargaShape(carga, busShape);
+      canvas.getChildren().add(shape);
+    }
+  }
+
   /** Punto de entrada centralizado para clics en Barras. */
   public void handleBusClick(NetworkShape<?> shape, MouseEvent e) {
     e.consume();
@@ -199,6 +246,8 @@ public class DiagramManager implements NetworkChangeListener {
       reconnectionHandler.handleClick(shape, e);
     } else if (connectionHandler.isConnecting()) {
       connectionHandler.complete(shape, e, currentTool);
+    } else if (singleConnectionMode) {
+      singleTerminalHandler.handleBusClick(shape, e, currentTool);
     } else if (connectionModeEnabled) {
       connectionHandler.start(shape, e);
     } else {

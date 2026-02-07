@@ -42,6 +42,16 @@ public class SelectionHandler {
             .info(
                 "Seleccionada linea -> "
                     + ((proyectoSistemasDePotencia.Lineas) modelData).getNombreLinea());
+      } else if (modelData instanceof proyectoSistemasDePotencia.Generadores) {
+        application.service.logging.LogService.getInstance()
+            .info(
+                "Seleccionado generador -> "
+                    + ((proyectoSistemasDePotencia.Generadores) modelData).getNombreGenerador());
+      } else if (modelData instanceof proyectoSistemasDePotencia.Carga) {
+        application.service.logging.LogService.getInstance()
+            .info(
+                "Seleccionada carga -> "
+                    + ((proyectoSistemasDePotencia.Carga) modelData).getNombreCarga());
       }
 
       model.setSeleccionActual(modelData);

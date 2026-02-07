@@ -2,9 +2,13 @@ package application.view.canvas.handlers;
 
 import application.view.canvas.DiagramManager;
 import application.view.shapes.BusShape;
+import application.view.shapes.CargaShape;
+import application.view.shapes.GenShape;
 import application.view.shapes.LineShape;
 import application.view.shapes.TrafoShape;
 import proyectoSistemasDePotencia.Barras;
+import proyectoSistemasDePotencia.Carga;
+import proyectoSistemasDePotencia.Generadores;
 import proyectoSistemasDePotencia.Lineas;
 import proyectoSistemasDePotencia.Transformador;
 
@@ -37,5 +41,19 @@ public class ShapeFactory {
     trafoShape.setOnMouseClicked(e -> mediator.handleNonBusClick(trafoShape, e));
     trafoShape.setOnReconnectRequest(mediator::startAnchorReselection);
     return trafoShape;
+  }
+
+  public GenShape createGenShape(Generadores generador, BusShape busShape) {
+    GenShape genShape = new GenShape(generador, busShape);
+    genShape.setOnMouseClicked(e -> mediator.handleNonBusClick(genShape, e));
+    genShape.setOnReconnectRequest(mediator::startAnchorReselection);
+    return genShape;
+  }
+
+  public CargaShape createCargaShape(Carga carga, BusShape busShape) {
+    CargaShape cargaShape = new CargaShape(carga, busShape);
+    cargaShape.setOnMouseClicked(e -> mediator.handleNonBusClick(cargaShape, e));
+    cargaShape.setOnReconnectRequest(mediator::startAnchorReselection);
+    return cargaShape;
   }
 }
